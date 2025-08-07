@@ -185,18 +185,12 @@ class AuthService {
   /**
    * Listen to authentication state changes
    * @param {Function} callback - Callback function for auth state changes
-   * @returns {Function} Unsubscribe function
+   * @returns {Object} Unsubscribe object
    */
   static onAuthStateChange(callback) {
     try {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (event, session) => {
-          callback(event, session);
-        }
-      );
-
-      // Return unsubscribe function
-      return () => subscription.unsubscribe();
+      // Langsung kembalikan hasil dari Supabase, yang berisi data subscription
+      return supabase.auth.onAuthStateChange(callback);
     } catch (error) {
       console.error('[AuthService] onAuthStateChange error:', error);
       throw new Error(`Failed to setup auth state listener: ${error.message}`);

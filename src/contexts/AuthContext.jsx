@@ -15,169 +15,81 @@ import PropTypes from 'prop-types';
 import AuthService from '../services/AuthService.js';
 
 // Create the context
-const AuthContext = createContext({
-  user: null,
-  session: null,
-  loading: true,
-  signIn: () => {},
-  signUp: () => {},
-  signInWithGoogle: () => {},
-  signOut: () => {},
-  resetPassword: () => {},
-});
+const AuthContext = createContext(null);
 
-/**
- * AuthProvider component that wraps the app and provides auth state
- */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // 'loading' sekarang hanya berarti "memeriksa sesi awal"
+  const [loadingInitial, setLoadingInitial] = useState(true);
 
-  // Initialize auth state on mount
   useEffect(() => {
     let unsubscribe;
-    let isInitialized = false;
 
-    // Setup auth state listener FIRST (before any async operations)
-    const setupAuthListener = () => {
-      unsubscribe = AuthService.onAuthStateChange((event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Handle sign out redirect
-        if (event === 'SIGNED_OUT') {
-          // Use setTimeout to avoid redirect during render
-          setTimeout(() => {
-            window.location.href = '/';
-          }, 100);
-        }
-        
-        // Only stop loading after initial auth check is complete
-        if (isInitialized) {
-          setLoading(false);
-        }
-      });
-    };
-
-    const initializeAuth = async () => {
-      try {
-        // Get current session (Supabase automatically handles URL session detection when detectSessionInUrl: true)
-        const currentSession = await AuthService.getCurrentSession();
+    // Cek sesi yang ada saat aplikasi pertama kali dimuat
+    // Supabase client secara otomatis menangani sesi dari URL jika dikonfigurasi.
+    AuthService.getCurrentSession()
+      .then(currentSession => {
         if (currentSession) {
           setSession(currentSession);
           setUser(currentSession.user);
         }
-      } catch (error) {
-        console.error('[AuthContext] Failed to initialize auth:', error);
-      } finally {
-        // Mark as initialized and stop loading
-        isInitialized = true;
-        setLoading(false);
-      }
-    };
+      })
+      .catch(error => console.error('[AuthContext] Failed to get initial session:', error))
+      .finally(() => {
+        // Tandai bahwa pemeriksaan awal selesai
+        setLoadingInitial(false);
+      });
 
-    // Setup listener first, then initialize
-    setupAuthListener();
-    initializeAuth();
-
+    // Pasang listener dan simpan subscription object-nya
+    const authListener = AuthService.onAuthStateChange((_event, session) => {
+      console.log(`[AuthContext] Auth state changed: ${_event}`, session);
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+    
     // Cleanup subscription on unmount
     return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
+      // AMBIL SUBSCRIPTION DARI LISTENER DAN UNSUBSCRIBE
+      // Ini adalah cara yang paling aman.
+      // `authListener.data.subscription.unsubscribe()`
+      authListener?.data?.subscription?.unsubscribe();
     };
   }, []);
-
-  /**
-   * Sign in with email and password
-   */
-  const signIn = async (email, password) => {
-    try {
-      setLoading(true);
-      const result = await AuthService.signInWithEmail(email, password);
-      return result;
-    } catch (error) {
-      console.error('[AuthContext] Sign in failed:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Sign up with email and password
-   */
-  const signUp = async (email, password, metadata = {}) => {
-    try {
-      setLoading(true);
-      const result = await AuthService.signUpWithEmail(email, password, metadata);
-      return result;
-    } catch (error) {
-      console.error('[AuthContext] Sign up failed:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Sign in with Google OAuth
-   */
-  const signInWithGoogle = async (redirectTo) => {
-    try {
-      setLoading(true);
-      const result = await AuthService.signInWithGoogle(redirectTo);
-      return result;
-    } catch (error) {
-      console.error('[AuthContext] Google sign in failed:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Sign out the current user
-   */
-  const signOut = async () => {
-    try {
-      setLoading(true);
-      await AuthService.signOut();
-      // Auth state listener will handle clearing user/session
-    } catch (error) {
-      console.error('[AuthContext] Sign out failed:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Reset password for email
-   */
-  const resetPassword = async (email, redirectTo) => {
-    try {
-      await AuthService.resetPassword(email, redirectTo);
-    } catch (error) {
-      console.error('[AuthContext] Password reset failed:', error);
-      throw error;
-    }
-  };
+  
+  // Fungsi-fungsi ini tidak perlu lagi mengatur 'loading'
+  // karena listener onAuthStateChange akan menangani pembaruan state secara reaktif.
+  const signIn = (email, password) => AuthService.signInWithEmail(email, password);
+  const signUp = (email, password, metadata) => AuthService.signUpWithEmail(email, password, metadata);
+  const signInWithGoogle = (redirectTo) => AuthService.signInWithGoogle(redirectTo);
+  const signOut = () => AuthService.signOut();
+  const resetPassword = (email, redirectTo) => AuthService.resetPassword(email, redirectTo);
 
   const value = {
     user,
     session,
-    loading,
     signIn,
     signUp,
     signInWithGoogle,
     signOut,
     resetPassword,
-    // Helper computed properties
     isAuthenticated: !!user,
-    isLoading: loading,
+    // Gunakan loadingInitial untuk state loading awal aplikasi
+    isLoading: loadingInitial, 
   };
+
+  // Jangan render apapun sampai pemeriksaan otentikasi awal selesai.
+  // Ini mencegah "flash" dari halaman yang dilindungi ke halaman login saat refresh.
+  if (loadingInitial) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Initializing Application...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={value}>
@@ -190,17 +102,11 @@ AuthProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-/**
- * Custom hook to use the Auth context
- */
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  
   return context;
 };
 

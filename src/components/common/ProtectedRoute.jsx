@@ -11,112 +11,43 @@
  * - Role-based permissions (future-ready)
  */
 
-import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
+import { Navigate, useLocation } from 'react-router-dom';
 
 /**
- * Check if the current URL contains OAuth redirect parameters
- * This helps prevent showing "Authentication Required" during OAuth flows
- */
-const hasOAuthParams = () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const hashParams = new URLSearchParams(window.location.hash.substring(1));
-  
-  // Check for common OAuth parameters
-  return (
-    urlParams.has('access_token') ||
-    urlParams.has('refresh_token') ||
-    urlParams.has('code') ||
-    hashParams.has('access_token') ||
-    hashParams.has('refresh_token')
-  );
-};
-
-/**
- * ProtectedRoute component that guards routes requiring authentication
+ * ProtectedRoute sekarang lebih sederhana.
+ * Ia hanya memeriksa status otentikasi.
+ * Logika redirect ditangani di level router/app.
  */
 const ProtectedRoute = ({ 
   children, 
-  fallback = null, 
   redirectTo = '/login',
-  requirePermission = null,
-  showLoading = true 
+  // Anda bisa menambahkan properti lain seperti requirePermission jika perlu
 }) => {
-  const navigate = useNavigate();
-  const { isAuthenticated, isLoading, checkPermission } = useAuth();
-  const [redirecting, setRedirecting] = useState(false);
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
 
-  // Handle redirect when not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated && !redirecting) {
-      setRedirecting(true);
-      navigate(redirectTo, { replace: true });
-    }
-  }, [isLoading, isAuthenticated, redirecting, navigate, redirectTo]);
-
-  // Show loading state while auth is being determined OR if OAuth params are present
-  if (isLoading || (!isAuthenticated && hasOAuthParams())) {
-    if (showLoading) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">
-              {hasOAuthParams() ? 'Completing sign in...' : 'Loading...'}
-            </p>
-          </div>
-        </div>
-      );
-    }
-    return null;
+  // isLoading di sini merujuk pada `loadingInitial` dari AuthContext.
+  // Selama loading awal, jangan render apa-apa, biarkan AuthProvider menampilkan spinner global.
+  if (isLoading) {
+    return null; // AuthProvider sudah menampilkan spinner
   }
 
-  // Check authentication
+  // Jika tidak terotentikasi, alihkan ke halaman login
   if (!isAuthenticated) {
-    // If a custom fallback is provided, render it
-    if (fallback) {
-      return fallback;
-    }
-    
-    // Show loading while redirecting
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting to login...</p>
-        </div>
-      </div>
-    );
+    // 'replace' mencegah pengguna menekan tombol "kembali" di browser untuk kembali ke halaman yang dilindungi.
+    // 'state' berguna untuk mengarahkan pengguna kembali ke halaman yang mereka coba akses setelah login.
+    return <Navigate to={redirectTo} replace state={{ from: location }} />;
   }
 
-  // Check permissions if required
-  if (requirePermission && !checkPermission(requirePermission)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Access Denied
-          </h2>
-          <p className="text-gray-600">
-            You don't have permission to access this resource.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // User is authenticated and has required permissions
+  // Jika terotentikasi, tampilkan konten yang dilindungi.
   return children;
 };
 
 ProtectedRoute.propTypes = {
   children: PropTypes.node.isRequired,
-  fallback: PropTypes.node,
   redirectTo: PropTypes.string,
-  requirePermission: PropTypes.string,
-  showLoading: PropTypes.bool,
 };
 
 export default ProtectedRoute;

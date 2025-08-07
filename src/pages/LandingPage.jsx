@@ -143,7 +143,10 @@ const LandingPage = () => {
               <GoogleOAuthButton
                 onSuccess={handleAuthSuccess}
                 onError={handleAuthError}
-                redirectTo={window.location.origin}
+                // --- PERBAIKAN DI SINI ---
+                // Arahkan ke dashboard setelah login berhasil.
+                // Pastikan URL origin tetap ada untuk membentuk URL yang lengkap.
+                redirectTo={`${window.location.origin}/dashboard`} 
               >
                 {authMode === 'login' ? 'Sign in with Google' : 'Sign up with Google'}
               </GoogleOAuthButton>
