@@ -11,9 +11,28 @@
  * - Role-based permissions (future-ready)
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
+
+/**
+ * Check if the current URL contains OAuth redirect parameters
+ * This helps prevent showing "Authentication Required" during OAuth flows
+ */
+const hasOAuthParams = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  
+  // Check for common OAuth parameters
+  return (
+    urlParams.has('access_token') ||
+    urlParams.has('refresh_token') ||
+    urlParams.has('code') ||
+    hashParams.has('access_token') ||
+    hashParams.has('refresh_token')
+  );
+};
 
 /**
  * ProtectedRoute component that guards routes requiring authentication
@@ -25,18 +44,33 @@ const ProtectedRoute = ({
   requirePermission = null,
   showLoading = true 
 }) => {
+  const navigate = useNavigate();
   const { isAuthenticated, isLoading, checkPermission } = useAuth();
+  const [redirecting, setRedirecting] = useState(false);
 
-  // Show loading state while auth is being determined
-  if (isLoading && showLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+  // Handle redirect when not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && !redirecting) {
+      setRedirecting(true);
+      navigate(redirectTo, { replace: true });
+    }
+  }, [isLoading, isAuthenticated, redirecting, navigate, redirectTo]);
+
+  // Show loading state while auth is being determined OR if OAuth params are present
+  if (isLoading || (!isAuthenticated && hasOAuthParams())) {
+    if (showLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">
+              {hasOAuthParams() ? 'Completing sign in...' : 'Loading...'}
+            </p>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    return null;
   }
 
   // Check authentication
@@ -46,23 +80,12 @@ const ProtectedRoute = ({
       return fallback;
     }
     
-    // Otherwise redirect to login (in a real app, you'd use React Router)
-    // For now, we'll show a simple unauthorized message
+    // Show loading while redirecting
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Authentication Required
-          </h2>
-          <p className="text-gray-600 mb-4">
-            You need to be logged in to access this page.
-          </p>
-          <button
-            onClick={() => window.location.href = redirectTo}
-            className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Go to Login
-          </button>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to login...</p>
         </div>
       </div>
     );

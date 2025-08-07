@@ -134,7 +134,7 @@ class AuthService {
    * @param {string} redirectTo - URL to redirect for password reset
    * @returns {Promise<void>}
    */
-  static async resetPassword(email, redirectTo = window.location.origin) {
+  static async resetPassword(email, redirectTo = `${window.location.origin}/reset-password`) {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo,
@@ -144,6 +144,41 @@ class AuthService {
     } catch (error) {
       console.error('[AuthService] resetPassword error:', error);
       throw new Error(`Failed to reset password: ${error.message}`);
+    }
+  }
+
+  /**
+   * Verify OTP token for password reset
+   * @param {Object} params - OTP verification parameters
+   * @returns {Promise<Object>} Verification result
+   */
+  static async verifyOtp(params) {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp(params);
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('[AuthService] verifyOtp error:', error);
+      return { data: null, error };
+    }
+  }
+
+  /**
+   * Update user's password
+   * @param {string} password - New password
+   * @returns {Promise<Object>} Update result
+   */
+  static async updatePassword(password) {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        password: password
+      });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('[AuthService] updatePassword error:', error);
+      return { data: null, error };
     }
   }
 

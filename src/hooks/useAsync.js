@@ -5,30 +5,41 @@
  * Provides consistent patterns for handling async calls in components.
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 /**
  * Custom hook for managing async operations
- * @param {Function} asyncFunction - The async function to execute
+ * @param {Function} asyncFunction - The async function to execute (optional)
  * @param {boolean} immediate - Whether to execute immediately on mount
  * @returns {Object} Async state and execution methods
  */
-export const useAsync = (asyncFunction, immediate = false) => {
+export const useAsync = (asyncFunction = null, immediate = false) => {
   const [loading, setLoading] = useState(immediate);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
 
   /**
    * Execute the async function
-   * @param {...any} args - Arguments to pass to the async function
+   * @param {Function|...any} firstArg - Either a function to execute, or first argument to asyncFunction
+   * @param {...any} args - Additional arguments to pass to the async function
    * @returns {Promise} Promise that resolves with the result
    */
-  const execute = useCallback(async (...args) => {
+  const execute = useCallback(async (firstArg, ...args) => {
     try {
       setLoading(true);
       setError(null);
       
-      const result = await asyncFunction(...args);
+      let result;
+      if (typeof firstArg === 'function' && !asyncFunction) {
+        // If no asyncFunction was provided, treat firstArg as the function to execute
+        result = await firstArg();
+      } else if (asyncFunction) {
+        // If asyncFunction was provided, pass all arguments to it
+        result = await asyncFunction(firstArg, ...args);
+      } else {
+        throw new Error('No async function provided');
+      }
+      
       setData(result);
       return result;
     } catch (err) {

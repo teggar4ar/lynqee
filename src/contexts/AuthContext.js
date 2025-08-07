@@ -56,15 +56,13 @@ export const AuthProvider = ({ children }) => {
     // Setup auth state listener
     const setupAuthListener = () => {
       unsubscribe = AuthService.onAuthStateChange((event, session) => {
-        console.log('[AuthContext] Auth state changed:', event);
+        console.warn('[AuthContext] Auth state changed:', event);
         
         setSession(session);
         setUser(session?.user ?? null);
         
-        // If we were loading and got a session update, stop loading
-        if (loading) {
-          setLoading(false);
-        }
+        // Stop loading when we get any auth state change
+        setLoading(false);
       });
     };
 

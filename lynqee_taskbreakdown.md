@@ -117,21 +117,21 @@ This document breaks down the Lynqee v1.0 MVP development into manageable tasks,
 **Priority:** P0 (Blocker)  
 **Estimate:** 4-6 hours  
 **Dependencies:** 2.2  
-**Status:** ✅ Database schema already implemented
+**Status:** ✅ **COMPLETED**
 
 #### Subtasks:
-- [ ] **2.3.1** Create profile setup wizard
-  - Build username selection step with real-time availability check
-  - Leverage existing database schema for profiles table
-  - Input validation and error handling
-- [ ] **2.3.2** Implement profile creation logic
-  - Create database trigger for new users (if not already existing)
-  - Auto-generate profile row on signup using existing schema
-  - Handle database conflicts and edge cases
-- [ ] **2.3.3** Create profile editing interface
-  - Build settings page with form using existing schema fields
-  - Allow editing display name, bio
-  - Handle avatar upload to Supabase Storage
+- [x] ~~**2.3.1** Create profile setup wizard~~ ✅ **COMPLETED**
+  - ~~Build username selection step with real-time availability check~~
+  - ~~Leverage existing database schema for profiles table~~
+  - ~~Input validation and error handling~~
+- [x] ~~**2.3.2** Implement profile creation logic~~ ✅ **COMPLETED**
+  - ~~Create database trigger for new users (if not already existing)~~
+  - ~~Auto-generate profile row on signup using existing schema~~
+  - ~~Handle database conflicts and edge cases~~
+- [x] ~~**2.3.3** Create profile editing interface~~ ✅ **COMPLETED**
+  - ~~Build settings page with form using existing schema fields~~
+  - ~~Allow editing display name, bio~~
+  - ~~Handle avatar upload to Supabase Storage~~
 
 ---
 
@@ -141,23 +141,23 @@ This document breaks down the Lynqee v1.0 MVP development into manageable tasks,
 **Priority:** P1 (High)  
 **Estimate:** 2-4 hours  
 **Dependencies:** 2.3  
-**Status:** ✅ Database schema ready, MCP client available for queries
+**Status:** ✅ **COMPLETED**
 
 #### Subtasks:
-- [ ] **3.1.1** Setup dynamic routing for usernames
-  - Configure React Router for `/[username]` pattern
-  - Handle 404 cases for non-existent users
-  - Setup SEO-friendly URL structure
-- [ ] **3.1.2** Create profile data fetching with service layer abstraction
-  - Create `services/ProfileService.js` for all profile-related API calls
-  - Create `hooks/useProfile.js` for component data fetching
-  - Create `hooks/useLinks.js` for link-specific operations
-  - Implement caching strategy using custom hooks
-  - Handle loading and error states with reusable patterns
-- [ ] **3.1.3** Configure Row Level Security (RLS) policies
-  - Review and test existing RLS policies for `profiles` table
-  - Verify RLS policies for `links` table allow public read access
-  - Test security rules thoroughly with MCP client
+- [x] ~~**3.1.1** Setup dynamic routing for usernames~~ ✅ **COMPLETED**
+  - ~~Configure React Router for `/[username]` pattern~~
+  - ~~Handle 404 cases for non-existent users~~
+  - ~~Setup SEO-friendly URL structure~~
+- [x] ~~**3.1.2** Create profile data fetching with service layer abstraction~~ ✅ **COMPLETED**
+  - ~~Create `services/ProfileService.js` for all profile-related API calls~~
+  - ~~Create `hooks/useProfile.js` for component data fetching~~
+  - ~~Create `hooks/useLinks.js` for link-specific operations~~
+  - ~~Implement caching strategy using custom hooks~~
+  - ~~Handle loading and error states with reusable patterns~~
+- [x] ~~**3.1.3** Configure Row Level Security (RLS) policies~~ ✅ **COMPLETED**
+  - ~~Review and test existing RLS policies for `profiles` table~~
+  - ~~Verify RLS policies for `links` table allow public read access~~
+  - ~~Test security rules thoroughly with MCP client~~
 
 ### Task 3.2: Public Profile UI Components
 **Priority:** P1 (High)  

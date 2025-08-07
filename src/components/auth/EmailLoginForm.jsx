@@ -84,7 +84,7 @@ const EmailLoginForm = ({
       });
 
       if (!isValid) {
-        console.log('[EmailLoginForm] Form validation failed');
+        console.warn('[EmailLoginForm] Form validation failed');
       }
     } catch (error) {
       console.error('[EmailLoginForm] Login failed:', error);

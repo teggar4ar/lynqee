@@ -1,4 +1,11 @@
-// Profile component exports
-// Example: export { default as ProfileHeader } from './ProfileHeader';
-// Example: export { default as Avatar } from './Avatar';
-// Example: export { default as ProfileInfo } from './ProfileInfo';
+/**
+ * Profile components barrel export
+ * 
+ * Centralized exports for all profile-related components.
+ * Enables clean imports: import { ProfileSetupWizard } from '../components/profile'
+ */
+
+export { default as ProfileSetupWizard } from './ProfileSetupWizard.jsx';
+export { default as UsernameSelection } from './UsernameSelection.jsx';
+export { default as ProfileInformation } from './ProfileInformation.jsx';
+export { default as ProfileSettings } from './ProfileSettings.jsx';

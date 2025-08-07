@@ -37,10 +37,32 @@ export const AuthProvider = ({ children }) => {
   // Initialize auth state on mount
   useEffect(() => {
     let unsubscribe;
+    let isInitialized = false;
+
+    // Setup auth state listener FIRST (before any async operations)
+    const setupAuthListener = () => {
+      unsubscribe = AuthService.onAuthStateChange((event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Handle sign out redirect
+        if (event === 'SIGNED_OUT') {
+          // Use setTimeout to avoid redirect during render
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 100);
+        }
+        
+        // Only stop loading after initial auth check is complete
+        if (isInitialized) {
+          setLoading(false);
+        }
+      });
+    };
 
     const initializeAuth = async () => {
       try {
-        // Get current session
+        // Get current session (Supabase automatically handles URL session detection when detectSessionInUrl: true)
         const currentSession = await AuthService.getCurrentSession();
         if (currentSession) {
           setSession(currentSession);
@@ -49,27 +71,15 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         console.error('[AuthContext] Failed to initialize auth:', error);
       } finally {
+        // Mark as initialized and stop loading
+        isInitialized = true;
         setLoading(false);
       }
     };
 
-    // Setup auth state listener
-    const setupAuthListener = () => {
-      unsubscribe = AuthService.onAuthStateChange((event, session) => {
-        console.log('[AuthContext] Auth state changed:', event);
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // If we were loading and got a session update, stop loading
-        if (loading) {
-          setLoading(false);
-        }
-      });
-    };
-
-    initializeAuth();
+    // Setup listener first, then initialize
     setupAuthListener();
+    initializeAuth();
 
     // Cleanup subscription on unmount
     return () => {
@@ -183,6 +193,7 @@ AuthProvider.propTypes = {
 /**
  * Custom hook to use the Auth context
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   

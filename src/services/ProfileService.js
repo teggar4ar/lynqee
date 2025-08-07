@@ -97,6 +97,21 @@ class ProfileService {
   }
 
   /**
+   * Check if a user has a profile
+   * @param {string} userId - The user ID
+   * @returns {Promise<boolean>} True if user has a profile
+   */
+  static async userHasProfile(userId) {
+    try {
+      const profile = await this.getProfileById(userId);
+      return profile !== null;
+    } catch (error) {
+      console.error('[ProfileService] userHasProfile error:', error);
+      return false;
+    }
+  }
+
+  /**
    * Check if a username is available
    * @param {string} username - Username to check
    * @returns {Promise<boolean>} True if username is available

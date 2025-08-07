@@ -38,7 +38,7 @@ export const useAuth = () => {
       }
     },
     
-    checkPermission: (permission) => {
+    checkPermission: (_permission) => {
       // Placeholder for future role-based permissions
       return authContext.isAuthenticated;
     },

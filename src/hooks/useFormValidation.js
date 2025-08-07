@@ -5,7 +5,7 @@
  * Separates validation logic from UI components for better testability.
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 /**
  * Custom hook for form validation

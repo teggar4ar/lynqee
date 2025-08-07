@@ -86,7 +86,7 @@ const EmailRegistrationForm = ({ onSuccess, onError, className = '' }) => {
       });
 
       if (!isValid) {
-        console.log('[EmailRegistrationForm] Form validation failed');
+        console.warn('[EmailRegistrationForm] Form validation failed');
       }
     } catch (error) {
       console.error('[EmailRegistrationForm] Registration failed:', error);

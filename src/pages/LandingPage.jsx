@@ -9,25 +9,51 @@
  * - Clean, modern UI optimized for touch devices
  */
 
-import React, { useState } from 'react';
-import { GoogleOAuthButton, EmailRegistrationForm, EmailLoginForm } from '../components/auth';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { EmailLoginForm, EmailRegistrationForm, GoogleOAuthButton } from '../components/auth';
 import { Button } from '../components/common';
+import { useAuth } from '../hooks/useAuth.js';
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user, isLoading } = useAuth();
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
+  // Check for password reset success message
+  useEffect(() => {
+    const passwordReset = searchParams.get('passwordReset');
+    if (passwordReset === 'success') {
+      setSuccess('Password updated successfully! You can now sign in with your new password.');
+      // Clear the URL parameter
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('passwordReset');
+      navigate({ search: newSearchParams.toString() }, { replace: true });
+    }
+  }, [searchParams, navigate]);
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, isLoading, navigate]);
+
   // Handle authentication success
   const handleAuthSuccess = (result) => {
-    console.log('[LandingPage] Auth success:', result);
     setError(null);
     setSuccess('Authentication successful! Redirecting...');
     
-    // In a real app, you'd redirect to dashboard or profile setup
-    setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 1500);
+    // For email/password auth, redirect immediately
+    // For OAuth, the useEffect above will handle the redirect when user state updates
+    if (result?.user) {
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 1500);
+    }
   };
 
   // Handle authentication error
@@ -49,6 +75,18 @@ const LandingPage = () => {
     setError(null);
     setSuccess(null);
   };
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -105,7 +143,7 @@ const LandingPage = () => {
               <GoogleOAuthButton
                 onSuccess={handleAuthSuccess}
                 onError={handleAuthError}
-                redirectTo={window.location.origin + '/dashboard'}
+                redirectTo={window.location.origin}
               >
                 {authMode === 'login' ? 'Sign in with Google' : 'Sign up with Google'}
               </GoogleOAuthButton>
