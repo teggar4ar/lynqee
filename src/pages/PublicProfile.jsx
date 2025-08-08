@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useProfile } from '../hooks/useProfile';
-import { useLinks } from '../hooks/useLinks';
+import { useRealtimeLinks } from '../hooks/useRealtimeLinks';
 import { ProfileHeader } from '../components/profile';
 import { 
   ErrorBoundary,
@@ -30,7 +30,7 @@ const PublicProfile = () => {
   
   // Fetch profile and links data
   const { profile, loading: profileLoading, error: profileError, notFound } = useProfile(username);
-  const { links, loading: linksLoading, error: linksError } = useLinks(username);
+  const { links, loading: linksLoading, error: linksError, isRealTimeConnected } = useRealtimeLinks(username);
 
   // Handle case where username is missing (shouldn't happen with proper routing)
   if (!username) {
@@ -211,6 +211,17 @@ const PublicProfile = () => {
             <h2 id="user-links" className="sr-only">
               {username}'s Links
             </h2>
+            
+            {/* Real-time indicator for links */}
+            {isRealTimeConnected && (
+              <div className="mb-4 flex items-center justify-center">
+                <div className="flex items-center space-x-2 px-3 py-1 bg-green-50 border border-green-200 rounded-full">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-green-700 font-medium">Live updates</span>
+                </div>
+              </div>
+            )}
+            
             
             {/* Enhanced LinkList with error state handling */}
             <ErrorBoundary 

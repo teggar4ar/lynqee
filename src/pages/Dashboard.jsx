@@ -1,40 +1,43 @@
 /**
- * Dashboard - Protected dashboard page for authenticated users
+ * Dashboard - Protected dashboard page for authenticated users (UNIFIED)
  * 
  * Features:
  * - Protected route (requires authentication and profile)
- * - Mobile-first layout
+ * - Mobile-first layout with bottom navigation
+ * - Unified real-time data management
  * - Profile management
- * - Link management (future)
- * - Analytics (future)
+ * - Real-time stats and link preview
  */
 
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.js';
 import { useCurrentUserProfile } from '../hooks/useProfile.js';
+import { useRealtimeDashboard } from '../hooks/useRealtimeDashboard.js';
 import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { ProfileSettings } from '../components/profile';
+import { DashboardLayout, DashboardStats, ProfileQuickPreview } from '../components/dashboard';
 import { getErrorType } from '../utils/errorUtils';
 
 const Dashboard = () => {
-  const { user, signOut, isLoading } = useAuth();
-  const { profile, loading: profileLoading, error: profileError, refetch } = useCurrentUserProfile(user?.id);
+  const { user } = useAuth();
+  const { profile, loading: profileLoading, error: profileError, refetch: refetchProfile } = useCurrentUserProfile(user?.id);
+  
+  // Unified real-time dashboard data (replaces separate hooks)
+  const { 
+    links, 
+    stats, 
+    loading: dashboardLoading, 
+    error: dashboardError, 
+    isRealTimeConnected, 
+    lastUpdated,
+    refetch: refetchDashboard,
+    hasLinks
+  } = useRealtimeDashboard(user?.id);
+
   const [showProfileSettings, setShowProfileSettings] = useState(false);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      // The AuthContext will handle the redirect after successful sign out
-      // No need for manual window.location.href = '/'
-    } catch (error) {
-      console.error('[Dashboard] Sign out failed:', error);
-      alert('Failed to sign out. Please try again.');
-    }
-  };
-
   const handleProfileUpdate = (_updatedProfile) => {
-    // Trigger a refetch to get the latest data from the server
-    refetch();
+    refetchProfile();
     setShowProfileSettings(false);
   };
 
@@ -42,148 +45,264 @@ const Dashboard = () => {
     setShowProfileSettings(false);
   };
 
-  const getPublicProfileUrl = () => {
-    return profile?.username ? `${window.location.origin}/${profile.username}` : '';
+  const handleViewPublicProfile = () => {
+    if (profile?.username) {
+      window.open(`/${profile.username}`, '_blank');
+    }
   };
+
+  // Refresh all dashboard data
+  const handleRefreshData = () => {
+    refetchProfile();
+    refetchDashboard();
+  };
+
+  // Determine overall loading state
+  const isLoading = profileLoading || dashboardLoading;
+  
+  // Determine if there are any errors
+  const hasError = profileError || dashboardError;
+  const primaryError = profileError || dashboardError;
+
+  // Header actions for the dashboard layout
+  const headerActions = showProfileSettings ? null : (
+    <Button
+      variant="outline"
+      onClick={() => setShowProfileSettings(true)}
+      disabled={isLoading}
+      className="px-3 py-2 text-sm md:px-4 md:py-2"
+    >
+      Edit Profile
+    </Button>
+  );
 
   return (
     <ProtectedRoute>
       <ProfileSetupGuard>
-        <div className="min-h-screen bg-gray-50">
-        {/* Header - Mobile optimized */}
-        <header className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="px-4 py-3 flex justify-between items-center md:max-w-7xl md:mx-auto md:px-6 md:py-4">
-            <h1 className="text-lg font-bold text-gray-900 md:text-xl">Dashboard</h1>
-            <Button
-              variant="outline"
-              onClick={handleSignOut}
-              disabled={isLoading}
-              className="px-3 py-2 text-sm md:px-4 md:py-2"
-            >
-              Sign Out
-            </Button>
-          </div>
-        </header>
-
-        {/* Main Content - Mobile optimized */}
-        <main className="px-4 py-4 md:max-w-7xl md:mx-auto md:px-6 md:py-8">
+        <DashboardLayout 
+          title="Dashboard" 
+          headerActions={headerActions}
+        >
           {showProfileSettings && profile ? (
-            <div className="mb-4">
-              <ProfileSettings
-                profile={profile}
-                onUpdate={handleProfileUpdate}
-                onCancel={handleCancelProfileEdit}
+            <ProfileSettings
+              profile={profile}
+              onUpdate={handleProfileUpdate}
+              onCancel={handleCancelProfileEdit}
+            />
+          ) : isLoading ? (
+            <>
+              {/* Loading state for profile */}
+              <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+                <div className="animate-pulse">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="w-14 h-14 bg-gray-200 rounded-full"></div>
+                    <div className="space-y-2 flex-1">
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                    </div>
+                  </div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </div>
+              
+              {/* Loading state for stats */}
+              <DashboardStats loading={true} />
+            </>
+          ) : hasError ? (
+            <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+              <ErrorState
+                type={getErrorType(primaryError)}
+                error={primaryError}
+                onRetry={handleRefreshData}
+                className="!p-4 !bg-white !border-red-200"
+                context={{
+                  operation: 'Load Dashboard Data',
+                  component: 'Dashboard'
+                }}
               />
             </div>
-          ) : (
-            <div className="space-y-4 md:space-y-6">
-              {/* Profile Overview - Mobile first */}
+          ) : profile ? (
+            <>
+              {/* Profile Quick Preview */}
+              <ProfileQuickPreview
+                profile={profile}
+                onEditProfile={() => setShowProfileSettings(true)}
+                onViewPublicProfile={handleViewPublicProfile}
+              />
+
+              {/* Dashboard Stats - unified real-time data */}
+              <DashboardStats 
+                stats={stats}
+                loading={dashboardLoading}
+                showRealTimeIndicator={isRealTimeConnected}
+              />
+
+              {/* Links Preview - Real data from unified hook */}
               <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
-                <div className="flex flex-col space-y-3 mb-4 md:flex-row md:items-center md:justify-between md:space-y-0 md:mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 md:text-xl">
-                    Your Profile
-                  </h2>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <h2 className="text-lg font-semibold text-gray-900 md:text-xl">
+                      Your Links
+                    </h2>
+                    {isRealTimeConnected && (
+                      <div className="flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-gray-600 hidden md:inline">Live</span>
+                      </div>
+                    )}
+                  </div>
                   <Button
                     variant="outline"
-                    onClick={() => setShowProfileSettings(true)}
-                    disabled={profileLoading}
-                    className="w-full py-3 text-base md:w-auto md:py-2 md:text-sm"
+                    disabled={true}
+                    className="px-3 py-2 text-sm opacity-50"
                   >
-                    Edit Profile
+                    Add Link
                   </Button>
                 </div>
                 
-                {profileLoading ? (
-                  <div className="flex items-center space-x-3 py-4">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 md:h-6 md:w-6"></div>
-                    <span className="text-gray-600 text-sm md:text-base">Loading profile...</span>
+                {dashboardLoading ? (
+                  // Loading state for links
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                          <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ) : profileError ? (
-                  <div className="py-4">
-                    <ErrorState
-                      type={getErrorType(profileError)}
-                      error={profileError}
-                      onRetry={refetch}
-                      className="!p-4 !bg-white !border-red-200"
-                      context={{
-                        operation: 'Load Profile',
-                        component: 'Dashboard'
-                      }}
-                    />
+                ) : dashboardError ? (
+                  // Error state for links
+                  <div className="text-center py-6">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                      <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Failed to load links
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      {dashboardError}
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={refetchDashboard}
+                      className="px-4 py-2"
+                    >
+                      Try Again
+                    </Button>
                   </div>
-                ) : profile ? (
-                  <div className="space-y-4">
-                    {/* Profile Info - Mobile optimized */}
-                    <div className="flex items-start space-x-3 md:space-x-4">
-                      <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0 md:w-16 md:h-16">
-                        <span className="text-lg font-medium text-gray-600 md:text-xl">
-                          {(profile.name || profile.username)?.[0]?.toUpperCase() || '?'}
+                ) : hasLinks ? (
+                  // Display actual links
+                  <div className="space-y-3">
+                    {links.slice(0, 3).map((link) => (
+                      <div key={link.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-medium text-gray-900 truncate">
+                            {link.title}
+                          </h3>
+                          <p className="text-xs text-gray-600 truncate">
+                            {link.url}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {links.length > 3 && (
+                      <div className="text-center pt-2">
+                        <span className="text-sm text-gray-600">
+                          +{links.length - 3} more links
                         </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-medium text-gray-900 truncate md:text-lg">
-                          {profile.name || 'Add your name'}
-                        </h3>
-                        <p className="text-sm text-gray-600 md:text-base">@{profile.username}</p>
-                        {profile.bio && (
-                          <p className="text-sm text-gray-700 mt-1 md:text-base">{profile.bio}</p>
-                        )}
-                      </div>
-                    </div>
+                    )}
                     
-                    {/* Public Profile Link - Mobile optimized */}
-                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <p className="text-xs font-medium text-blue-700 mb-2 md:text-sm md:mb-1">Your public profile:</p>
-                      <a
-                        href={getPublicProfileUrl()}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-xs underline break-all md:text-sm"
+                    <div className="pt-2 border-t border-gray-200">
+                      <Button
+                        variant="outline"
+                        disabled={true}
+                        className="w-full py-2 text-sm opacity-50"
                       >
-                        {getPublicProfileUrl()}
-                      </a>
+                        Manage Links (Coming Soon)
+                      </Button>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-gray-600 py-4">Failed to load profile.</p>
-                )}
-              </div>
-
-              {/* Links Management - Mobile optimized */}
-              <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3 md:text-xl md:mb-4">
-                  Your Links
-                </h2>
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <h3 className="font-medium text-blue-900 mb-2 text-sm md:text-base">Coming Soon</h3>
-                  <p className="text-blue-800 text-xs md:text-sm">
-                    Link management functionality will be available here soon.
-                  </p>
-                </div>
-              </div>
-
-              {/* Account Information - Mobile optimized */}
-              <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3 md:text-xl md:mb-4">
-                  Account Information
-                </h2>
-                {user && (
-                  <div className="space-y-2 md:space-y-3">
-                    <div className="text-sm md:text-base">
-                      <span className="font-medium text-gray-700">Email:</span>
-                      <span className="text-gray-600 ml-2 break-all">{user.email}</span>
+                  // Empty state - no links yet
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
                     </div>
-                    <div className="text-sm md:text-base">
-                      <span className="font-medium text-gray-700">Account created:</span>
-                      <span className="text-gray-600 ml-2">{new Date(user.created_at).toLocaleDateString()}</span>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No links yet
+                    </h3>
+                    <p className="text-gray-600 mb-4 max-w-sm mx-auto">
+                      Link management functionality will be available soon. You'll be able to add and organize your links here.
+                    </p>
+                    <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Coming in Sprint 4.2
                     </div>
                   </div>
                 )}
               </div>
+
+              {/* Account Information - Compact Mobile Version */}
+              <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900 md:text-xl">
+                    Account Details
+                  </h2>
+                  {lastUpdated && (
+                    <span className="text-xs text-gray-500">
+                      Updated {new Date(lastUpdated).toLocaleTimeString()}
+                    </span>
+                  )}
+                </div>
+                {user && (
+                  <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 border-b border-gray-100">
+                      <span className="text-sm font-medium text-gray-700 mb-1 sm:mb-0">Email</span>
+                      <span className="text-sm text-gray-600 break-all">{user.email}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 border-b border-gray-100">
+                      <span className="text-sm font-medium text-gray-700 mb-1 sm:mb-0">Member since</span>
+                      <span className="text-sm text-gray-600">{new Date(user.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2">
+                      <span className="text-sm font-medium text-gray-700 mb-1 sm:mb-0">Account status</span>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 w-fit">
+                        Active
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 text-center py-8">
+              <p className="text-gray-600">Failed to load dashboard data. Please try refreshing the page.</p>
+              <Button
+                variant="outline"
+                onClick={handleRefreshData}
+                className="mt-4"
+              >
+                Try Again
+              </Button>
             </div>
           )}
-        </main>
-      </div>
+        </DashboardLayout>
       </ProfileSetupGuard>
     </ProtectedRoute>
   );
