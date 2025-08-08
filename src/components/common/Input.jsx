@@ -11,6 +11,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+// Generate a unique ID for cases where name is not provided
+let inputCounter = 0;
+
 const Input = ({
   type = 'text',
   name,
@@ -27,7 +30,14 @@ const Input = ({
   className = '',
   ...props
 }) => {
-  const inputId = `input-${name}`;
+  // Generate unique ID using name or fallback to counter
+  const inputId = React.useMemo(() => {
+    if (name) {
+      return `input-${name}`;
+    }
+    inputCounter += 1;
+    return `input-generated-${inputCounter}`;
+  }, [name]);
   
   // Combine base classes with custom classes
   const baseInputClasses = `
@@ -86,7 +96,7 @@ const Input = ({
 
 Input.propTypes = {
   type: PropTypes.string,
-  name: PropTypes.string.isRequired,
+  name: PropTypes.string,
   value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   onBlur: PropTypes.func,

@@ -12,8 +12,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.js';
 import { useCurrentUserProfile } from '../hooks/useProfile.js';
-import { Button, ProfileSetupGuard, ProtectedRoute } from '../components/common';
+import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { ProfileSettings } from '../components/profile';
+import { getErrorType } from '../utils/errorUtils';
 
 const Dashboard = () => {
   const { user, signOut, isLoading } = useAuth();
@@ -99,15 +100,16 @@ const Dashboard = () => {
                   </div>
                 ) : profileError ? (
                   <div className="py-4">
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <p className="text-red-700 text-sm md:text-base">Error loading profile: {profileError}</p>
-                      <button 
-                        onClick={refetch}
-                        className="mt-2 text-red-600 hover:text-red-700 text-sm underline"
-                      >
-                        Try again
-                      </button>
-                    </div>
+                    <ErrorState
+                      type={getErrorType(profileError)}
+                      error={profileError}
+                      onRetry={refetch}
+                      className="!p-4 !bg-white !border-red-200"
+                      context={{
+                        operation: 'Load Profile',
+                        component: 'Dashboard'
+                      }}
+                    />
                   </div>
                 ) : profile ? (
                   <div className="space-y-4">

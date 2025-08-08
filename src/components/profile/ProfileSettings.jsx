@@ -186,6 +186,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
       <form onSubmit={handleSubmit} className="space-y-4 md:space-y-4">
         <Input
           label="Display Name"
+          name="displayName"
           type="text"
           value={formData.name}
           onChange={handleInputChange('name')}
@@ -198,6 +199,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
         <div>
           <Input
             label="Username"
+            name="username"
             type="text"
             value={formData.username}
             onChange={handleInputChange('username')}
@@ -222,17 +224,20 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 md:text-base">
+          <label htmlFor="input-bio" className="block text-sm font-medium text-gray-700 mb-1 md:text-base">
             Bio
             <span className="text-gray-500 font-normal ml-1">(optional)</span>
           </label>
           <textarea
+            id="input-bio"
+            name="bio"
             value={formData.bio}
             onChange={handleInputChange('bio')}
             placeholder="Tell people a little about yourself..."
             rows={3}
             maxLength={BIO_MAX_LENGTH}
             className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-base md:text-sm"
+            style={{ minHeight: '44px' }}
           />
           <div className="mt-1 flex justify-between text-xs text-gray-500">
             <span>{errors.bio || ''}</span>

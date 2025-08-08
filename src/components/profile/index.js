@@ -5,6 +5,8 @@
  * Enables clean imports: import { ProfileSetupWizard } from '../components/profile'
  */
 
+export { default as ProfileHeader } from './ProfileHeader.jsx';
+export { default as ProfileInfo } from './ProfileInfo.jsx';
 export { default as ProfileSetupWizard } from './ProfileSetupWizard.jsx';
 export { default as UsernameSelection } from './UsernameSelection.jsx';
 export { default as ProfileInformation } from './ProfileInformation.jsx';

@@ -2,9 +2,7 @@ import React from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import { Dashboard, LandingPage, NotFound, ProfileSetup, PublicProfile, ResetPassword } from './pages';
-
-// 1. Impor ProtectedRoute
-import ProtectedRoute from './components/common/ProtectedRoute'; // Pastikan path ini benar
+import ProtectedRoute from './components/common/ProtectedRoute';
 
 import './App.css';
 

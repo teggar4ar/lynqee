@@ -1,3 +1,5 @@
+import defaultTheme from 'tailwindcss/defaultTheme';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -58,6 +60,58 @@ export default {
         }
       }
     },
+    // Enhanced spacing for touch-friendly design
+    spacing: {
+      ...defaultTheme.spacing,
+      '11': '2.75rem',  // 44px - minimum touch target
+      '13': '3.25rem',  // 52px - comfortable touch target
+      '15': '3.75rem',  // 60px - large touch target
+    },
+    // Enhanced font sizes for better mobile readability
+    fontSize: {
+      ...defaultTheme.fontSize,
+      'xs': ['0.75rem', { lineHeight: '1rem' }],
+      'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+      'base': ['1rem', { lineHeight: '1.5rem' }],
+      'lg': ['1.125rem', { lineHeight: '1.75rem' }],
+      'xl': ['1.25rem', { lineHeight: '1.75rem' }],
+      '2xl': ['1.5rem', { lineHeight: '2rem' }],
+      '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+    },
+    // Enhanced border radius for modern design
+    borderRadius: {
+      ...defaultTheme.borderRadius,
+      'lg': '0.75rem',
+      'xl': '1rem',
+      '2xl': '1.25rem',
+    },
   },
-  plugins: [],
+  plugins: [
+    // Plugin for line-clamp utility
+    function({ addUtilities }) {
+      addUtilities({
+        '.line-clamp-1': {
+          overflow: 'hidden',
+          display: '-webkit-box',
+          '-webkit-line-clamp': '1',
+          'line-clamp': '1',
+          '-webkit-box-orient': 'vertical',
+        },
+        '.line-clamp-2': {
+          overflow: 'hidden',
+          display: '-webkit-box',
+          '-webkit-line-clamp': '2',
+          'line-clamp': '2',
+          '-webkit-box-orient': 'vertical',
+        },
+        '.line-clamp-3': {
+          overflow: 'hidden',
+          display: '-webkit-box',
+          '-webkit-line-clamp': '3',
+          'line-clamp': '3',
+          '-webkit-box-orient': 'vertical',
+        },
+      })
+    }
+  ],
 }

@@ -17,7 +17,8 @@ const ProfileSetupGuard = ({ children }) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [profileCheckLoading, setProfileCheckLoading] = useState(true);
-  const [hasProfile, setHasProfile] = useState(false);
+  // Default to true so we only block when we know the profile is missing
+  const [hasProfile, setHasProfile] = useState(true);
 
   useEffect(() => {
     let isMounted = true; // Track if component is still mounted
@@ -38,14 +39,14 @@ const ProfileSetupGuard = ({ children }) => {
           setHasProfile(userHasProfile);
 
           if (!userHasProfile) {
-            // Redirect to profile setup
+            // Redirect to profile setup only when we're sure user has no profile
             navigate('/setup', { replace: true });
             return;
           }
         }
       } catch (error) {
         console.error('[ProfileSetupGuard] Failed to check profile:', error);
-        // On error, allow access but log the issue
+        // On error (e.g., offline), allow access by keeping hasProfile=true
       } finally {
         if (isMounted) {
           setProfileCheckLoading(false);
@@ -92,7 +93,7 @@ const ProfileSetupGuard = ({ children }) => {
     );
   }
 
-  // User has profile, render children
+  // User has profile or we couldn't verify due to an error (allow access), render children
   return children;
 };
 

@@ -102,13 +102,10 @@ class ProfileService {
    * @returns {Promise<boolean>} True if user has a profile
    */
   static async userHasProfile(userId) {
-    try {
-      const profile = await this.getProfileById(userId);
-      return profile !== null;
-    } catch (error) {
-      console.error('[ProfileService] userHasProfile error:', error);
-      return false;
-    }
+    // Do not swallow errors here. Let the caller decide how to handle
+    // network failures or permission errors.
+    const profile = await this.getProfileById(userId);
+    return profile !== null;
   }
 
   /**

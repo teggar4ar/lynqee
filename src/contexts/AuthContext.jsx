@@ -24,8 +24,6 @@ export const AuthProvider = ({ children }) => {
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   useEffect(() => {
-    let unsubscribe;
-
     // Cek sesi yang ada saat aplikasi pertama kali dimuat
     // Supabase client secara otomatis menangani sesi dari URL jika dikonfigurasi.
     AuthService.getCurrentSession()
@@ -43,7 +41,6 @@ export const AuthProvider = ({ children }) => {
 
     // Pasang listener dan simpan subscription object-nya
     const authListener = AuthService.onAuthStateChange((_event, session) => {
-      console.log(`[AuthContext] Auth state changed: ${_event}`, session);
       setSession(session);
       setUser(session?.user ?? null);
     });
@@ -102,6 +99,7 @@ AuthProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

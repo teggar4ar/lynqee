@@ -3,7 +3,16 @@ import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useProfile } from '../hooks/useProfile';
 import { useLinks } from '../hooks/useLinks';
-import { NotFound } from '../pages';
+import { ProfileHeader } from '../components/profile';
+import { 
+  ErrorBoundary,
+  ErrorState,
+  LoadingSpinner, 
+  SkeletonLoader
+} from '../components/common';
+import { LinkList } from '../components/links';
+import { RESPONSIVE_PATTERNS, TOUCH_TARGETS } from '../utils/mobileUtils';
+import { getErrorType } from '../utils/errorUtils';
 
 /**
  * PublicProfile Component
@@ -13,7 +22,8 @@ import { NotFound } from '../pages';
  * - Loading profile data by username
  * - Displaying profile information and links
  * - Handling 404 cases for non-existent users
- * - Mobile-first responsive design
+ * - Mobile-first responsive design with touch optimization
+ * - Responsive design testing in development
  */
 const PublicProfile = () => {
   const { username } = useParams();
@@ -24,169 +34,244 @@ const PublicProfile = () => {
 
   // Handle case where username is missing (shouldn't happen with proper routing)
   if (!username) {
-    return <NotFound type="profile" />;
-  }
-
-  // Handle profile not found
-  if (notFound) {
-    return <NotFound type="profile" username={username} />;
-  }
-
-  // Handle loading state
-  if (profileLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-md mx-auto bg-white min-h-screen md:max-w-lg md:my-8 md:rounded-lg md:shadow-sm">
-          {/* Loading skeleton */}
-          <div className="px-4 py-6 text-center border-b border-gray-100 md:px-6 md:py-8">
-            <div className="w-20 h-20 mx-auto mb-4 bg-gray-200 rounded-full animate-pulse md:w-24 md:h-24"></div>
-            <div className="h-6 bg-gray-200 rounded mb-2 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto animate-pulse"></div>
-          </div>
-          <div className="px-4 py-6 md:px-6">
-            <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-12 bg-gray-200 rounded-lg animate-pulse"></div>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <ErrorState
+          type="profileNotFound"
+          title="Invalid Profile URL"
+          message="No username provided in the URL."
+          onRetry={() => window.location.href = '/'}
+        />
       </div>
     );
   }
 
-  // Handle profile error
-  if (profileError) {
+  // Handle profile not found
+  if (notFound) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-        <div className="text-center max-w-md">
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">
-            Error Loading Profile
-          </h1>
-          <p className="text-gray-600 mb-4">
-            {profileError}
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
-          >
-            Try Again
-          </button>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <ErrorState
+          type="profileNotFound"
+          onRetry={() => window.location.href = '/'}
+          context={{
+            operation: 'Load Profile',
+            username: username
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Handle loading state with enhanced skeleton
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+          <div className="
+            w-full 
+            mx-auto 
+            bg-white 
+            min-h-screen
+            
+            sm:max-w-md 
+            sm:my-4 
+            sm:rounded-lg 
+            sm:shadow-sm 
+            sm:min-h-0
+            
+            md:max-w-lg 
+            md:my-8 
+            md:shadow-md
+            
+            lg:max-w-xl
+          ">
+            
+            {/* Profile Header Skeleton */}
+            <div className="
+              p-4 
+              border-b 
+              border-gray-100
+              
+              sm:p-6 
+              sm:rounded-t-lg
+              
+              md:p-8
+            ">
+              <SkeletonLoader type="profileHeader" />
+            </div>
+
+            {/* Links Section Skeleton */}
+            <div className="
+              px-4 
+              py-6 
+              
+              sm:px-6 
+              sm:py-8
+              
+              md:px-8
+            ">
+              <SkeletonLoader type="linkList" count={3} />
+            </div>
+
+            {/* Footer */}
+            <div className="
+              px-4 
+              py-6 
+              text-center 
+              border-t 
+              border-gray-100
+              
+              sm:px-6 
+              sm:rounded-b-lg
+              
+              md:px-8
+            ">
+              <div className="w-32 h-3 bg-gray-200 rounded mx-auto animate-pulse"></div>
+            </div>
+          </div>
         </div>
+    );
+  }
+
+  // Handle profile error with enhanced error state
+  if (profileError) {
+    const errorType = getErrorType(profileError);
+    
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <ErrorState
+          type={errorType}
+          error={profileError}
+          onRetry={() => window.location.reload()}
+          context={{
+            operation: 'Load Profile',
+            username: username
+          }}
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile-first design with responsive container */}
-      <div className="max-w-md mx-auto bg-white min-h-screen md:max-w-lg md:my-8 md:rounded-lg md:shadow-sm">
-        
-        {/* Profile Header Section */}
-        <div className="px-4 py-6 text-center border-b border-gray-100 md:px-6 md:py-8">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        {/* Mobile-first responsive container */}
+        <div className="
+          w-full 
+          mx-auto 
+          bg-white 
+          min-h-screen
           
-          {/* Avatar */}
-          <div className="w-20 h-20 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center md:w-24 md:h-24 overflow-hidden">
-            {profile?.avatar_url ? (
-              <img 
-                src={profile.avatar_url} 
-                alt={`${profile.name || username}'s avatar`}
-                className="w-full h-full object-cover"
+          sm:max-w-md 
+          sm:my-4 
+          sm:rounded-lg 
+          sm:shadow-sm 
+          sm:min-h-0
+          
+          md:max-w-lg 
+          md:my-8 
+          md:shadow-md
+          
+          lg:max-w-xl
+        ">
+          
+          {/* Profile Header Section - Enhanced with responsive design */}
+          <section 
+            aria-labelledby="profile-header"
+            className="relative"
+          >
+            <ProfileHeader 
+              profile={profile} 
+              username={username}
+              className="
+                p-4 
+                border-b 
+                border-gray-100
+                
+                sm:p-6 
+                sm:rounded-t-lg
+                
+                md:p-8
+              "
+            />
+          </section>
+
+          {/* Links Section - Enhanced with loading states */}
+          <section 
+            aria-labelledby="user-links"
+            className="
+              px-4 
+              py-6 
+              
+              sm:px-6 
+              sm:py-8
+              
+              md:px-8
+            "
+          >
+            <h2 id="user-links" className="sr-only">
+              {username}'s Links
+            </h2>
+            
+            {/* Enhanced LinkList with error state handling */}
+            <ErrorBoundary 
+              fallback={
+                <ErrorState
+                  type="linksError"
+                  title="Failed to Load Links"
+                  message="Unable to load links for this profile."
+                  onRetry={() => window.location.reload()}
+                />
+              }
+            >
+              <LinkList
+                links={links}
+                loading={linksLoading}
+                error={linksError}
+                emptyMessage="No links added yet"
+                emptySubtext={`@${username} hasn't shared any links yet.`}
+                spacing="comfortable"
+                className="space-y-3 sm:space-y-4"
+                showAnimation={true}
               />
-            ) : (
-              <span className="text-2xl font-bold text-gray-500 uppercase md:text-3xl">
-                {(profile?.name || username).charAt(0)}
-              </span>
-            )}
-          </div>
-          
-          {/* Display Name and Username */}
-          {profile?.name && (
-            <h1 className="text-xl font-bold text-gray-900 mb-1 md:text-2xl">
-              {profile.name}
-            </h1>
-          )}
-          <h2 className={`${profile?.name ? 'text-gray-600 text-lg' : 'text-xl font-bold text-gray-900'} mb-2 md:text-xl`}>
-            @{username}
-          </h2>
-          
-          {/* Bio */}
-          {profile?.bio && (
-            <p className="text-gray-600 text-sm leading-relaxed max-w-xs mx-auto md:text-base md:max-w-sm">
-              {profile.bio}
+            </ErrorBoundary>
+          </section>
+
+          {/* Footer with branding - Mobile-optimized */}
+          <footer className="
+            px-4 
+            py-6 
+            text-center 
+            border-t 
+            border-gray-100
+            
+            sm:px-6 
+            sm:rounded-b-lg
+            
+            md:px-8
+          ">
+            <p className="text-xs text-gray-400">
+              Powered by <span className="font-semibold text-gray-500">Lynqee</span>
             </p>
-          )}
+          </footer>
+
+          {/* Safe area spacing for mobile devices */}
+          <div className="h-safe-area-inset-bottom sm:hidden" aria-hidden="true" />
         </div>
 
-        {/* Links Section */}
-        <div className="px-4 py-6 md:px-6">
-          {linksLoading ? (
-            // Links loading state
-            <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-12 bg-gray-200 rounded-lg animate-pulse"></div>
-              ))}
-            </div>
-          ) : linksError ? (
-            // Links error state
-            <div className="text-center text-red-500 py-8">
-              <p className="text-sm">Failed to load links</p>
-              <p className="text-xs mt-2 text-gray-400">{linksError}</p>
-            </div>
-          ) : links.length > 0 ? (
-            // Display links
-            <div className="space-y-3">
-              {links.map((link) => (
-                <a
-                  key={link.id}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-colors group"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-900 group-hover:text-gray-800">
-                      {link.title || link.url}
-                    </span>
-                    <svg 
-                      className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </div>
-                  {link.title && link.title !== link.url && (
-                    <p className="text-xs text-gray-500 mt-1 truncate">
-                      {link.url}
-                    </p>
-                  )}
-                </a>
-              ))}
-            </div>
-          ) : (
-            // No links state
-            <div className="text-center text-gray-500 py-8">
-              <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-              </svg>
-              <p className="text-sm">No links added yet</p>
-              <p className="text-xs mt-1 text-gray-400">
-                @{username} hasn't shared any links yet.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Footer with branding */}
-        <div className="px-4 py-6 text-center border-t border-gray-100 md:px-6">
-          <p className="text-xs text-gray-400">
-            Powered by <span className="font-semibold">Lynqee</span>
-          </p>
-        </div>
+        {/* Background pattern for larger screens */}
+        <div className="
+          hidden 
+          sm:block 
+          fixed 
+          inset-0 
+          -z-10 
+          bg-gradient-to-br 
+          from-blue-50 
+          via-white 
+          to-purple-50
+        " />
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 

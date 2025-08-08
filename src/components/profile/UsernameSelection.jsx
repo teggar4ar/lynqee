@@ -136,6 +136,7 @@ const UsernameSelection = ({ initialUsername, onComplete, userEmail }) => {
         <div>
           <Input
             label="Username"
+            name="username"
             type="text"
             value={username}
             onChange={handleUsernameChange}
