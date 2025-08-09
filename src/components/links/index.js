@@ -6,8 +6,7 @@
  */
 
 export { default as LinkCard } from './LinkCard.jsx';
+export { default as LinkManagerCard } from './LinkManagerCard.jsx';
 export { default as LinkList } from './LinkList.jsx';
-
-// Future exports:
-// export { default as AddLinkModal } from './AddLinkModal';
-// export { default as LinkForm } from './LinkForm';
+export { default as AddLinkModal } from './AddLinkModal.jsx';
+export { default as LinkForm } from './LinkForm.jsx';

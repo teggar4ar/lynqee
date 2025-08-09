@@ -96,10 +96,10 @@ export const useRealtimeLinks = (username) => {
     if (!username) return null;
     
     try {
-      // We need to query the profiles table to get the user_id for this username
+      // We need to query the profiles table to get the profile ID for this username
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id')
+        .select('id')
         .eq('username', username)
         .single();
         
@@ -108,7 +108,7 @@ export const useRealtimeLinks = (username) => {
         return null;
       }
       
-      return data?.user_id;
+      return data?.id;
     } catch (err) {
       console.error('[useRealtimeLinks] Error in getProfileId:', err);
       return null;

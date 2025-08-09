@@ -11,19 +11,30 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useAppState } from '../../contexts/AppStateContext.jsx';
 import { ProfileService } from '../../services';
+import { InitialLoading } from './ModernLoading.jsx';
 
 const ProfileSetupGuard = ({ children }) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading } = useAuth();
-  const [profileCheckLoading, setProfileCheckLoading] = useState(true);
-  // Default to true so we only block when we know the profile is missing
-  const [hasProfile, setHasProfile] = useState(true);
+  const { hasProfileData } = useAppState();
+  const [profileCheckLoading, setProfileCheckLoading] = useState(!hasProfileData);
+  const [hasProfile, setHasProfile] = useState(hasProfileData);
 
   useEffect(() => {
-    let isMounted = true; // Track if component is still mounted
+    let isMounted = true;
 
     const checkProfile = async () => {
+      // If we already have profile data cached, no need to check again
+      if (hasProfileData) {
+        if (isMounted) {
+          setHasProfile(true);
+          setProfileCheckLoading(false);
+        }
+        return;
+      }
+
       if (!isAuthenticated || !user) {
         if (isMounted) {
           setProfileCheckLoading(false);
@@ -34,19 +45,20 @@ const ProfileSetupGuard = ({ children }) => {
       try {
         const userHasProfile = await ProfileService.userHasProfile(user.id);
         
-        // Only update state if component is still mounted
         if (isMounted) {
           setHasProfile(userHasProfile);
 
           if (!userHasProfile) {
-            // Redirect to profile setup only when we're sure user has no profile
             navigate('/setup', { replace: true });
             return;
           }
         }
       } catch (error) {
         console.error('[ProfileSetupGuard] Failed to check profile:', error);
-        // On error (e.g., offline), allow access by keeping hasProfile=true
+        // On error, allow access by keeping hasProfile=true
+        if (isMounted) {
+          setHasProfile(true);
+        }
       } finally {
         if (isMounted) {
           setProfileCheckLoading(false);
@@ -58,22 +70,14 @@ const ProfileSetupGuard = ({ children }) => {
       checkProfile();
     }
 
-    // Cleanup function to prevent state updates on unmounted component
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated, user, isLoading, navigate]);
+  }, [isAuthenticated, user, isLoading, hasProfileData, navigate]);
 
-  // Show loading while checking authentication or profile
-  if (isLoading || profileCheckLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+  // Show minimal loading only when absolutely necessary
+  if (isLoading || (profileCheckLoading && !hasProfileData)) {
+    return <InitialLoading message="Checking profile..." />;
   }
 
   // If not authenticated, let ProtectedRoute handle the redirect
@@ -81,19 +85,12 @@ const ProfileSetupGuard = ({ children }) => {
     return children;
   }
 
-  // If user doesn't have profile, we've already redirected to setup, show loading
+  // If user doesn't have profile, we've already redirected to setup, show minimal loading
   if (!hasProfile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Setting up your profile...</p>
-        </div>
-      </div>
-    );
+    return <InitialLoading message="Setting up your profile..." />;
   }
 
-  // User has profile or we couldn't verify due to an error (allow access), render children
+  // User has profile, render children
   return children;
 };
 

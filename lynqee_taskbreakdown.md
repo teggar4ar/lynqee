@@ -229,12 +229,13 @@ This document breaks down the Lynqee v1.0 MVP development into manageable tasks,
 **Dependencies:** 4.1
 
 #### Subtasks:
-- [ ] **4.2.1** Build modular "Add New Link" functionality
-  - Create `components/links/AddLinkModal.jsx` with reusable modal pattern
-  - Create `components/links/LinkForm.jsx` for shared form logic
-  - Create `utils/validators.js` for URL and input validation
-  - Handle form submission with proper error boundaries
-  - Implement optimistic UI updates with rollback capability
+- [x] ~~**4.2.1** Build modular "Add New Link" functionality~~ ✅ **COMPLETED**
+  - ~~Create `pages/LinkPage.jsx`~~
+  - ~~Create `components/links/AddLinkModal.jsx` with reusable modal pattern~~
+  - ~~Create `components/links/LinkForm.jsx` for shared form logic~~
+  - ~~Create `utils/validators.js` for URL and input validation~~
+  - ~~Handle form submission with proper error boundaries~~
+  - ~~Implement optimistic UI updates with rollback capability~~
 - [ ] **4.2.2** Implement link editing
   - Create edit link modal/form
   - Allow inline editing of title and URL

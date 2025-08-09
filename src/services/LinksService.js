@@ -64,14 +64,20 @@ class LinksService {
    */
   static async createLink(linkData) {
     try {
+      // console.log('[LinksService] Creating link with data:', linkData);
+      
       const { data, error } = await supabase
         .from(SUPABASE_TABLES.LINKS)
         .insert([linkData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[LinksService] Supabase error:', error);
+        throw error;
+      }
 
+      // console.log('[LinksService] Successfully created link:', data);
       return data;
     } catch (error) {
       console.error('[LinksService] createLink error:', error);

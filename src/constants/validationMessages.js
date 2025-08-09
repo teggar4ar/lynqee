@@ -9,6 +9,11 @@ export const VALIDATION_MESSAGES = {
   USERNAME_TAKEN: 'This username is already taken',
   PASSWORD_TOO_SHORT: 'Password must be at least 8 characters',
   PASSWORDS_DONT_MATCH: 'Passwords do not match',
+  LINK_TITLE_REQUIRED: 'Link title is required',
+  LINK_TITLE_TOO_LONG: 'Link title must be no more than 100 characters',
+  LINK_URL_REQUIRED: 'URL is required',
+  LINK_URL_INVALID: 'Please enter a valid URL',
+  LINK_URL_TOO_LONG: 'URL must be no more than 2000 characters',
   NETWORK_ERROR: 'Network error. Please check your connection and try again.',
   UNKNOWN_ERROR: 'An unexpected error occurred. Please try again.',
 };

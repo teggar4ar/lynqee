@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import LinkCard from './LinkCard';
-import { ErrorState, LoadingSpinner, SkeletonLoader } from '../common';
+import { ErrorState, LinksSkeleton } from '../common';
 import { RESPONSIVE_PATTERNS, TOUCH_SPACING } from '../../utils/mobileUtils';
 import { getErrorType } from '../../utils/errorUtils';
 
@@ -34,8 +34,7 @@ const LinkList = ({
   // Enhanced loading state with skeleton
   if (loading) {
     return (
-      <SkeletonLoader 
-        type="linkList" 
+      <LinksSkeleton 
         count={3} 
         className={className}
       />

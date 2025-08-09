@@ -7,12 +7,14 @@
 // Authentication hooks
 export { useAuth } from './useAuth.js';
 
-// Profile hooks  
-export { useProfile, useCurrentUserProfile } from './useProfile.js';
+// Profile hooks (consolidated - useProgressiveProfile replaces useCurrentUserProfile)  
+export { useProfile } from './useProfile.js';
+export { useProgressiveProfile } from './useProgressiveProfile.js';
 
-// Links hooks
+// Links hooks (consolidated - useProgressiveLinks replaces useRealtimeDashboard)
 export { useLinks, useUserLinks } from './useLinks.js';
 export { useRealtimeLinks } from './useRealtimeLinks.js';
+export { useProgressiveLinks } from './useProgressiveLinks.js';
 
 // Form and validation hooks
 export { useFormValidation } from './useFormValidation.js';
@@ -20,9 +22,6 @@ export { useFormValidation } from './useFormValidation.js';
 // Utility hooks
 export { useAsync } from './useAsync.js';
 export { useRetry } from './useRetry.js';
-
-// Real-time data hooks
-export { useRealtimeDashboard } from './useRealtimeDashboard.js';
 
 // Optimistic update hooks
 export { useOptimisticUpdates, useDashboardCache } from './useOptimisticUpdates.js';

@@ -4,35 +4,36 @@
  * Features:
  * - Protected route (requires authentication and profile)
  * - Mobile-first layout with bottom navigation
- * - Unified real-time data management
+ * - Progressive data loading
  * - Profile management
  * - Real-time stats and link preview
+ * - Link management (add, edit, delete)
  */
 
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.js';
-import { useCurrentUserProfile } from '../hooks/useProfile.js';
-import { useRealtimeDashboard } from '../hooks/useRealtimeDashboard.js';
+import { useProgressiveProfile } from '../hooks/useProgressiveProfile.js';
+import { useProgressiveLinks } from '../hooks/useProgressiveLinks.js';
 import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
+import { ProfileSkeleton, RefreshIndicator, StatsSkeleton } from '../components/common/ModernLoading.jsx';
 import { ProfileSettings } from '../components/profile';
 import { DashboardLayout, DashboardStats, ProfileQuickPreview } from '../components/dashboard';
-import { getErrorType } from '../utils/errorUtils';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { profile, loading: profileLoading, error: profileError, refetch: refetchProfile } = useCurrentUserProfile(user?.id);
+  const { profile, loading: profileLoading, refreshing: profileRefreshing, error: profileError, refetch: refetchProfile } = useProgressiveProfile(user?.id);
   
-  // Unified real-time dashboard data (replaces separate hooks)
+  // Progressive dashboard data (eliminates loading screens on navigation)
   const { 
     links, 
     stats, 
-    loading: dashboardLoading, 
-    error: dashboardError, 
+    loading: linksLoading, 
+    refreshing: linksRefreshing,
+    error: linksError, 
     isRealTimeConnected, 
-    lastUpdated,
-    refetch: refetchDashboard,
+    refetch: refetchLinks,
     hasLinks
-  } = useRealtimeDashboard(user?.id);
+  } = useProgressiveLinks(user?.id);
 
   const [showProfileSettings, setShowProfileSettings] = useState(false);
 
@@ -54,91 +55,62 @@ const Dashboard = () => {
   // Refresh all dashboard data
   const handleRefreshData = () => {
     refetchProfile();
-    refetchDashboard();
+    refetchLinks();
   };
 
-  // Determine overall loading state
-  const isLoading = profileLoading || dashboardLoading;
-  
-  // Determine if there are any errors
-  const hasError = profileError || dashboardError;
-  const primaryError = profileError || dashboardError;
-
-  // Header actions for the dashboard layout
-  const headerActions = showProfileSettings ? null : (
-    <Button
-      variant="outline"
-      onClick={() => setShowProfileSettings(true)}
-      disabled={isLoading}
-      className="px-3 py-2 text-sm md:px-4 md:py-2"
-    >
-      Edit Profile
-    </Button>
-  );
+  // Determine overall loading state (only for initial loads)
+  const isRefreshing = profileRefreshing || linksRefreshing;
 
   return (
     <ProtectedRoute>
       <ProfileSetupGuard>
-        <DashboardLayout 
-          title="Dashboard" 
-          headerActions={headerActions}
-        >
+        <DashboardLayout title="Dashboard">
+          {/* Background refresh indicator */}
+          <RefreshIndicator isVisible={isRefreshing} />
+          
           {showProfileSettings && profile ? (
             <ProfileSettings
               profile={profile}
               onUpdate={handleProfileUpdate}
               onCancel={handleCancelProfileEdit}
             />
-          ) : isLoading ? (
+          ) : (
             <>
-              {/* Loading state for profile */}
-              <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
-                <div className="animate-pulse">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-14 h-14 bg-gray-200 rounded-full"></div>
-                    <div className="space-y-2 flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/3"></div>
-                    </div>
+              {/* Profile Quick Preview - show skeleton only on initial load */}
+              {profileLoading ? (
+                <ProfileSkeleton />
+              ) : profile ? (
+                <ProfileQuickPreview
+                  profile={profile}
+                  onEditProfile={() => setShowProfileSettings(true)}
+                  onViewPublicProfile={handleViewPublicProfile}
+                />
+              ) : profileError ? (
+                <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+                  <div className="text-center py-6">
+                    <h3 className="text-lg font-medium text-red-600 mb-2">Profile Error</h3>
+                    <p className="text-gray-600 mb-4">{profileError}</p>
+                    <Button onClick={refetchProfile} variant="outline">Retry</Button>
                   </div>
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                 </div>
-              </div>
-              
-              {/* Loading state for stats */}
-              <DashboardStats loading={true} />
-            </>
-          ) : hasError ? (
-            <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
-              <ErrorState
-                type={getErrorType(primaryError)}
-                error={primaryError}
-                onRetry={handleRefreshData}
-                className="!p-4 !bg-white !border-red-200"
-                context={{
-                  operation: 'Load Dashboard Data',
-                  component: 'Dashboard'
-                }}
-              />
-            </div>
-          ) : profile ? (
-            <>
-              {/* Profile Quick Preview */}
-              <ProfileQuickPreview
-                profile={profile}
-                onEditProfile={() => setShowProfileSettings(true)}
-                onViewPublicProfile={handleViewPublicProfile}
-              />
+              ) : (
+                // Show skeleton while waiting for data
+                <ProfileSkeleton />
+              )}
 
-              {/* Dashboard Stats - unified real-time data */}
-              <DashboardStats 
-                stats={stats}
-                loading={dashboardLoading}
-                showRealTimeIndicator={isRealTimeConnected}
-              />
+              {/* Dashboard Stats - show skeleton only on initial load */}
+              {linksLoading ? (
+                <StatsSkeleton />
+              ) : (
+                <DashboardStats 
+                  stats={stats}
+                  loading={false}
+                  isRealTimeConnected={isRealTimeConnected}
+                  onRefresh={handleRefreshData}
+                />
+              )}
 
-              {/* Links Preview - Real data from unified hook */}
+              {/* Links Preview - Simplified for Dashboard */}
               <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
@@ -152,31 +124,20 @@ const Dashboard = () => {
                       </div>
                     )}
                   </div>
-                  <Button
-                    variant="outline"
-                    disabled={true}
-                    className="px-3 py-2 text-sm opacity-50"
-                  >
-                    Add Link
-                  </Button>
+                  
+                  {/* View All Links Button */}
+                  {hasLinks && (
+                    <Button
+                      variant="outline"
+                      onClick={() => window.location.href = '/links'}
+                      className="px-3 py-2 text-sm"
+                    >
+                      View All
+                    </Button>
+                  )}
                 </div>
                 
-                {dashboardLoading ? (
-                  // Loading state for links
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="animate-pulse">
-                        <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                          <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
-                          <div className="flex-1 space-y-2">
-                            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : dashboardError ? (
+                {linksError ? (
                   // Error state for links
                   <div className="text-center py-6">
                     <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
@@ -188,18 +149,18 @@ const Dashboard = () => {
                       Failed to load links
                     </h3>
                     <p className="text-gray-600 mb-4">
-                      {dashboardError}
+                      {linksError}
                     </p>
                     <Button
                       variant="outline"
-                      onClick={refetchDashboard}
+                      onClick={refetchLinks}
                       className="px-4 py-2"
                     >
                       Try Again
                     </Button>
                   </div>
                 ) : hasLinks ? (
-                  // Display actual links
+                  // Display preview of first 3 links only
                   <div className="space-y-3">
                     {links.slice(0, 3).map((link) => (
                       <div key={link.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
@@ -219,23 +180,14 @@ const Dashboard = () => {
                       </div>
                     ))}
                     
+                    {/* Show quick summary if more links exist */}
                     {links.length > 3 && (
-                      <div className="text-center pt-2">
-                        <span className="text-sm text-gray-600">
-                          +{links.length - 3} more links
-                        </span>
+                      <div className="text-center pt-3 border-t border-gray-200">
+                        <p className="text-sm text-gray-600">
+                          And {links.length - 3} more link{links.length - 3 !== 1 ? 's' : ''}
+                        </p>
                       </div>
                     )}
-                    
-                    <div className="pt-2 border-t border-gray-200">
-                      <Button
-                        variant="outline"
-                        disabled={true}
-                        className="w-full py-2 text-sm opacity-50"
-                      >
-                        Manage Links (Coming Soon)
-                      </Button>
-                    </div>
                   </div>
                 ) : (
                   // Empty state - no links yet
@@ -248,59 +200,16 @@ const Dashboard = () => {
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       No links yet
                     </h3>
-                    <p className="text-gray-600 mb-4 max-w-sm mx-auto">
-                      Link management functionality will be available soon. You'll be able to add and organize your links here.
+                    <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+                      Start building your link collection! Use the + button to add your first link.
                     </p>
-                    <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      Coming in Sprint 4.2
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Account Information - Compact Mobile Version */}
-              <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 md:text-xl">
-                    Account Details
-                  </h2>
-                  {lastUpdated && (
-                    <span className="text-xs text-gray-500">
-                      Updated {new Date(lastUpdated).toLocaleTimeString()}
-                    </span>
-                  )}
-                </div>
-                {user && (
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 border-b border-gray-100">
-                      <span className="text-sm font-medium text-gray-700 mb-1 sm:mb-0">Email</span>
-                      <span className="text-sm text-gray-600 break-all">{user.email}</span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 border-b border-gray-100">
-                      <span className="text-sm font-medium text-gray-700 mb-1 sm:mb-0">Member since</span>
-                      <span className="text-sm text-gray-600">{new Date(user.created_at).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2">
-                      <span className="text-sm font-medium text-gray-700 mb-1 sm:mb-0">Account status</span>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 w-fit">
-                        Active
-                      </span>
+                    <div className="text-sm text-gray-500">
+                      Use the floating + button (mobile) or Add Link button (desktop) to get started
                     </div>
                   </div>
                 )}
               </div>
             </>
-          ) : (
-            <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 text-center py-8">
-              <p className="text-gray-600">Failed to load dashboard data. Please try refreshing the page.</p>
-              <Button
-                variant="outline"
-                onClick={handleRefreshData}
-                className="mt-4"
-              >
-                Try Again
-              </Button>
-            </div>
           )}
         </DashboardLayout>
       </ProfileSetupGuard>

@@ -28,10 +28,10 @@ const ProtectedRoute = ({
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  // isLoading di sini merujuk pada `loadingInitial` dari AuthContext.
-  // Selama loading awal, jangan render apa-apa, biarkan AuthProvider menampilkan spinner global.
+  // For initial loading, return null and let AuthProvider handle the loading screen
+  // This prevents multiple loading screens stacking up
   if (isLoading) {
-    return null; // AuthProvider sudah menampilkan spinner
+    return null; // AuthProvider shows the initial loading
   }
 
   // Jika tidak terotentikasi, alihkan ke halaman login

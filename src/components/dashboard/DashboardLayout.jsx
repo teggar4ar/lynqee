@@ -3,22 +3,24 @@
  * 
  * Features:
  * - Mobile-first design approach
- * - Bottom navigation integration
+ * - Bottom navigation integration (mobile)
+ * - Sidebar navigation integration (desktop)
  * - Responsive header
- * - Content area with proper spacing for bottom navigation
+ * - Content area with proper spacing for navigation
  * - Optimized for touch interactions
  */
 
 import React from 'react';
 import PropTypes from 'prop-types';
 import BottomNavigation from '../common/BottomNavigation.jsx';
+import SidebarNavigation from '../common/SidebarNavigation.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
 import { Button } from '../common';
 
 const DashboardLayout = ({ 
   children, 
-  title = 'Dashboard',
   headerActions = null,
+  title = 'Dashboard',
   className = '' 
 }) => {
   const { signOut, isLoading } = useAuth();
@@ -35,42 +37,48 @@ const DashboardLayout = ({
 
   return (
     <div className={`min-h-screen bg-gray-50 ${className}`}>
-      {/* Header - Mobile optimized, sticky for easy access */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="px-4 py-3 flex justify-between items-center md:max-w-7xl md:mx-auto md:px-6 md:py-4">
-          <h1 className="text-lg font-bold text-gray-900 md:text-xl truncate">
-            {title}
-          </h1>
-          
-          <div className="flex items-center space-x-2">
-            {/* Custom header actions */}
-            {headerActions}
-            
-            {/* Sign out button - always visible on desktop, hidden on mobile (available via bottom nav) */}
-            <Button
-              variant="outline"
-              onClick={handleSignOut}
-              disabled={isLoading}
-              className="
-                hidden md:flex
-                px-3 py-2 text-sm md:px-4 md:py-2
-              "
-            >
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
+      {/* Sidebar Navigation - Desktop only */}
+      <SidebarNavigation />
 
-      {/* Main Content Area - Enhanced mobile spacing */}
-      <main className="
-        px-4 py-4 md:max-w-7xl md:mx-auto md:px-6 md:py-8
-        pb-24 md:pb-8 min-h-[calc(100vh-64px)] md:min-h-[calc(100vh-80px)]
-      ">
-        <div className="space-y-4 md:space-y-6">
-          {children}
-        </div>
-      </main>
+      {/* Main Content Wrapper - Adjusted for sidebar on desktop */}
+      <div className="md:ml-20">
+        {/* Header - Mobile optimized, sticky for easy access */}
+        <header className="bg-white shadow-sm sticky top-0 z-40 rounded-lg">
+          <div className="px-4 py-3 flex justify-between items-center md:max-w-7xl md:mx-auto md:px-6 md:py-4">
+            <h1 className="text-lg font-bold text-gray-900 md:text-xl truncate">
+              {title}
+            </h1>
+            
+            <div className="flex items-center space-x-2">
+              {/* Custom header actions */}
+              {headerActions}
+              
+              {/* Sign out button - hidden on both mobile and desktop since it's now in sidebar */}
+              <Button
+                variant="outline"
+                onClick={handleSignOut}
+                disabled={isLoading}
+                className="
+                  hidden
+                  px-3 py-2 text-sm md:px-4 md:py-2
+                "
+              >
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content Area - Enhanced mobile spacing */}
+        <main className="
+          px-4 py-4 md:max-w-7xl md:mx-auto md:px-6 md:py-8
+          pb-24 md:pb-8 min-h-[calc(100vh-64px)] md:min-h-[calc(100vh-80px)]
+        ">
+          <div className="space-y-4 md:space-y-6">
+            {children}
+          </div>
+        </main>
+      </div>
 
       {/* Bottom Navigation - Mobile only */}
       <BottomNavigation />

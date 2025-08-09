@@ -7,8 +7,8 @@ import { ProfileHeader } from '../components/profile';
 import { 
   ErrorBoundary,
   ErrorState,
-  LoadingSpinner, 
-  SkeletonLoader
+  LinksSkeleton,
+  ProfileSkeleton
 } from '../components/common';
 import { LinkList } from '../components/links';
 import { RESPONSIVE_PATTERNS, TOUCH_TARGETS } from '../utils/mobileUtils';
@@ -96,7 +96,7 @@ const PublicProfile = () => {
               
               md:p-8
             ">
-              <SkeletonLoader type="profileHeader" />
+              <ProfileSkeleton />
             </div>
 
             {/* Links Section Skeleton */}
@@ -109,7 +109,7 @@ const PublicProfile = () => {
               
               md:px-8
             ">
-              <SkeletonLoader type="linkList" count={3} />
+              <LinksSkeleton count={3} />
             </div>
 
             {/* Footer */}

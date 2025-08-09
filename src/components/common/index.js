@@ -5,7 +5,17 @@ export { default as Button } from './Button';
 export { default as ErrorBoundary, withErrorBoundary, useErrorHandler } from './ErrorBoundary';
 export { default as ErrorState } from './ErrorState';
 export { default as Input } from './Input';
-export { default as LoadingSpinner } from './LoadingSpinner';
+export { default as Modal } from './Modal';
 export { default as ProtectedRoute } from './ProtectedRoute';
 export { default as ProfileSetupGuard } from './ProfileSetupGuard';
-export { default as SkeletonLoader } from './SkeletonLoader';
+export { default as SidebarNavigation } from './SidebarNavigation';
+
+// Consolidated modern loading components (replaces LoadingSpinner and SkeletonLoader)
+export { 
+  CompactSpinner, 
+  RefreshIndicator, 
+  ProfileSkeleton, 
+  StatsSkeleton, 
+  LinksSkeleton, 
+  InitialLoading 
+} from './ModernLoading';

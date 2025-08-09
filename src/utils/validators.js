@@ -68,3 +68,94 @@ export const validatePassword = (password) => {
   
   return { isValid: true, error: null };
 };
+
+/**
+ * Validates a link title
+ * @param {string} title - The link title to validate
+ * @returns {Object} Validation result with isValid and error message
+ */
+export const validateLinkTitle = (title) => {
+  if (!title || !title.trim()) {
+    return { isValid: false, error: 'Link title is required' };
+  }
+  
+  if (title.trim().length < 1) {
+    return { isValid: false, error: 'Link title cannot be empty' };
+  }
+  
+  if (title.length > 100) {
+    return { isValid: false, error: 'Link title must be no more than 100 characters' };
+  }
+  
+  return { isValid: true, error: null };
+};
+
+/**
+ * Validates a link URL with enhanced checking
+ * @param {string} url - The URL to validate
+ * @returns {Object} Validation result with isValid and error message
+ */
+export const validateLinkUrl = (url) => {
+  if (!url || !url.trim()) {
+    return { isValid: false, error: 'URL is required' };
+  }
+  
+  const trimmedUrl = url.trim();
+  
+  // Check basic URL pattern
+  if (!VALIDATION_RULES.URL_PATTERN.test(trimmedUrl)) {
+    return { 
+      isValid: false, 
+      error: 'URL must start with http:// or https://' 
+    };
+  }
+  
+  // Additional URL validation
+  try {
+    new URL(trimmedUrl);
+  } catch {
+    return { 
+      isValid: false, 
+      error: 'Please enter a valid URL' 
+    };
+  }
+  
+  if (trimmedUrl.length > 2000) {
+    return { 
+      isValid: false, 
+      error: 'URL must be no more than 2000 characters' 
+    };
+  }
+  
+  return { isValid: true, error: null };
+};
+
+/**
+ * Validates complete link data
+ * @param {Object} linkData - Object containing title and url
+ * @returns {Object} Validation result with isValid, errors object, and hasErrors boolean
+ */
+export const validateLinkData = (linkData) => {
+  const { title, url } = linkData;
+  
+  const titleValidation = validateLinkTitle(title);
+  const urlValidation = validateLinkUrl(url);
+  
+  const errors = {};
+  
+  if (!titleValidation.isValid) {
+    errors.title = titleValidation.error;
+  }
+  
+  if (!urlValidation.isValid) {
+    errors.url = urlValidation.error;
+  }
+  
+  const hasErrors = Object.keys(errors).length > 0;
+  
+  return {
+    isValid: !hasErrors,
+    errors,
+    hasErrors
+  };
+};

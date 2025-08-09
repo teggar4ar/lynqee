@@ -1,7 +1,8 @@
 import React from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
-import { Dashboard, LandingPage, NotFound, ProfileSetup, PublicProfile, ResetPassword } from './pages';
+import { AppStateProvider } from './contexts/AppStateContext.jsx';
+import { Dashboard, LandingPage, LinksPage, NotFound, ProfileSetup, PublicProfile, ResetPassword } from './pages';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 import './App.css';
@@ -9,9 +10,10 @@ import './App.css';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="app-container">
-          <Routes>
+      <AppStateProvider>
+        <Router>
+          <div className="app-container">
+            <Routes>
             {/* Rute Publik: bisa diakses siapa saja */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LandingPage />} />
@@ -25,6 +27,14 @@ function App() {
                 // 2. Bungkus komponen dengan ProtectedRoute
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/links" 
+              element={
+                <ProtectedRoute>
+                  <LinksPage />
                 </ProtectedRoute>
               } 
             />
@@ -43,6 +53,7 @@ function App() {
           </Routes>
         </div>
       </Router>
+      </AppStateProvider>
     </AuthProvider>
   );
 }
