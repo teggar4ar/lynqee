@@ -97,6 +97,25 @@ class ProfileService {
   }
 
   /**
+   * Update user's avatar URL
+   * @param {string} userId - The user ID
+   * @param {string} avatarUrl - New avatar URL
+   * @returns {Promise<Object>} Updated profile object
+   */
+  static async updateAvatarUrl(userId, avatarUrl) {
+    return this.updateProfile(userId, { avatar_url: avatarUrl });
+  }
+
+  /**
+   * Remove user's avatar URL (set to null)
+   * @param {string} userId - The user ID
+   * @returns {Promise<Object>} Updated profile object
+   */
+  static async removeAvatarUrl(userId) {
+    return this.updateProfile(userId, { avatar_url: null });
+  }
+
+  /**
    * Check if a user has a profile
    * @param {string} userId - The user ID
    * @returns {Promise<boolean>} True if user has a profile

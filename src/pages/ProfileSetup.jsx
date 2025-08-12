@@ -60,6 +60,7 @@ const ProfileSetup = () => {
           username: profileData.username,
           name: profileData.name || '',
           bio: profileData.bio || '',
+          avatar_url: profileData.avatarUrl || null,
         });
 
         // Update auth context to reflect profile creation

@@ -13,9 +13,9 @@
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Input } from '../common';
+import { Avatar, Button, Input } from '../common';
 
-const ProfileInformation = ({ initialData, username, onComplete, loading }) => {
+const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, loading }) => {
   const [formData, setFormData] = useState({
     name: initialData.name || '',
     bio: initialData.bio || '',
@@ -90,11 +90,13 @@ const ProfileInformation = ({ initialData, username, onComplete, loading }) => {
           Preview
         </p>
         <div className="flex items-start space-x-3">
-          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0 md:w-10 md:h-10 md:w-12 md:h-12">
-            <span className="text-xs font-medium text-gray-600 md:text-sm md:text-base">
-              {(formData.name || username)?.[0]?.toUpperCase() || '?'}
-            </span>
-          </div>
+          <Avatar
+            src={avatarUrl}
+            alt="Profile preview"
+            fallbackText={formData.name || username || ''}
+            size="small"
+            className="!w-10 !h-10 md:!w-12 md:!h-12 flex-shrink-0"
+          />
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-medium text-gray-900 truncate md:text-base">
               {formData.name || 'Your Name'}
@@ -173,6 +175,7 @@ ProfileInformation.propTypes = {
     bio: PropTypes.string,
   }).isRequired,
   username: PropTypes.string.isRequired,
+  avatarUrl: PropTypes.string,
   onComplete: PropTypes.func.isRequired,
   loading: PropTypes.bool,
 };

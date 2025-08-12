@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button } from '../common';
+import { Avatar, Button } from '../common';
 
 const ProfileQuickPreview = ({ 
   profile, 
@@ -22,11 +22,6 @@ const ProfileQuickPreview = ({
   if (!profile) {
     return null;
   }
-
-  const getInitials = () => {
-    const name = profile.name || profile.username || '';
-    return name.charAt(0).toUpperCase() || '?';
-  };
 
   const getPublicProfileUrl = () => {
     return profile.username ? `/${profile.username}` : '';
@@ -63,16 +58,14 @@ const ProfileQuickPreview = ({
         {/* Profile Info - Modern card design */}
         <div className="flex items-center space-x-4 p-4 bg-gray-50/50 rounded-xl border border-gray-100">
           {/* Avatar */}
-          <div className="
-            w-16 h-16 md:w-20 md:h-20 
-            bg-gradient-to-br from-blue-500 to-purple-600 
-            rounded-2xl flex items-center justify-center 
-            flex-shrink-0 shadow-lg
-          ">
-            <span className="text-xl md:text-2xl font-bold text-white">
-              {getInitials()}
-            </span>
-          </div>
+          <Avatar
+            src={profile.avatar_url}
+            alt={`${profile.name || profile.username}'s avatar`}
+            fallbackText={profile.name || profile.username || ''}
+            size="medium"
+            className="flex-shrink-0 shadow-lg !rounded-2xl !w-16 !h-16 md:!w-20 md:!h-20"
+            forceRefresh={false}
+          />
 
           {/* Profile Details */}
           <div className="flex-1 min-w-0">
@@ -145,6 +138,7 @@ ProfileQuickPreview.propTypes = {
     name: PropTypes.string,
     username: PropTypes.string.isRequired,
     bio: PropTypes.string,
+    avatar_url: PropTypes.string,
   }),
   onEditProfile: PropTypes.func.isRequired,
   onViewPublicProfile: PropTypes.func.isRequired,

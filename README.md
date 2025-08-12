@@ -1,12 +1,26 @@
-# React + Vite
+# Lynqee
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Lynqee is a link management platform that allows users to create personalized profile pages with custom links.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Clone the repository
+2. Copy `.env.example` to `.env` and fill in your Supabase credentials
+3. Run `npm install`
+4. Run `npm run dev` to start the development server
 
-## Expanding the ESLint configuration
+## Technology Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React + Vite
+- Tailwind CSS
+- Supabase (Auth & Database)
+
+## Development Guidelines
+
+- Follow the modular architecture pattern
+- Use service layer for all Supabase interactions
+- Components should be mobile-first and fully responsive
+
+## License
+
+MIT

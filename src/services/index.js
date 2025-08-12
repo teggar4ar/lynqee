@@ -2,4 +2,5 @@
 export { default as AuthService } from './AuthService.js';
 export { default as ProfileService } from './ProfileService.js';
 export { default as LinksService } from './LinksService.js';
+export { default as AvatarService } from './AvatarService.js';
 export { supabase, isSupabaseConfigured, getSupabaseConfig, SUPABASE_TABLES, SUPABASE_AUTH_PROVIDERS } from './supabase.js';

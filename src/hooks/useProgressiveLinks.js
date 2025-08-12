@@ -82,6 +82,7 @@ export const useProgressiveLinks = (userId) => {
       // Clear states when user is null (e.g., during sign out)
       setIsInitialLoading(false);
       setIsRefreshingLinks(false);
+      setIsRealTimeConnected(false);
       return;
     }
 
@@ -90,31 +91,56 @@ export const useProgressiveLinks = (userId) => {
       fetchLinks(false);
     }
 
-    // Set up real-time subscription
-    subscriptionRef.current = supabase
-      .channel(`links_${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'links',
-          filter: `user_id=eq.${userId}`
-        },
+    // Clean up any existing subscription
+    if (subscriptionRef.current) {
+      subscriptionRef.current.unsubscribe();
+      subscriptionRef.current = null;
+    }
+
+    // Set up real-time subscription with improved error handling
+    try {
+      subscriptionRef.current = supabase
+        .channel(`links_${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'links',
+            filter: `user_id=eq.${userId}`
+          },
         handleLinkChange
       )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          setIsRealTimeConnected(true);
-        } else if (status === 'CHANNEL_ERROR') {
-          setIsRealTimeConnected(false);
-          console.warn('[useProgressiveLinks] Real-time subscription error');
+      .subscribe((status, err) => {
+        switch (status) {
+          case 'SUBSCRIBED':
+            setIsRealTimeConnected(true);
+            break;
+          case 'CHANNEL_ERROR':
+            setIsRealTimeConnected(false);
+            console.error('[useProgressiveLinks] Real-time subscription error:', err?.message || 'Unknown error');
+            break;
+          case 'TIMED_OUT':
+            setIsRealTimeConnected(false);
+            console.warn('[useProgressiveLinks] Real-time subscription timed out');
+            break;
+          case 'CLOSED':
+            setIsRealTimeConnected(false);
+            break;
+          default:
+            break;
         }
       });
+
+    } catch (subscriptionError) {
+      console.error('[useProgressiveLinks] Failed to set up real-time subscription:', subscriptionError);
+      setIsRealTimeConnected(false);
+    }
 
     return () => {
       if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
+        subscriptionRef.current = null;
         setIsRealTimeConnected(false);
       }
     };

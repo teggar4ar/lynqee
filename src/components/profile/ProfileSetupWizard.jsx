@@ -2,18 +2,21 @@
  * ProfileSetupWizard - Multi-step profile setup wizard
  * 
  * Mobile-first wizard component that guides users through profile creation.
- * Includes username selection with real-time availability checking.
+ * Includes username selection, avatar upload, and profile information.
  * 
  * Features:
  * - Step-by-step interface
  * - Real-time username validation
+ * - Avatar upload with drag & drop
  * - Touch-optimized inputs
  * - Progress indication
  */
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useAuth } from '../../hooks/useAuth.js';
 import UsernameSelection from './UsernameSelection.jsx';
+import AvatarSelection from './AvatarSelection.jsx';
 import ProfileInformation from './ProfileInformation.jsx';
 import { Button } from '../common';
 
@@ -25,13 +28,15 @@ const ProfileSetupWizard = ({
   error,
   userEmail,
 }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
+    avatarUrl: null,
     name: '',
     bio: '',
   });
 
-  const totalSteps = 2;
+  const totalSteps = 3;
 
   const handleStepComplete = (stepData) => {
     const updatedData = { ...formData, ...stepData };
@@ -63,12 +68,23 @@ const ProfileSetupWizard = ({
         );
       case 2:
         return (
+          <AvatarSelection
+            userId={user?.id}
+            username={formData.username}
+            initialAvatarUrl={formData.avatarUrl}
+            onComplete={handleStepComplete}
+            loading={loading}
+          />
+        );
+      case 3:
+        return (
           <ProfileInformation
             initialData={{
               name: formData.name,
               bio: formData.bio,
             }}
             username={formData.username}
+            avatarUrl={formData.avatarUrl}
             onComplete={handleStepComplete}
             loading={loading}
           />

@@ -9,6 +9,9 @@ export const APP_CONFIG = {
   USERNAME_MAX_LENGTH: 30,
 };
 
+// Session management
+export { SESSION_CONFIG, SESSION_EVENTS } from './session.js';
+
 // Route paths
 export const ROUTES = {
   HOME: '/',

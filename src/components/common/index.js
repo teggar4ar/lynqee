@@ -1,5 +1,6 @@
 // Common component exports
 export { default as Avatar } from './Avatar';
+export { default as AvatarUpload } from './AvatarUpload';
 export { default as BottomNavigation } from './BottomNavigation';
 export { default as Button } from './Button';
 export { default as ErrorBoundary, withErrorBoundary, useErrorHandler } from './ErrorBoundary';

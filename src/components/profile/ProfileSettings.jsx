@@ -2,23 +2,27 @@
  * ProfileSettings - Profile editing interface
  * 
  * Mobile-first component for editing user profile information.
- * Allows users to update their display name, bio, and username.
+ * Allows users to update their display name, bio, username, and avatar.
  * 
  * Features:
  * - Edit display name and bio
  * - Username change with availability checking
+ * - Avatar upload and management
  * - Mobile-optimized form design
  * - Real-time validation
  */
 
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Input } from '../common';
+import { AvatarUpload, Button, Input } from '../common';
 import { ProfileService } from '../../services';
+import { useAvatar } from '../../hooks';
 import useAsync from '../../hooks/useAsync.js';
 import { validateUsername } from '../../utils/validators.js';
 
 const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
+  const { avatarUrl, updateAvatarUrl, refreshAvatar } = useAvatar(profile?.avatar_url);
+  
   const [formData, setFormData] = useState({
     name: profile?.name || '',
     bio: profile?.bio || '',
@@ -137,7 +141,14 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
           updates.username = formData.username;
         }
 
+        // Include avatar_url in updates (it's managed by the avatar hook)
+        updates.avatar_url = avatarUrl;
+
         const updatedProfile = await ProfileService.updateProfile(profile.id, updates);
+        
+        // Refresh avatar to ensure cache busting
+        refreshAvatar();
+        
         onUpdate(updatedProfile);
       });
     } catch (err) {
@@ -145,10 +156,20 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
     }
   };
 
+  // Handle avatar upload - update both local state and avatar hook
+  const handleAvatarUpload = (newAvatarUrl) => {
+    updateAvatarUrl(newAvatarUrl);
+  };
+
+  const handleAvatarError = (error) => {
+    console.error('Avatar upload error:', error);
+  };
+
   const hasChanges = 
     formData.name !== (profile?.name || '') ||
     formData.bio !== (profile?.bio || '') ||
-    formData.username !== originalUsername;
+    formData.username !== originalUsername ||
+    avatarUrl !== (profile?.avatar_url || null);
 
   const canSubmit = hasChanges && 
     !loading && 
@@ -184,6 +205,21 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4 md:space-y-4">
+        {/* Avatar Upload Section */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2 md:text-base">
+            Profile Photo
+          </label>
+          <AvatarUpload
+            userId={profile.id}
+            currentAvatarUrl={avatarUrl}
+            fallbackText={formData.name || formData.username}
+            onUploadComplete={handleAvatarUpload}
+            onUploadError={handleAvatarError}
+            size="medium"
+          />
+        </div>
+
         <Input
           label="Display Name"
           name="displayName"
@@ -276,6 +312,7 @@ ProfileSettings.propTypes = {
     username: PropTypes.string.isRequired,
     name: PropTypes.string,
     bio: PropTypes.string,
+    avatar_url: PropTypes.string,
   }).isRequired,
   onUpdate: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,

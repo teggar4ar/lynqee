@@ -13,6 +13,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import AuthService from '../services/AuthService.js';
+import { useInactivityTimeout } from '../hooks/useInactivityTimeout.js';
+import { SESSION_CONFIG } from '../constants/session.js';
 
 // Create the context
 const AuthContext = createContext(null);
@@ -22,6 +24,51 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   // 'loading' sekarang hanya berarti "memeriksa sesi awal"
   const [loadingInitial, setLoadingInitial] = useState(true);
+
+  /**
+   * Handle automatic logout due to inactivity
+   */
+  const handleInactivityLogout = async () => {
+    if (!user) return; // Already logged out
+    
+    try {
+      // Broadcast manual logout to other tabs before signing out
+      try {
+        localStorage.setItem(SESSION_CONFIG.SESSION_EVENT_KEY, JSON.stringify({
+          type: 'manual_logout',
+          timestamp: Date.now()
+        }));
+      } catch (error) {
+        // Silently handle localStorage errors
+        console.warn('[AuthContext] Failed to broadcast logout:', error);
+      }
+
+      // Sign out the user
+      await AuthService.signOut();
+      
+      // The auth state change listener will handle updating the UI state
+    } catch (error) {
+      console.error('[AuthContext] Failed to sign out due to inactivity:', error);
+      
+      // Force local state update if signOut fails
+      setUser(null);
+      setSession(null);
+    }
+  };
+
+  /**
+   * Set up inactivity timeout monitoring
+   * Only enabled when user is authenticated
+   */
+  const inactivityTimeout = useInactivityTimeout({
+    onInactivityTimeout: handleInactivityLogout,
+    timeoutMs: SESSION_CONFIG.INACTIVITY_TIMEOUT,
+    isEnabled: !!user, // Only track when user is logged in
+    onActivity: () => {
+      // Optional: Add activity logging here for analytics/debugging
+      // console.log('[AuthContext] User activity detected');
+    },
+  });
 
   useEffect(() => {
     // Cek sesi yang ada saat aplikasi pertama kali dimuat
@@ -59,7 +106,27 @@ export const AuthProvider = ({ children }) => {
   const signIn = (email, password) => AuthService.signInWithEmail(email, password);
   const signUp = (email, password, metadata) => AuthService.signUpWithEmail(email, password, metadata);
   const signInWithGoogle = (redirectTo) => AuthService.signInWithGoogle(redirectTo);
-  const signOut = () => AuthService.signOut();
+  
+  const signOut = async () => {
+    try {
+      // Broadcast manual logout to other tabs before signing out
+      try {
+        localStorage.setItem(SESSION_CONFIG.SESSION_EVENT_KEY, JSON.stringify({
+          type: 'manual_logout',
+          timestamp: Date.now()
+        }));
+      } catch (error) {
+        // Silently handle localStorage errors
+        console.warn('[AuthContext] Failed to broadcast logout:', error);
+      }
+
+      return await AuthService.signOut();
+    } catch (error) {
+      console.error('[AuthContext] Sign out error:', error);
+      throw error;
+    }
+  };
+  
   const resetPassword = (email, redirectTo) => AuthService.resetPassword(email, redirectTo);
 
   const value = {
@@ -72,7 +139,15 @@ export const AuthProvider = ({ children }) => {
     resetPassword,
     isAuthenticated: !!user,
     // Gunakan loadingInitial untuk state loading awal aplikasi
-    isLoading: loadingInitial, 
+    isLoading: loadingInitial,
+    
+    // Expose inactivity timeout state for potential future UI features
+    inactivityTimeout: {
+      isActive: inactivityTimeout.isActive,
+      timeRemaining: inactivityTimeout.timeRemaining,
+      resetTimer: inactivityTimeout.resetTimer,
+      // Future extensibility: add methods for session warnings, extensions, etc.
+    },
   };
 
   // Jangan render apapun sampai pemeriksaan otentikasi awal selesai.

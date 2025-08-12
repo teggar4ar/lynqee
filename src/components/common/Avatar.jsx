@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { getCacheBustedAvatarUrl } from '../../utils/imageUtils.js';
 
 /**
  * Avatar Component
  * 
  * A reusable avatar component with responsive sizing for different devices.
- * Supports both image avatars and fallback initials.
+ * Supports both image avatars and fallback initials with cache busting.
  * Mobile-first design with touch-optimized sizing.
  */
 const Avatar = ({ 
@@ -13,9 +14,11 @@ const Avatar = ({
   alt, 
   fallbackText = '', 
   size = 'medium',
-  className = '' 
+  className = '',
+  forceRefresh = false
 }) => {
   const [imageError, setImageError] = React.useState(false);
+  const [currentSrc, setCurrentSrc] = React.useState(null);
 
   // Define size variants with mobile-first approach
   const sizeClasses = {
@@ -27,12 +30,21 @@ const Avatar = ({
   // Get fallback initial (first character of fallbackText)
   const fallbackInitial = fallbackText ? fallbackText.charAt(0).toUpperCase() : '?';
 
-  // Reset error state when src changes
+  // Update src with cache busting when src changes or forceRefresh is true
   React.useEffect(() => {
     if (src) {
       setImageError(false);
+      const cacheBustedSrc = forceRefresh ? getCacheBustedAvatarUrl(src) : src;
+      setCurrentSrc(cacheBustedSrc);
+    } else {
+      setCurrentSrc(null);
     }
-  }, [src]);
+  }, [src, forceRefresh]);
+
+  // Handle image loading error
+  const handleImageError = React.useCallback(() => {
+    setImageError(true);
+  }, []);
 
   return (
     <div className={`
@@ -45,12 +57,13 @@ const Avatar = ({
       bg-gray-200 
       ${className}
     `}>
-      {src && !imageError ? (
+      {currentSrc && !imageError ? (
         <img 
-          src={src} 
+          src={currentSrc} 
           alt={alt}
           className="w-full h-full object-cover"
-          onError={() => setImageError(true)}
+          onError={handleImageError}
+          loading="lazy"
         />
       ) : (
         <span className="font-bold text-gray-500 flex items-center justify-center w-full h-full">
@@ -72,6 +85,8 @@ Avatar.propTypes = {
   size: PropTypes.oneOf(['small', 'medium', 'large']),
   /** Additional CSS classes */
   className: PropTypes.string,
+  /** Force refresh of cached images */
+  forceRefresh: PropTypes.bool,
 };
 
 export default Avatar;

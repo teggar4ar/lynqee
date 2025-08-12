@@ -244,12 +244,11 @@ This document breaks down the Lynqee v1.0 MVP development into manageable tasks,
   - Implement delete confirmation dialog
   - Handle soft delete vs hard delete
   - Update UI after deletion
-- [ ] **4.2.4** Create scalable link management interface
+- [ ] **4.2.4** Create scalable link management interface **SKIP**
   - Create `components/dashboard/LinkManager.jsx` as main container
   - Create `components/links/LinkListItem.jsx` for individual management
   - Create `components/common/ActionButton.jsx` for reusable actions
   - Implement proper separation of concerns between UI and business logic
-  - Add bulk actions infrastructure (future enhancement ready)
 
 ### Task 4.3: Link Reordering System
 **Priority:** P1 (High)  

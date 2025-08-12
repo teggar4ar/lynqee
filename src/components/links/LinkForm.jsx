@@ -9,13 +9,13 @@
  * - Supports both create and edit modes
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Input } from '../common';
 import { validateLinkData } from '../../utils/validators';
 
 const LinkForm = ({
-  initialData = { title: '', url: '' },
+  initialData = null, // Changed to null to detect when no data is passed
   onSubmit,
   onCancel,
   loading = false,
@@ -23,16 +23,32 @@ const LinkForm = ({
   cancelLabel = 'Cancel',
   className = ''
 }) => {
-  const [formData, setFormData] = useState(initialData);
+  // Memoize the default initial data to prevent re-creation on every render
+  const defaultInitialData = useMemo(() => ({ title: '', url: '' }), []);
+  
+  // Use provided initialData or default
+  const actualInitialData = initialData || defaultInitialData;
+  
+  const [formData, setFormData] = useState(actualInitialData);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  
+  // Use ref to track the last processed initialData to avoid infinite loops
+  const lastInitialDataRef = useRef(actualInitialData);
 
   // Update form data when initialData changes (for edit mode)
   useEffect(() => {
-    setFormData(initialData);
-    setErrors({});
-    setTouched({});
-  }, [initialData]);
+    const currentDataString = JSON.stringify(actualInitialData);
+    const lastDataString = JSON.stringify(lastInitialDataRef.current);
+    
+    // Only update if the initial data has actually changed
+    if (currentDataString !== lastDataString) {
+      setFormData(actualInitialData);
+      setErrors({});
+      setTouched({});
+      lastInitialDataRef.current = actualInitialData;
+    }
+  }, [actualInitialData]);
 
   // Handle input changes
   const handleChange = (event) => {
