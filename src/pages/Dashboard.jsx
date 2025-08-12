@@ -12,8 +12,8 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.js';
-import { useProgressiveProfile } from '../hooks/useProgressiveProfile.js';
-import { useProgressiveLinks } from '../hooks/useProgressiveLinks.js';
+import { useProfile } from '../hooks/useProfile.js';
+import { useLinks } from '../hooks/useLinks.js';
 import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { ProfileSkeleton, RefreshIndicator, StatsSkeleton } from '../components/common/ModernLoading.jsx';
 import { ProfileSettings } from '../components/profile';
@@ -21,19 +21,26 @@ import { DashboardLayout, DashboardStats, ProfileQuickPreview } from '../compone
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { profile, loading: profileLoading, refreshing: profileRefreshing, error: profileError, refetch: refetchProfile } = useProgressiveProfile(user?.id);
+  const { profile, loading: profileLoading, error: profileError, refetch: refetchProfile } = useProfile(user?.id);
+  const profileRefreshing = false; // Placeholder
   
   // Progressive dashboard data (eliminates loading screens on navigation)
   const { 
     links, 
-    stats, 
     loading: linksLoading, 
-    refreshing: linksRefreshing,
     error: linksError, 
     isRealTimeConnected, 
     refetch: refetchLinks,
     hasLinks
-  } = useProgressiveLinks(user?.id);
+  } = useLinks(user?.id);
+
+  const stats = {
+    totalLinks: links.length,
+    totalClicks: 0, // Placeholder
+    profileViews: 0, // Placeholder
+  };
+
+  const linksRefreshing = false; // Placeholder
 
   const [showProfileSettings, setShowProfileSettings] = useState(false);
 

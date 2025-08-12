@@ -1,8 +1,8 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { useProfile } from '../hooks/useProfile';
-import { useRealtimeLinks } from '../hooks/useRealtimeLinks';
+import { usePublicProfile } from '../hooks/usePublicProfile';
+import { usePublicRealtimeLinks } from '../hooks/usePublicRealtimeLinks';
 import { ProfileHeader } from '../components/profile';
 import { 
   ErrorBoundary,
@@ -29,8 +29,8 @@ const PublicProfile = () => {
   const { username } = useParams();
   
   // Fetch profile and links data
-  const { profile, loading: profileLoading, error: profileError, notFound } = useProfile(username);
-  const { links, loading: linksLoading, error: linksError, isRealTimeConnected } = useRealtimeLinks(username);
+  const { profile, loading: profileLoading, error: profileError, notFound } = usePublicProfile(username);
+  const { links, loading: linksLoading, error: linksError, isRealTimeConnected } = usePublicRealtimeLinks(username);
 
   // Handle case where username is missing (shouldn't happen with proper routing)
   if (!username) {

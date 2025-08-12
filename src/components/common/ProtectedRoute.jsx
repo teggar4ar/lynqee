@@ -16,14 +16,14 @@ import { useAuth } from '../../hooks/useAuth.js';
 import { Navigate, useLocation } from 'react-router-dom';
 
 /**
- * ProtectedRoute sekarang lebih sederhana.
- * Ia hanya memeriksa status otentikasi.
- * Logika redirect ditangani di level router/app.
+ * ProtectedRoute is now simpler.
+ * It only checks the authentication status.
+ * The redirect logic is handled at the router/app level.
  */
 const ProtectedRoute = ({ 
   children, 
   redirectTo = '/login',
-  // Anda bisa menambahkan properti lain seperti requirePermission jika perlu
+  // You can add other properties like requirePermission if needed
 }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
@@ -34,14 +34,14 @@ const ProtectedRoute = ({
     return null; // AuthProvider shows the initial loading
   }
 
-  // Jika tidak terotentikasi, alihkan ke halaman login
+  // If not authenticated, redirect to the login page
   if (!isAuthenticated) {
-    // 'replace' mencegah pengguna menekan tombol "kembali" di browser untuk kembali ke halaman yang dilindungi.
-    // 'state' berguna untuk mengarahkan pengguna kembali ke halaman yang mereka coba akses setelah login.
+    // 'replace' prevents the user from pressing the "back" button in the browser to return to the protected page.
+    // 'state' is useful for redirecting the user back to the page they were trying to access after logging in.
     return <Navigate to={redirectTo} replace state={{ from: location }} />;
   }
 
-  // Jika terotentikasi, tampilkan konten yang dilindungi.
+  // If authenticated, display the protected content.
   return children;
 };
 

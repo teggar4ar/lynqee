@@ -12,7 +12,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.js';
-import { useProgressiveLinks } from '../hooks/useProgressiveLinks.js';
+import { useLinks } from '../hooks/useLinks.js';
 import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { LinksSkeleton, RefreshIndicator } from '../components/common/ModernLoading.jsx';
 import { DashboardLayout } from '../components/dashboard';
@@ -24,10 +24,10 @@ const LinksPage = () => {
   const { 
     links, 
     loading, 
-    refreshing,
     error, 
     refetch 
-  } = useProgressiveLinks(user?.id);
+  } = useLinks(user?.id);
+  const refreshing = false; // Placeholder
 
   const [showAddLinkModal, setShowAddLinkModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

@@ -5,15 +5,16 @@
  * Provides loading states, error handling, and caching for link operations
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { LinksService } from '../services';
+import { supabase } from '../services/supabase';
 
 /**
  * Hook for fetching links by username (public access)
  * @param {string} username - The username to fetch links for
  * @returns {Object} { links, loading, error, refetch }
  */
-export const useLinks = (username) => {
+export const usePublicLinks = (username) => {
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -66,10 +67,12 @@ export const useLinks = (username) => {
  * @param {string} userId - The user ID
  * @returns {Object} { links, loading, error, refetch, createLink, updateLink, deleteLink, reorderLinks }
  */
-export const useUserLinks = (userId) => {
+export const useLinks = (userId) => {
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isRealTimeConnected, setIsRealTimeConnected] = useState(false);
+  const subscriptionRef = useRef(null);
 
   const fetchLinks = useCallback(async () => {
     if (!userId) {
@@ -85,7 +88,7 @@ export const useUserLinks = (userId) => {
       const linksData = await LinksService.getLinksByUserId(userId);
       setLinks(linksData);
     } catch (err) {
-      console.error('[useUserLinks] Error fetching links:', err);
+      console.error('[useLinks] Error fetching links:', err);
       setError(err.message || 'Failed to load links');
       setLinks([]);
     } finally {
@@ -93,10 +96,64 @@ export const useUserLinks = (userId) => {
     }
   }, [userId]);
 
+  const handleLinkChange = useCallback(
+    (payload) => {
+      setIsRealTimeConnected(true);
+      switch (payload.eventType) {
+        case 'INSERT':
+          setLinks((current) =>
+            [...current, payload.new].sort((a, b) => (a.position || 0) - (b.position || 0))
+          );
+          break;
+        case 'DELETE':
+          setLinks((current) => current.filter((link) => link.id !== payload.old.id));
+          break;
+        case 'UPDATE':
+          setLinks((current) =>
+            current.map((link) => (link.id === payload.new.id ? payload.new : link))
+          );
+          break;
+        default:
+          break;
+      }
+    },
+    []
+  );
+
   // Fetch links when userId changes
   useEffect(() => {
     fetchLinks();
-  }, [fetchLinks]);
+
+    if (subscriptionRef.current) {
+      subscriptionRef.current.unsubscribe();
+    }
+
+    if (userId) {
+      subscriptionRef.current = supabase
+        .channel(`links_${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'links',
+            filter: `user_id=eq.${userId}`,
+          },
+          handleLinkChange
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            setIsRealTimeConnected(true);
+          }
+        });
+    }
+
+    return () => {
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe();
+      }
+    };
+  }, [fetchLinks, userId, handleLinkChange]);
 
   // Create new link with optimistic updates
   const createLink = useCallback(async (linkData) => {
@@ -123,7 +180,7 @@ export const useUserLinks = (userId) => {
       
       return newLink;
     } catch (err) {
-      console.error('[useUserLinks] Error creating link:', err);
+      console.error('[useLinks] Error creating link:', err);
       setError(err.message || 'Failed to create link');
       
       // Remove optimistic update on error
@@ -153,7 +210,7 @@ export const useUserLinks = (userId) => {
       
       return updatedLink;
     } catch (err) {
-      console.error('[useUserLinks] Error updating link:', err);
+      console.error('[useLinks] Error updating link:', err);
       setError(err.message || 'Failed to update link');
       
       // Revert optimistic update on error
@@ -176,7 +233,7 @@ export const useUserLinks = (userId) => {
       
       return true;
     } catch (err) {
-      console.error('[useUserLinks] Error deleting link:', err);
+      console.error('[useLinks] Error deleting link:', err);
       setError(err.message || 'Failed to delete link');
       
       // Revert optimistic update on error
@@ -205,7 +262,7 @@ export const useUserLinks = (userId) => {
       
       return true;
     } catch (err) {
-      console.error('[useUserLinks] Error reordering links:', err);
+      console.error('[useLinks] Error reordering links:', err);
       setError(err.message || 'Failed to reorder links');
       
       // Revert optimistic update on error
@@ -229,6 +286,7 @@ export const useUserLinks = (userId) => {
     updateLink,
     deleteLink,
     reorderLinks,
+    isRealTimeConnected,
     // Computed properties
     hasLinks: links.length > 0,
     linkCount: links.length,

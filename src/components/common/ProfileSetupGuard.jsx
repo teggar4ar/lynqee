@@ -11,7 +11,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useAuth } from '../../hooks/useAuth.js';
-import { useAppState } from '../../contexts/AppStateContext.jsx';
+import { useAppState } from '../../hooks/useAppState';
 import { ProfileService } from '../../services';
 import { InitialLoading } from './ModernLoading.jsx';
 

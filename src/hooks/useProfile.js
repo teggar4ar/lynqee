@@ -1,64 +1,56 @@
-/**
- * useProfile Hook
- * 
- * Custom hook for fetching and managing profile data
- * Provides loading states, error handling, and caching for profile operations
- */
-
 import { useCallback, useEffect, useState } from 'react';
-import { ProfileService } from '../services';
+import ProfileService from '../services/ProfileService';
 
-/**
- * Hook for fetching a profile by username (public access)
- * @param {string} username - The username to fetch
- * @returns {Object} { profile, loading, error, refetch }
- */
-export const useProfile = (username) => {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+const profileCache = new Map();
+
+export const useProfile = (userId) => {
+  const [profile, setProfile] = useState(profileCache.get(userId) || null);
+  const [loading, setLoading] = useState(!profile && !!userId);
   const [error, setError] = useState(null);
 
   const fetchProfile = useCallback(async () => {
-    if (!username) {
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
+    if (!userId) return;
+
+    setLoading(true);
+    setError(null);
 
     try {
-      setLoading(true);
-      setError(null);
-      
-      const profileData = await ProfileService.getProfileByUsername(username);
-      setProfile(profileData);
+      const data = await ProfileService.getProfileById(userId);
+      setProfile(data);
+      profileCache.set(userId, data);
     } catch (err) {
-      console.error('[useProfile] Error fetching profile:', err);
-      setError(err.message || 'Failed to load profile');
-      setProfile(null);
+      setError(err.message || 'Failed to fetch profile');
     } finally {
       setLoading(false);
     }
-  }, [username]);
+  }, [userId]);
 
-  // Fetch profile when username changes
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    if (!profile && userId) {
+      fetchProfile();
+    }
+  }, [userId, profile, fetchProfile]);
 
-  // Refetch function for manual refresh
-  const refetch = useCallback(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+  const refreshProfile = useCallback(() => {
+    if (userId) {
+      profileCache.delete(userId);
+      fetchProfile();
+    }
+  }, [userId, fetchProfile]);
+
+  const clearProfile = useCallback(() => {
+    if (userId) {
+      profileCache.delete(userId);
+      setProfile(null);
+    }
+  }, [userId]);
 
   return {
     profile,
     loading,
     error,
-    refetch,
-    // Computed properties for common checks
-    exists: profile !== null,
-    notFound: !loading && !error && profile === null,
+    refreshProfile,
+    clearProfile,
+    hasProfile: !!profile,
   };
 };
-
-

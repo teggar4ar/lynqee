@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
-import { AppStateProvider } from './contexts/AppStateContext.jsx';
+import { AppStateProvider } from './contexts/AppStateProvider.jsx';
 import { Dashboard, LandingPage, LinksPage, NotFound, ProfileSetup, PublicProfile, ResetPassword } from './pages';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
@@ -14,17 +14,17 @@ function App() {
         <Router>
           <div className="app-container">
             <Routes>
-            {/* Rute Publik: bisa diakses siapa saja */}
+            {/* Public routes: accessible to everyone */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LandingPage />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/:username" element={<PublicProfile />} />
             
-            {/* Rute yang Dilindungi: hanya untuk pengguna yang sudah login */}
+            {/* Protected routes: only for logged-in users */}
             <Route 
               path="/dashboard" 
               element={
-                // 2. Bungkus komponen dengan ProtectedRoute
+                // Wrap the component with ProtectedRoute
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
@@ -41,14 +41,14 @@ function App() {
             <Route 
               path="/setup" 
               element={
-                // 3. Lakukan hal yang sama untuk rute terlindungi lainnya
+                // Do the same for other protected routes
                 <ProtectedRoute>
                   <ProfileSetup />
                 </ProtectedRoute>
               } 
             />
             
-            {/* Rute Catch-all untuk 404 - harus selalu paling akhir */}
+            {/* Catch-all route for 404 - must always be last */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

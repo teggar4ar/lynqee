@@ -140,7 +140,7 @@ LinkList.propTypes = {
   /** Loading state indicator */
   loading: PropTypes.bool,
   /** Error message to display */
-  error: PropTypes.string,
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   /** Message to show when no links are available */
   emptyMessage: PropTypes.string,
   /** Subtext for empty state */

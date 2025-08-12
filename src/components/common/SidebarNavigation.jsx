@@ -13,11 +13,11 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
-import { useProgressiveProfile } from '../../hooks/useProgressiveProfile.js';
+import { useProfile } from '../../hooks/useProfile.js';
 
 const SidebarNavigation = ({ className = '' }) => {
   const { user, signOut } = useAuth();
-  const { profile } = useProgressiveProfile(user?.id);
+  const { profile } = useProfile(user?.id);
   const navigate = useNavigate();
   const [hoveredItem, setHoveredItem] = useState(null);
 
