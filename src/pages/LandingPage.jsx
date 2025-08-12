@@ -12,7 +12,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { EmailLoginForm, EmailRegistrationForm, GoogleOAuthButton } from '../components/auth';
-import { Button } from '../components/common';
+import { Button, ErrorDisplay } from '../components/common';
 import { useAuth } from '../hooks/useAuth.js';
 
 const LandingPage = () => {
@@ -121,9 +121,10 @@ const LandingPage = () => {
             )}
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-800 text-sm">{error}</p>
-              </div>
+              <ErrorDisplay 
+                error={error} 
+                className="mb-6" 
+              />
             )}
 
             {/* Auth Mode Title */}

@@ -149,7 +149,12 @@ const ResetPassword = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input type="password" name="password" value={formData.password} onChange={handleInputChange} onBlur={handleBlur} label="Password Baru" placeholder="Minimal 8 karakter" error={errors.password} touched={touched.password} required disabled={isSubmitting} />
           <Input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} onBlur={handleBlur} label="Konfirmasi Password Baru" placeholder="Ketik ulang password baru Anda" error={errors.confirmPassword} touched={touched.confirmPassword} required disabled={isSubmitting} />
-          {error && <p className="text-sm text-red-700">{error}</p>}
+          {error && 
+            <ErrorDisplay 
+              error={error} 
+              className="mb-3 md:mb-4"
+            />
+          }
           <div className="pt-2">
             <Button type="submit" variant="primary" loading={isSubmitting} fullWidth>Ubah Password</Button>
           </div>

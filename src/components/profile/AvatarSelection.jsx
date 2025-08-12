@@ -14,7 +14,7 @@
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Avatar, AvatarUpload, Button } from '../common';
+import { Avatar, AvatarUpload, Button, ErrorDisplay } from '../common';
 
 const AvatarSelection = ({ 
   userId, 
@@ -72,9 +72,10 @@ const AvatarSelection = ({
 
       {/* Error Display */}
       {uploadError && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{uploadError}</p>
-        </div>
+        <ErrorDisplay 
+          error={uploadError} 
+          className="mb-4" 
+        />
       )}
 
       {/* Preview Section */}

@@ -15,6 +15,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { AvatarUpload, Button, Input } from '../common';
+import ErrorDisplay from '../common/ErrorDisplay.jsx';
 import { ProfileService } from '../../services';
 import { useAvatar } from '../../hooks';
 import useAsync from '../../hooks/useAsync.js';
@@ -199,9 +200,10 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{error}</p>
-        </div>
+        <ErrorDisplay 
+          error={error} 
+          className="mb-4" 
+        />
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4 md:space-y-4">

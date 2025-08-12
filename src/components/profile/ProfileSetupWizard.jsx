@@ -18,6 +18,7 @@ import { useAuth } from '../../hooks/useAuth.js';
 import UsernameSelection from './UsernameSelection.jsx';
 import AvatarSelection from './AvatarSelection.jsx';
 import ProfileInformation from './ProfileInformation.jsx';
+import ErrorDisplay from '../common/ErrorDisplay.jsx';
 import { Button } from '../common';
 
 const ProfileSetupWizard = ({
@@ -116,9 +117,10 @@ const ProfileSetupWizard = ({
 
       {/* Error display - Mobile optimized */}
       {error && (
-        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg md:mb-4">
-          <p className="text-sm text-red-600">{error}</p>
-        </div>
+        <ErrorDisplay 
+          error={error} 
+          className="mb-3 md:mb-4" 
+        />
       )}
 
       {/* Current step content - Mobile optimized */}
@@ -148,7 +150,13 @@ ProfileSetupWizard.propTypes = {
   onStepChange: PropTypes.func.isRequired,
   onComplete: PropTypes.func.isRequired,
   loading: PropTypes.bool,
-  error: PropTypes.string,
+  error: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.instanceOf(Error),
+    PropTypes.shape({ 
+      message: PropTypes.string 
+    })
+  ]),
   userEmail: PropTypes.string.isRequired,
 };
 
