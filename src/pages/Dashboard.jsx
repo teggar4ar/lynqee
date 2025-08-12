@@ -12,8 +12,8 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.js';
-import { useProgressiveProfile } from '../hooks/useProgressiveProfile.js';
-import { useProgressiveLinks } from '../hooks/useProgressiveLinks.js';
+import { useUserProfile } from '../hooks/useUserProfile.js';
+import { useUserLinks } from '../hooks/useUserLinks.js';
 import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { ProfileSkeleton, RefreshIndicator, StatsSkeleton } from '../components/common/ModernLoading.jsx';
 import { ProfileSettings } from '../components/profile';
@@ -21,19 +21,19 @@ import { DashboardLayout, DashboardStats, ProfileQuickPreview } from '../compone
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { profile, loading: profileLoading, refreshing: profileRefreshing, error: profileError, refetch: refetchProfile } = useProgressiveProfile(user?.id);
+  const { data: profile, loading: profileLoading, refreshing: profileRefreshing, error: profileError, refetch: refetchProfile } = useUserProfile(user?.id);
   
   // Progressive dashboard data (eliminates loading screens on navigation)
   const { 
-    links, 
+    data: links, 
     stats, 
     loading: linksLoading, 
     refreshing: linksRefreshing,
     error: linksError, 
     isRealTimeConnected, 
     refetch: refetchLinks,
-    hasLinks
-  } = useProgressiveLinks(user?.id);
+    hasData: hasLinks
+  } = useUserLinks(user?.id);
 
   const [showProfileSettings, setShowProfileSettings] = useState(false);
 

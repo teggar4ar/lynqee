@@ -32,6 +32,16 @@ export const AppStateProvider = ({ children }) => {
   const [isRefreshingProfile, setIsRefreshingProfile] = useState(false);
   const [isRefreshingLinks, setIsRefreshingLinks] = useState(false);
 
+  // Auto-update stats when links data changes
+  useEffect(() => {
+    const newStats = { 
+      totalLinks: linksData?.length || 0, 
+      totalClicks: 0, 
+      profileViews: 0 
+    };
+    setDashboardStats(newStats);
+  }, [linksData]);
+
   const clearData = useCallback(() => {
     setProfileData(null);
     setLinksData([]);
@@ -48,17 +58,55 @@ export const AppStateProvider = ({ children }) => {
 
   // Sisa kode di bawah ini tidak ada perubahan sama sekali
   const updateProfile = useCallback((profile) => { setProfileData(profile); }, []);
-  const updateLinks = useCallback((links) => {
-    setLinksData(links);
-    setDashboardStats({ totalLinks: links.length, totalClicks: 0, profileViews: 0 });
+  const updateLinks = useCallback((linksOrUpdater) => {
+    // Handle functional updates
+    if (typeof linksOrUpdater === 'function') {
+      setLinksData(currentLinks => {
+        const newLinks = linksOrUpdater(currentLinks);
+        
+        // Ensure the result is an array
+        if (!Array.isArray(newLinks)) {
+          console.error('[AppStateContext] updateLinks functional update returned non-array:', typeof newLinks, newLinks);
+          return currentLinks; // Keep current state if invalid
+        }
+        
+        // Ensure no duplicates by ID (safety check)
+        const uniqueLinks = newLinks.reduce((acc, link) => {
+          if (!acc.find(existing => existing.id === link.id)) {
+            acc.push(link);
+          }
+          return acc;
+        }, []);
+        
+        return uniqueLinks;
+      });
+      return;
+    }
+    
+    // Handle direct array updates
+    const links = linksOrUpdater;
+    
+    // Ensure links is always an array
+    if (!Array.isArray(links)) {
+      console.error('[AppStateContext] updateLinks called with non-array:', typeof links, links);
+      return;
+    }
+    
+    // Ensure no duplicates by ID (safety check)
+    const uniqueLinks = links.reduce((acc, link) => {
+      if (!acc.find(existing => existing.id === link.id)) {
+        acc.push(link);
+      }
+      return acc;
+    }, []);
+    
+    setLinksData(uniqueLinks);
   }, []);
   const addLinkOptimistic = useCallback((newLink) => {
     setLinksData(current => [...current, newLink]);
-    setDashboardStats(current => ({ ...current, totalLinks: current.totalLinks + 1 }));
   }, []);
   const removeLinkOptimistic = useCallback((linkId) => {
     setLinksData(current => current.filter(link => link.id !== linkId));
-    setDashboardStats(current => ({ ...current, totalLinks: Math.max(0, current.totalLinks - 1) }));
   }, []);
 
   const value = {
@@ -79,6 +127,7 @@ export const AppStateProvider = ({ children }) => {
 
 AppStateProvider.propTypes = { children: PropTypes.node.isRequired };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppState = () => {
   const context = useContext(AppStateContext);
   if (context === undefined) {
