@@ -104,7 +104,7 @@ export const withProgressiveLoading = (useDataHook, options = {}) => {
         setIsProgressiveLoading(false);
       }
       initializedRef.current = true;
-    }, [cacheKey, enableCache]);
+    }, [cacheKey]);
 
     // Update cache when new data is available
     useEffect(() => {
@@ -113,7 +113,7 @@ export const withProgressiveLoading = (useDataHook, options = {}) => {
       progressiveCache.set(cacheKey, hookResult.data);
       setProgressiveData(hookResult.data);
       setIsProgressiveLoading(false);
-    }, [hookResult.data, cacheKey, enableCache]);
+    }, [hookResult.data, cacheKey]);
 
     // Update progressive loading state based on hook loading state
     useEffect(() => {
@@ -129,14 +129,14 @@ export const withProgressiveLoading = (useDataHook, options = {}) => {
       if (enableCache) {
         progressiveCache.clear(cacheKey);
       }
-    }, [cacheKey, enableCache]);
+    }, [cacheKey]);
 
     // Clear all cache function
     const clearAllCache = useCallback(() => {
       if (enableCache) {
         progressiveCache.clearAll();
       }
-    }, [enableCache]);
+    }, []);
 
     return {
       ...hookResult,

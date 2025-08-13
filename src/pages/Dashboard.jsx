@@ -38,21 +38,6 @@ const Dashboard = () => {
   // Dashboard statistics from DashboardContext
   const { dashboardStats: stats } = useDashboard();
 
-  // Test function to manually add a link to test stats update
-  const testAddLink = () => {
-    const testLink = {
-      id: Date.now(),
-      title: 'Test Link',
-      url: 'https://example.com',
-      user_id: user?.id,
-      created_at: new Date().toISOString()
-    };
-    
-    // Get the LinksContext to test manual update
-    const { updateLinks } = require('../contexts/LinksContext.jsx').useLinks();
-    updateLinks(currentLinks => [...currentLinks, testLink]);
-  };
-
   const [showProfileSettings, setShowProfileSettings] = useState(false);
 
   const handleProfileUpdate = (_updatedProfile) => {

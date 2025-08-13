@@ -11,7 +11,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { EmailLoginForm, EmailRegistrationForm, GoogleOAuthButton } from '../components/auth';
+import { EmailLoginForm, EmailRegistrationForm, EmailVerificationPending, GoogleOAuthButton } from '../components/auth';
 import { Button, ErrorDisplay } from '../components/common';
 import { useAuth } from '../hooks/useAuth.js';
 
@@ -19,9 +19,10 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, isLoading } = useAuth();
-  const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
+  const [authMode, setAuthMode] = useState('login'); // 'login', 'register', or 'verify-email'
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState(null);
 
   // Check for password reset success message
   useEffect(() => {
@@ -35,32 +36,56 @@ const LandingPage = () => {
     }
   }, [searchParams, navigate]);
 
-  // Redirect authenticated users to dashboard
+  // Track if we've already initiated a redirect to prevent race conditions
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Redirect authenticated users to dashboard - SINGLE SOURCE OF TRUTH
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isLoading && user && !isRedirecting) {
+      setIsRedirecting(true);
+      // Use replace to avoid back button issues
       navigate('/dashboard', { replace: true });
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, navigate, isRedirecting]);
 
   // Handle authentication success
   const handleAuthSuccess = (result) => {
     setError(null);
+    
+    // Check if this is a registration that needs email verification
+    if (result?.user && !result.session) {
+      // User was created but needs email verification
+      setPendingVerificationEmail(result.user.email);
+      setAuthMode('verify-email');
+      setSuccess('Registration successful! Please check your email to verify your account.');
+      return;
+    }
+    
+    // For successful login, just show success message
+    // The useEffect will handle navigation when user state updates
     setSuccess('Authentication successful! Redirecting...');
     
-    // For email/password auth, redirect immediately
-    // For OAuth, the useEffect above will handle the redirect when user state updates
-    if (result?.user) {
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 1500);
-    }
+    // Don't manually navigate here - let the useEffect handle it
+    // This prevents race conditions and double navigation
   };
 
   // Handle authentication error
   const handleAuthError = (error) => {
     console.error('[LandingPage] Auth error:', error);
     setSuccess(null);
-    setError(error.message || 'Authentication failed. Please try again.');
+    
+    // Check for specific error types and provide user-friendly messages
+    if (error.message && error.message.includes('Invalid login credentials')) {
+      setError('Account not verified or invalid credentials. Please check your email for a verification link, or try registering again.');
+    } else if (error.message && error.message.includes('Email not confirmed')) {
+      setError('Please verify your email address before signing in. Check your inbox for a verification link.');
+    } else if (error.message && error.message.includes('only request this after')) {
+      setError('Please wait a moment before requesting another password reset email.');
+    } else if (error.message && error.message.includes('Too Many Requests')) {
+      setError('Too many requests. Please wait a moment and try again.');
+    } else {
+      setError(error.message || 'Authentication failed. Please try again.');
+    }
   };
 
   // Handle forgot password
@@ -74,15 +99,26 @@ const LandingPage = () => {
     setAuthMode(prev => prev === 'login' ? 'register' : 'login');
     setError(null);
     setSuccess(null);
+    setPendingVerificationEmail(null);
   };
 
-  // Show loading state while checking authentication
-  if (isLoading) {
+  // Handle back to login from verification screen
+  const handleBackToLogin = () => {
+    setAuthMode('login');
+    setError(null);
+    setSuccess(null);
+    setPendingVerificationEmail(null);
+  };
+
+  // Show loading state while checking authentication or redirecting
+  if (isLoading || isRedirecting) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">
+            {isRedirecting ? 'Redirecting to dashboard...' : 'Loading...'}
+          </p>
         </div>
       </div>
     );
@@ -130,67 +166,81 @@ const LandingPage = () => {
             {/* Auth Mode Title */}
             <div className="text-center mb-6">
               <h3 className="text-xl font-semibold text-gray-900">
-                {authMode === 'login' ? 'Welcome back' : 'Create your account'}
+                {authMode === 'login' && 'Welcome back'}
+                {authMode === 'register' && 'Create your account'}
+                {authMode === 'verify-email' && 'Verify your email'}
               </h3>
               <p className="text-gray-600 mt-2">
-                {authMode === 'login' 
-                  ? 'Sign in to manage your links' 
-                  : 'Get started with your link page'}
+                {authMode === 'login' && 'Sign in to manage your links'}
+                {authMode === 'register' && 'Get started with your link page'}
+                {authMode === 'verify-email' && 'Complete your registration'}
               </p>
             </div>
 
-            {/* Google OAuth Button */}
-            <div className="mb-6">
-              <GoogleOAuthButton
-                onSuccess={handleAuthSuccess}
-                onError={handleAuthError}
-                // --- PERBAIKAN DI SINI ---
-                // Arahkan ke dashboard setelah login berhasil.
-                // Pastikan URL origin tetap ada untuk membentuk URL yang lengkap.
-                redirectTo={`${window.location.origin}/dashboard`} 
-              >
-                {authMode === 'login' ? 'Sign in with Google' : 'Sign up with Google'}
-              </GoogleOAuthButton>
-            </div>
-
-            {/* Divider */}
-            <div className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">or</span>
-              </div>
-            </div>
-
-            {/* Email Form */}
-            {authMode === 'login' ? (
-              <EmailLoginForm
-                onSuccess={handleAuthSuccess}
-                onError={handleAuthError}
-                onForgotPassword={handleForgotPassword}
+            {/* Render different content based on auth mode */}
+            {authMode === 'verify-email' ? (
+              <EmailVerificationPending
+                email={pendingVerificationEmail}
+                onBackToLogin={handleBackToLogin}
               />
             ) : (
-              <EmailRegistrationForm
-                onSuccess={handleAuthSuccess}
-                onError={handleAuthError}
-              />
-            )}
+              <>
+                {/* Google OAuth Button */}
+                <div className="mb-6">
+                  <GoogleOAuthButton
+                    onSuccess={handleAuthSuccess}
+                    onError={handleAuthError}
+                    // --- PERBAIKAN DI SINI ---
+                    // Arahkan ke dashboard setelah login berhasil.
+                    // Pastikan URL origin tetap ada untuk membentuk URL yang lengkap.
+                    redirectTo={`${window.location.origin}/dashboard`} 
+                  >
+                    {authMode === 'login' ? 'Sign in with Google' : 'Sign up with Google'}
+                  </GoogleOAuthButton>
+                </div>
 
-            {/* Toggle Auth Mode */}
-            <div className="mt-6 text-center">
-              <p className="text-gray-600 text-sm">
-                {authMode === 'login' 
-                  ? "Don't have an account? " 
-                  : "Already have an account? "}
-                <button
-                  onClick={toggleAuthMode}
-                  className="text-blue-500 hover:text-blue-600 font-medium underline"
-                >
-                  {authMode === 'login' ? 'Sign up' : 'Sign in'}
-                </button>
-              </p>
-            </div>
+                {/* Divider */}
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">or</span>
+                  </div>
+                </div>
+
+                {/* Email Form */}
+                {authMode === 'login' ? (
+                  <EmailLoginForm
+                    key="login-form" // Prevent remounting when switching modes
+                    onSuccess={handleAuthSuccess}
+                    onError={handleAuthError}
+                    onForgotPassword={handleForgotPassword}
+                  />
+                ) : (
+                  <EmailRegistrationForm
+                    key="register-form" // Prevent remounting when switching modes
+                    onSuccess={handleAuthSuccess}
+                    onError={handleAuthError}
+                  />
+                )}
+
+                {/* Toggle Auth Mode */}
+                <div className="mt-6 text-center">
+                  <p className="text-gray-600 text-sm">
+                    {authMode === 'login' 
+                      ? "Don't have an account? " 
+                      : "Already have an account? "}
+                    <button
+                      onClick={toggleAuthMode}
+                      className="text-blue-500 hover:text-blue-600 font-medium underline"
+                    >
+                      {authMode === 'login' ? 'Sign up' : 'Sign in'}
+                    </button>
+                  </p>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Feature Preview */}

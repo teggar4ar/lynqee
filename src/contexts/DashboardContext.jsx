@@ -9,7 +9,7 @@
  * into smaller, more maintainable domain-specific contexts.
  */
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useProfile } from './ProfileContext.jsx';
 import { useLinks } from './LinksContext.jsx';

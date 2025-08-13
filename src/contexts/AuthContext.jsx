@@ -87,9 +87,24 @@ export const AuthProvider = ({ children }) => {
       });
 
     // Pasang listener dan simpan subscription object-nya
-    const authListener = AuthService.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    const authListener = AuthService.onAuthStateChange((event, session) => {
+      // Prevent unnecessary state updates if the session hasn't actually changed
+      setSession(prevSession => {
+        // Compare session tokens to avoid unnecessary updates
+        if (prevSession?.access_token === session?.access_token) {
+          return prevSession;
+        }
+        return session;
+      });
+      
+      setUser(prevUser => {
+        const newUser = session?.user ?? null;
+        // Compare user IDs to avoid unnecessary updates
+        if (prevUser?.id === newUser?.id) {
+          return prevUser;
+        }
+        return newUser;
+      });
     });
     
     // Cleanup subscription on unmount
@@ -150,9 +165,27 @@ export const AuthProvider = ({ children }) => {
     },
   };
 
-  // Jangan render apapun sampai pemeriksaan otentikasi awal selesai.
-  // Ini mencegah "flash" dari halaman yang dilindungi ke halaman login saat refresh.
-  if (loadingInitial) {
+  // Don't render the loading screen immediately on app start
+  // This prevents the flash when the user is already authenticated
+  // Only show loading after a brief delay to allow for fast auth resolution
+  const [showLoading, setShowLoading] = useState(false);
+  
+  useEffect(() => {
+    if (loadingInitial) {
+      // Add a small delay before showing loading to prevent flash
+      const timer = setTimeout(() => {
+        setShowLoading(true);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setShowLoading(false);
+    }
+  }, [loadingInitial]);
+
+  // Only show loading screen if we've been loading for a while
+  // This prevents the flash for users who are already authenticated
+  if (loadingInitial && showLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">

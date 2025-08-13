@@ -79,8 +79,6 @@ const useBaseUserLinks = (userId) => {
           filter: `user_id=eq.${userId}`
         },
         (payload) => {
-          console.warn('[useUserLinks] Real-time update received:', payload.eventType, 'for link:', payload.new?.id || payload.old?.id);
-          
           switch (payload.eventType) {
             case 'INSERT':
               // Use functional update to get the current state

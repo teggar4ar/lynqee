@@ -27,12 +27,17 @@ if (!supabaseKey) {
  */
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    // Configure auth settings
+    // Configure auth settings for smoother transitions
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
     // Security: Enforce strong password requirements
     flowType: 'pkce', // Use PKCE flow for better security
+    // Reduce flashing by handling session changes more smoothly
+    storageKey: 'lynqee-auth-token',
+    storage: window?.localStorage,
+    // Prevent rapid auth state changes
+    debug: import.meta.env.DEV ? false : false, // Disable debug logs that might affect timing
   },
   realtime: {
     // Configure real-time WebSocket settings

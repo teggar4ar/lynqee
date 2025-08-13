@@ -94,6 +94,7 @@ AppStateProvider.propTypes = { children: PropTypes.node.isRequired };
  * @returns {Object} App state value
  * @throws {Error} If used outside AppStateProvider
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppState = () => {
   const context = useContext(AppStateContext);
   if (context === undefined) {

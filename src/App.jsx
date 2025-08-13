@@ -2,7 +2,7 @@ import React from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import { AppStateProvider } from './contexts/AppStateContext.jsx';
-import { Dashboard, LandingPage, LinksPage, NotFound, ProfileSetup, PublicProfile, ResetPassword } from './pages';
+import { Dashboard, EmailVerification, LandingPage, LinksPage, NotFound, ProfileSetup, PublicProfile, ResetPassword } from './pages';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 import './App.css';
@@ -18,6 +18,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LandingPage />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-email" element={<EmailVerification />} />
             <Route path="/:username" element={<PublicProfile />} />
             
             {/* Rute yang Dilindungi: hanya untuk pengguna yang sudah login */}

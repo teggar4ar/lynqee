@@ -9,7 +9,7 @@
  * - Keyboard-friendly mobile experience
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Input from '../common/Input.jsx';
 import Button from '../common/Button.jsx';
@@ -26,6 +26,15 @@ const EmailRegistrationForm = ({ onSuccess, onError, className = '' }) => {
     confirmPassword: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Prevent form reset during auth state changes
+  const mountedRef = useRef(true);
+  
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Validation rules
   const validationRules = {
