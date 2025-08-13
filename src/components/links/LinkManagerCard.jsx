@@ -26,12 +26,14 @@ const LinkManagerCard = ({
   const handleEdit = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setShowActions(false); // Close dropdown when edit is triggered
     if (onEdit) onEdit(link);
   };
 
   const handleDelete = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setShowActions(false); // Close dropdown when delete is triggered
     if (onDelete) onDelete(link);
   };
 

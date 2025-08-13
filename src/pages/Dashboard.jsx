@@ -19,6 +19,7 @@ import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../compon
 import { ProfileSkeleton, RefreshIndicator, StatsSkeleton } from '../components/common/ModernLoading.jsx';
 import { ProfileSettings } from '../components/profile';
 import { DashboardLayout, DashboardStats, ProfileQuickPreview } from '../components/dashboard';
+// import RealTimeDebugger from '../components/common/RealTimeDebugger.jsx';
 
 const Dashboard = () => {
   const { user } = useAuth();

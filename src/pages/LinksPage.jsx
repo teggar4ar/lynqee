@@ -16,7 +16,7 @@ import { useUserLinks } from '../hooks/useUserLinks.js';
 import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { LinksSkeleton, RefreshIndicator } from '../components/common/ModernLoading.jsx';
 import { DashboardLayout } from '../components/dashboard';
-import { AddLinkModal, LinkManagerCard } from '../components/links';
+import { AddLinkModal, EditLinkModal, LinkManagerCard } from '../components/links';
 import { getErrorType } from '../utils/errorUtils';
 
 const LinksPage = () => {
@@ -30,6 +30,8 @@ const LinksPage = () => {
   } = useUserLinks(user?.id);
 
   const [showAddLinkModal, setShowAddLinkModal] = useState(false);
+  const [showEditLinkModal, setShowEditLinkModal] = useState(false);
+  const [editingLink, setEditingLink] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter links based on search query
@@ -48,6 +50,22 @@ const LinksPage = () => {
   };
 
   const handleLinkAdded = (_newLink) => {
+    // Real-time subscription will handle the update automatically
+    // No need to refetch since real-time updates are working
+  };
+
+  // Handle Edit Link Modal
+  const handleOpenEditLinkModal = (link) => {
+    setEditingLink(link);
+    setShowEditLinkModal(true);
+  };
+
+  const handleCloseEditLinkModal = () => {
+    setShowEditLinkModal(false);
+    setEditingLink(null);
+  };
+
+  const handleLinkUpdated = (_updatedLink) => {
     // Real-time subscription will handle the update automatically
     // No need to refetch since real-time updates are working
   };
@@ -186,8 +204,8 @@ const LinksPage = () => {
                       showDragHandle={true}
                       showSelection={false}
                       isSelected={false}
-                      onEdit={() => {
-                        // TODO: Implement edit functionality
+                      onEdit={(link) => {
+                        handleOpenEditLinkModal(link);
                       }}
                       onDelete={() => {
                         // TODO: Implement delete functionality
@@ -208,6 +226,14 @@ const LinksPage = () => {
           onClose={handleCloseAddLinkModal}
           onLinkAdded={handleLinkAdded}
           existingLinksCount={links?.length || 0}
+        />
+
+        {/* Edit Link Modal */}
+        <EditLinkModal
+          isOpen={showEditLinkModal}
+          onClose={handleCloseEditLinkModal}
+          onLinkUpdated={handleLinkUpdated}
+          link={editingLink}
         />
       </ProfileSetupGuard>
     </ProtectedRoute>

@@ -103,7 +103,6 @@ const useBaseUserLinks = (userId) => {
               // Update the existing link using functional update
               updateLinks(currentLinks => {
                 const links = currentLinks || [];
-                console.warn('[useUserLinks] Updating existing link in', links.length, 'links');
                 return links.map(link => 
                   link.id === payload.new.id ? payload.new : link
                 );

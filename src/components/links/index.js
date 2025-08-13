@@ -9,4 +9,5 @@ export { default as LinkCard } from './LinkCard.jsx';
 export { default as LinkManagerCard } from './LinkManagerCard.jsx';
 export { default as LinkList } from './LinkList.jsx';
 export { default as AddLinkModal } from './AddLinkModal.jsx';
+export { default as EditLinkModal } from './EditLinkModal.jsx';
 export { default as LinkForm } from './LinkForm.jsx';
