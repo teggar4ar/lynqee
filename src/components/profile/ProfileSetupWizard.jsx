@@ -18,7 +18,7 @@ import { useAuth } from '../../hooks/useAuth.js';
 import UsernameSelection from './UsernameSelection.jsx';
 import AvatarSelection from './AvatarSelection.jsx';
 import ProfileInformation from './ProfileInformation.jsx';
-import ErrorDisplay from '../common/ErrorDisplay.jsx';
+import ErrorDisplay from '../common/error/ErrorDisplay.jsx';
 import { Button } from '../common';
 
 const ProfileSetupWizard = ({

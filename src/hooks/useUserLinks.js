@@ -1,27 +1,32 @@
 /**
  * useUserLinks Hook
  * 
- * Hook for fetching and managing the current authenticated user's links data
+ * Enhanced hook for fetching and managing the current authenticated user's links data
+ * Now uses the refactored LinksContext and progressive loading pattern.
+ * 
  * @param {string} userId - The user ID to fetch links for
  * @returns {Object} { data, loading, error, refetch }
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAppState } from '../contexts/AppStateContext.jsx';
+import { useLinks } from '../contexts/LinksContext.jsx';
 import LinksService from '../services/LinksService.js';
 import { supabase } from '../services/supabase.js';
+import { withProgressiveLoading } from './withProgressiveLoading.js';
 
-export const useUserLinks = (userId) => {
+/**
+ * Base hook for links data fetching (without progressive loading)
+ */
+const useBaseUserLinks = (userId) => {
   const { 
     linksData, 
-    dashboardStats,
     hasLinksData, 
     updateLinks, 
     addLinkOptimistic,
     removeLinkOptimistic,
     isRefreshingLinks, 
     setIsRefreshingLinks 
-  } = useAppState();
+  } = useLinks();
   
   const [error, setError] = useState(null);
   const [isInitialLoading, setIsInitialLoading] = useState(!hasLinksData && !!userId);
@@ -89,10 +94,8 @@ export const useUserLinks = (userId) => {
                     link.id === payload.new.id ? payload.new : link
                   );
                 } else {
-                  console.warn('[useUserLinks] Adding new link to existing', links.length, 'links');
                   // New link, add it to the list
                   const newLinks = [...links, payload.new];
-                  console.warn('[useUserLinks] Total links after INSERT:', newLinks.length);
                   return newLinks;
                 }
               });
@@ -183,9 +186,19 @@ export const useUserLinks = (userId) => {
     refetch,
     hasData: hasLinksData,
     isRealTimeConnected,
-    stats: dashboardStats,
     // Optimistic update methods
     addOptimistic,
     removeOptimistic
   };
 };
+
+/**
+ * Enhanced hook with progressive loading
+ * Uses cached data from previous navigation while fetching fresh data
+ */
+export const useUserLinks = withProgressiveLoading(useBaseUserLinks, {
+  getCacheKey: (userId) => `user-links-${userId}`,
+  enableCache: true,
+});
+
+export default useUserLinks;

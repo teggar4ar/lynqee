@@ -15,7 +15,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { AvatarUpload, Button, Input } from '../common';
-import ErrorDisplay from '../common/ErrorDisplay.jsx';
+import ErrorDisplay from '../common/error/ErrorDisplay.jsx';
 import { ProfileService } from '../../services';
 import { useAvatar } from '../../hooks';
 import useAsync from '../../hooks/useAsync.js';

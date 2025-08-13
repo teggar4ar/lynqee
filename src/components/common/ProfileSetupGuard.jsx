@@ -1,6 +1,9 @@
 /**
  * ProfileSetupGuard - HOC that redirects users to profile setup if needed
  * 
+ * REFACTORED: This component now uses the new ProfileContext instead of AppStateContext
+ * for better separation of concerns and improved maintainability.
+ * 
  * This component checks if the authenticated user has completed their profile setup.
  * If not, it redirects them to the profile setup wizard.
  * 
@@ -11,14 +14,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useAuth } from '../../hooks/useAuth.js';
-import { useAppState } from '../../contexts/AppStateContext.jsx';
+import { useProfile } from '../../contexts/ProfileContext.jsx';
 import { ProfileService } from '../../services';
 import { InitialLoading } from './ModernLoading.jsx';
 
 const ProfileSetupGuard = ({ children }) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading } = useAuth();
-  const { hasProfileData } = useAppState();
+  const { hasProfileData } = useProfile();
   const [profileCheckLoading, setProfileCheckLoading] = useState(!hasProfileData);
   const [hasProfile, setHasProfile] = useState(hasProfileData);
 

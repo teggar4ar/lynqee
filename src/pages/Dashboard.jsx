@@ -14,6 +14,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.js';
 import { useUserProfile } from '../hooks/useUserProfile.js';
 import { useUserLinks } from '../hooks/useUserLinks.js';
+import { useDashboard } from '../contexts/DashboardContext.jsx';
 import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { ProfileSkeleton, RefreshIndicator, StatsSkeleton } from '../components/common/ModernLoading.jsx';
 import { ProfileSettings } from '../components/profile';
@@ -26,7 +27,6 @@ const Dashboard = () => {
   // Progressive dashboard data (eliminates loading screens on navigation)
   const { 
     data: links, 
-    stats, 
     loading: linksLoading, 
     refreshing: linksRefreshing,
     error: linksError, 
@@ -34,6 +34,24 @@ const Dashboard = () => {
     refetch: refetchLinks,
     hasData: hasLinks
   } = useUserLinks(user?.id);
+
+  // Dashboard statistics from DashboardContext
+  const { dashboardStats: stats } = useDashboard();
+
+  // Test function to manually add a link to test stats update
+  const testAddLink = () => {
+    const testLink = {
+      id: Date.now(),
+      title: 'Test Link',
+      url: 'https://example.com',
+      user_id: user?.id,
+      created_at: new Date().toISOString()
+    };
+    
+    // Get the LinksContext to test manual update
+    const { updateLinks } = require('../contexts/LinksContext.jsx').useLinks();
+    updateLinks(currentLinks => [...currentLinks, testLink]);
+  };
 
   const [showProfileSettings, setShowProfileSettings] = useState(false);
 
