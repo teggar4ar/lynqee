@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { RESPONSIVE_PATTERNS, TOUCH_TARGETS } from '../../utils/mobileUtils';
+import { RESPONSIVE_PATTERNS, TOUCH_TARGETS } from '../../../utils/mobileUtils';
 
 /**
  * ErrorState Component

@@ -1,29 +1,36 @@
 /**
- * useProgressiveProfile - Progressive profile data loading
+ * useUserProfile Hook
  * 
- * Returns cached profile data immediately while refreshing in background.
- * Eliminates loading screens on navigation.
+ * Enhanced hook for fetching and managing the current authenticated user's profile data
+ * Now uses the refactored ProfileContext and progressive loading pattern.
+ * 
+ * @param {string} userId - The user ID to fetch profile for
+ * @returns {Object} { data, loading, error, refetch }
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { useAppState } from '../contexts/AppStateContext.jsx';
+import { useProfile } from '../contexts/ProfileContext.jsx';
 import ProfileService from '../services/ProfileService.js';
+import { withProgressiveLoading } from './withProgressiveLoading.js';
 
-export const useProgressiveProfile = (userId) => {
+/**
+ * Base hook for profile data fetching (without progressive loading)
+ */
+const useBaseUserProfile = (userId) => {
   const { 
     profileData, 
     hasProfileData, 
     updateProfile, 
     isRefreshingProfile, 
     setIsRefreshingProfile 
-  } = useAppState();
+  } = useProfile();
   
   const [error, setError] = useState(null);
   const [isInitialLoading, setIsInitialLoading] = useState(!hasProfileData && !!userId);
 
   const fetchProfile = useCallback(async (showLoading = false) => {
     if (!userId) {
-      setIsRefreshingProfile(false); // Stop any ongoing refresh
+      setIsRefreshingProfile(false);
       return;
     }
 
@@ -38,7 +45,7 @@ export const useProgressiveProfile = (userId) => {
         setIsInitialLoading(false);
       }
     } catch (err) {
-      console.error('[useProgressiveProfile] Error:', err);
+      console.error('[useUserProfile] Error:', err);
       setError(err.message || 'Failed to fetch profile');
       if (!hasProfileData) {
         setIsInitialLoading(false);
@@ -51,7 +58,6 @@ export const useProgressiveProfile = (userId) => {
   // Initial fetch only if no cached data
   useEffect(() => {
     if (!userId) {
-      // Clear loading state when user is null (e.g., during sign out)
       setIsInitialLoading(false);
       setIsRefreshingProfile(false);
       return;
@@ -62,17 +68,28 @@ export const useProgressiveProfile = (userId) => {
     }
   }, [userId, hasProfileData, fetchProfile, setIsRefreshingProfile]);
 
-  // Background refresh function
-  const refreshProfile = () => {
+  // Manual refresh function
+  const refetch = useCallback(() => {
     fetchProfile(true);
-  };
+  }, [fetchProfile]);
 
   return {
-    profile: profileData,
-    loading: isInitialLoading, // Only true for very first load
-    refreshing: isRefreshingProfile, // Background refresh indicator
+    data: profileData,
+    loading: isInitialLoading,
+    refreshing: isRefreshingProfile,
     error,
-    refetch: refreshProfile,
+    refetch,
     hasData: hasProfileData
   };
 };
+
+/**
+ * Enhanced hook with progressive loading
+ * Uses cached data from previous navigation while fetching fresh data
+ */
+export const useUserProfile = withProgressiveLoading(useBaseUserProfile, {
+  getCacheKey: (userId) => `user-profile-${userId}`,
+  enableCache: true,
+});
+
+export default useUserProfile;

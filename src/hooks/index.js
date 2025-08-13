@@ -7,15 +7,14 @@
 // Authentication hooks
 export { useAuth } from './useAuth.js';
 
-// Profile hooks (consolidated - useProgressiveProfile replaces useCurrentUserProfile)  
-export { useProfile } from './useProfile.js';
-export { useProgressiveProfile } from './useProgressiveProfile.js';
+// Profile hooks - standardized naming convention
+export { useUserProfile } from './useUserProfile.js';        // For authenticated user's profile
+export { usePublicProfile } from './usePublicProfile.js';    // For public profile by username
 export { default as useAvatar } from './useAvatar.js';
 
-// Links hooks (consolidated - useProgressiveLinks replaces useRealtimeDashboard)
-export { useLinks, useUserLinks } from './useLinks.js';
-export { useRealtimeLinks } from './useRealtimeLinks.js';
-export { useProgressiveLinks } from './useProgressiveLinks.js';
+// Links hooks - standardized naming convention  
+export { useUserLinks } from './useUserLinks.js';                    // For authenticated user's links
+export { usePublicRealtimeLinks } from './usePublicRealtimeLinks.js'; // For public links with real-time updates
 
 // Form and validation hooks
 export { useFormValidation } from './useFormValidation.js';

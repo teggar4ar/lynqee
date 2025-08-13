@@ -9,7 +9,7 @@
  * - Keyboard-friendly mobile experience
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Input from '../common/Input.jsx';
 import Button from '../common/Button.jsx';
@@ -31,6 +31,15 @@ const EmailLoginForm = ({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  
+  // Prevent form reset during auth state changes
+  const mountedRef = useRef(true);
+  
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Validation rules
   const validationRules = {
@@ -78,6 +87,7 @@ const EmailLoginForm = ({
           validatedData.password
         );
 
+        // Always call onSuccess for user feedback, even if component is unmounting
         if (onSuccess) {
           onSuccess(result);
         }
@@ -89,10 +99,12 @@ const EmailLoginForm = ({
     } catch (error) {
       console.error('[EmailLoginForm] Login failed:', error);
       
+      // Always call onError for user feedback, even if component is unmounting
       if (onError) {
         onError(error);
       }
     } finally {
+      // Always reset loading state - React will handle unmounted component updates gracefully
       setIsSubmitting(false);
     }
   };

@@ -15,6 +15,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { AvatarUpload, Button, Input } from '../common';
+import ErrorDisplay from '../common/error/ErrorDisplay.jsx';
 import { ProfileService } from '../../services';
 import { useAvatar } from '../../hooks';
 import useAsync from '../../hooks/useAsync.js';
@@ -31,6 +32,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
   
   const [originalUsername] = useState(profile?.username || '');
   const [errors, setErrors] = useState({});
+  const [avatarError, setAvatarError] = useState(null); // Add separate state for avatar errors
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const { loading, error, execute } = useAsync();
@@ -41,8 +43,15 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
   // Check username availability when it changes
   useEffect(() => {
     const checkAvailability = async () => {
-      // Skip if username hasn't changed or is invalid
-      if (formData.username === originalUsername || errors.username) {
+      // Skip if username hasn't changed
+      if (formData.username === originalUsername) {
+        setIsUsernameAvailable(null);
+        return;
+      }
+
+      // Skip if username is clearly invalid (let validation handle it)
+      const validation = validateUsername(formData.username);
+      if (!validation.isValid) {
         setIsUsernameAvailable(null);
         return;
       }
@@ -61,7 +70,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
 
     const timeoutId = setTimeout(checkAvailability, 500);
     return () => clearTimeout(timeoutId);
-  }, [formData.username, originalUsername, errors.username]);
+  }, [formData.username, originalUsername]);
 
   const handleInputChange = (field) => (e) => {
     const value = e.target.value;
@@ -70,16 +79,21 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
       [field]: value
     }));
 
-    // Clear error when user starts typing
+    // Clear error when user starts typing - COMPLETELY REMOVE the error
     if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: ''
-      }));
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field]; // Remove the field entirely instead of setting to empty string
+        return newErrors;
+      });
     }
 
-    // Validate username on change
+    // For username, clear the validation state immediately to allow fresh validation
     if (field === 'username') {
+      setIsUsernameAvailable(null);
+      
+      // Only set validation error if the username is clearly invalid
+      // Let the useEffect handle availability checking
       const validation = validateUsername(value);
       if (!validation.isValid) {
         setErrors(prev => ({
@@ -159,10 +173,12 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
   // Handle avatar upload - update both local state and avatar hook
   const handleAvatarUpload = (newAvatarUrl) => {
     updateAvatarUrl(newAvatarUrl);
+    setAvatarError(null); // Clear any previous avatar errors on successful upload
   };
 
   const handleAvatarError = (error) => {
     console.error('Avatar upload error:', error);
+    setAvatarError(error.message || 'Failed to upload avatar');
   };
 
   const hasChanges = 
@@ -171,11 +187,20 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
     formData.username !== originalUsername ||
     avatarUrl !== (profile?.avatar_url || null);
 
+  // Determine if username change is valid
+  const isUsernameChangeValid = formData.username === originalUsername || 
+    (isUsernameAvailable === true && !errors.username);
+
+  // Filter out empty string errors when counting
+  const actualErrors = Object.fromEntries(
+    Object.entries(errors).filter(([_key, value]) => value && value.trim() !== '')
+  );
+
   const canSubmit = hasChanges && 
     !loading && 
     !checkingUsername && 
-    Object.keys(errors).length === 0 &&
-    (formData.username === originalUsername || isUsernameAvailable === true);
+    Object.keys(actualErrors).length === 0 &&
+    isUsernameChangeValid;
 
   const getUsernameStatus = () => {
     if (formData.username === originalUsername) return null;
@@ -199,9 +224,10 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{error}</p>
-        </div>
+        <ErrorDisplay 
+          error={error} 
+          className="mb-4" 
+        />
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4 md:space-y-4">
@@ -218,6 +244,12 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
             onUploadError={handleAvatarError}
             size="medium"
           />
+          {avatarError && (
+            <ErrorDisplay 
+              error={avatarError} 
+              className="mt-2" 
+            />
+          )}
         </div>
 
         <Input

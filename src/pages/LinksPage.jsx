@@ -12,7 +12,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.js';
-import { useProgressiveLinks } from '../hooks/useProgressiveLinks.js';
+import { useUserLinks } from '../hooks/useUserLinks.js';
 import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { LinksSkeleton, RefreshIndicator } from '../components/common/ModernLoading.jsx';
 import { DashboardLayout } from '../components/dashboard';
@@ -22,12 +22,12 @@ import { getErrorType } from '../utils/errorUtils';
 const LinksPage = () => {
   const { user } = useAuth();
   const { 
-    links, 
+    data: links, 
     loading, 
     refreshing,
     error, 
-    refetch 
-  } = useProgressiveLinks(user?.id);
+    refetch
+  } = useUserLinks(user?.id);
 
   const [showAddLinkModal, setShowAddLinkModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,9 +47,9 @@ const LinksPage = () => {
     setShowAddLinkModal(false);
   };
 
-  const handleLinkAdded = () => {
-    // The real-time hook will automatically update the data
-    refetch();
+  const handleLinkAdded = (_newLink) => {
+    // Real-time subscription will handle the update automatically
+    // No need to refetch since real-time updates are working
   };
 
   return (

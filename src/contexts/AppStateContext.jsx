@@ -1,74 +1,66 @@
 /**
- * AppStateContext - Global application state management
+ * AppStateContext - Backward-compatible global application state management
  * 
- * Provides persistent data across route navigation to prevent unnecessary loading screens.
- * Simple and clean implementation without over-engineering.
+ * REFACTORED: This context now composes ProfileContext, LinksContext, and DashboardContext
+ * to maintain backward compatibility while transitioning to a more modular architecture.
+ * 
+ * The original functionality is preserved, but the implementation now delegates
+ * to domain-specific contexts for better separation of concerns.
  * 
  * Features:
- * - Profile data caching
- * - Links data caching
+ * - Profile data caching (via ProfileContext)
+ * - Links data caching (via LinksContext)
+ * - Dashboard statistics (via DashboardContext)
  * - Background data refresh
  * - Optimistic updates
+ * - Backward compatibility with existing components
  */
 
-// contexts/AppStateContext.jsx
-
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { useAuth } from './AuthContext.jsx';
+import { ProfileProvider, useProfile } from './ProfileContext.jsx';
+import { LinksProvider, useLinks } from './LinksContext.jsx';
+import { DashboardProvider, useDashboard } from './DashboardContext.jsx';
 
 const AppStateContext = createContext(null);
 
-export const AppStateProvider = ({ children }) => {
-  // =================================================================
-  // BARIS INI ADALAH KUNCINYA. PASTIKAN IA ADA DI SINI.
-  const { isAuthenticated } = useAuth();
-  // =================================================================
+/**
+ * Internal component that provides the composed app state
+ * This component has access to all the domain-specific contexts
+ */
+const AppStateValue = ({ children }) => {
+  // Get state from domain-specific contexts
+  const profileContext = useProfile();
+  const linksContext = useLinks();
+  const dashboardContext = useDashboard();
 
-  // State-state Anda
-  const [profileData, setProfileData] = useState(null);
-  const [linksData, setLinksData] = useState([]);
-  const [dashboardStats, setDashboardStats] = useState({ totalLinks: 0, totalClicks: 0, profileViews: 0 });
-  const [isRefreshingProfile, setIsRefreshingProfile] = useState(false);
-  const [isRefreshingLinks, setIsRefreshingLinks] = useState(false);
-
-  const clearData = useCallback(() => {
-    setProfileData(null);
-    setLinksData([]);
-    setDashboardStats({ totalLinks: 0, totalClicks: 0, profileViews: 0 });
-  }, []);
-
-  // useEffect yang bergantung pada isAuthenticated
-  useEffect(() => {
-    // Jika pengguna tidak lagi terotentikasi, bersihkan semua data.
-    if (!isAuthenticated) {
-      clearData();
-    }
-  }, [isAuthenticated, clearData]);
-
-  // Sisa kode di bawah ini tidak ada perubahan sama sekali
-  const updateProfile = useCallback((profile) => { setProfileData(profile); }, []);
-  const updateLinks = useCallback((links) => {
-    setLinksData(links);
-    setDashboardStats({ totalLinks: links.length, totalClicks: 0, profileViews: 0 });
-  }, []);
-  const addLinkOptimistic = useCallback((newLink) => {
-    setLinksData(current => [...current, newLink]);
-    setDashboardStats(current => ({ ...current, totalLinks: current.totalLinks + 1 }));
-  }, []);
-  const removeLinkOptimistic = useCallback((linkId) => {
-    setLinksData(current => current.filter(link => link.id !== linkId));
-    setDashboardStats(current => ({ ...current, totalLinks: Math.max(0, current.totalLinks - 1) }));
-  }, []);
-
-  const value = {
-    profileData, linksData, dashboardStats,
-    isRefreshingProfile, isRefreshingLinks,
-    updateProfile, updateLinks, addLinkOptimistic, removeLinkOptimistic, clearData,
-    setIsRefreshingProfile, setIsRefreshingLinks,
-    hasProfileData: !!profileData,
-    hasLinksData: linksData.length > 0,
-  };
+  // Compose the backward-compatible API
+  const value = useMemo(() => ({
+    // Profile data (from ProfileContext)
+    profileData: profileContext.profileData,
+    hasProfileData: profileContext.hasProfileData,
+    isRefreshingProfile: profileContext.isRefreshingProfile,
+    updateProfile: profileContext.updateProfile,
+    setIsRefreshingProfile: profileContext.setIsRefreshingProfile,
+    
+    // Links data (from LinksContext)
+    linksData: linksContext.linksData,
+    hasLinksData: linksContext.hasLinksData,
+    isRefreshingLinks: linksContext.isRefreshingLinks,
+    updateLinks: linksContext.updateLinks,
+    addLinkOptimistic: linksContext.addLinkOptimistic,
+    removeLinkOptimistic: linksContext.removeLinkOptimistic,
+    setIsRefreshingLinks: linksContext.setIsRefreshingLinks,
+    
+    // Dashboard data (from DashboardContext)
+    dashboardStats: dashboardContext.dashboardStats,
+    
+    // Combined actions
+    clearData: () => {
+      profileContext.clearProfileData();
+      linksContext.clearLinksData();
+    },
+  }), [profileContext, linksContext, dashboardContext]);
 
   return (
     <AppStateContext.Provider value={value}>
@@ -77,8 +69,32 @@ export const AppStateProvider = ({ children }) => {
   );
 };
 
+/**
+ * Main AppStateProvider that sets up all the domain-specific providers
+ * and the composed AppStateContext for backward compatibility
+ */
+export const AppStateProvider = ({ children }) => {
+  return (
+    <ProfileProvider>
+      <LinksProvider>
+        <DashboardProvider>
+          <AppStateValue>
+            {children}
+          </AppStateValue>
+        </DashboardProvider>
+      </LinksProvider>
+    </ProfileProvider>
+  );
+};
+
 AppStateProvider.propTypes = { children: PropTypes.node.isRequired };
 
+/**
+ * Hook to access the composed app state (backward compatible)
+ * @returns {Object} App state value
+ * @throws {Error} If used outside AppStateProvider
+ */
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppState = () => {
   const context = useContext(AppStateContext);
   if (context === undefined) {

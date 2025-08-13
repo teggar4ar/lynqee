@@ -2,6 +2,7 @@ import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import vitest from 'eslint-plugin-vitest'
 
 export default [
   { ignores: ['dist'] },
@@ -40,6 +41,28 @@ export default [
         'ignoreDeclarationSort': true,
         'ignoreMemberSort': false
       }],
+    },
+  },
+  // Test files configuration
+  {
+    files: ['**/*.{test,spec}.{js,jsx}', '**/test/**/*.{js,jsx}', '**/__tests__/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...vitest.environments.env.globals,
+        global: 'writable',
+      },
+    },
+    plugins: {
+      vitest,
+    },
+    rules: {
+      ...vitest.configs.recommended.rules,
+      // Allow console.log in tests
+      'no-console': 'off',
+      // Relax some rules for test files
+      'react-refresh/only-export-components': 'off',
     },
   },
 ]

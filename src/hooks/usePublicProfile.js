@@ -1,19 +1,15 @@
 /**
- * useProfile Hook
+ * usePublicProfile Hook
  * 
- * Custom hook for fetching and managing profile data
- * Provides loading states, error handling, and caching for profile operations
+ * Hook for fetching public profile data by username
+ * @param {string} username - The username to fetch profile for
+ * @returns {Object} { data, loading, error, refetch }
  */
 
 import { useCallback, useEffect, useState } from 'react';
 import { ProfileService } from '../services';
 
-/**
- * Hook for fetching a profile by username (public access)
- * @param {string} username - The username to fetch
- * @returns {Object} { profile, loading, error, refetch }
- */
-export const useProfile = (username) => {
+export const usePublicProfile = (username) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,7 +28,7 @@ export const useProfile = (username) => {
       const profileData = await ProfileService.getProfileByUsername(username);
       setProfile(profileData);
     } catch (err) {
-      console.error('[useProfile] Error fetching profile:', err);
+      console.error('[usePublicProfile] Error fetching profile:', err);
       setError(err.message || 'Failed to load profile');
       setProfile(null);
     } finally {
@@ -45,13 +41,13 @@ export const useProfile = (username) => {
     fetchProfile();
   }, [fetchProfile]);
 
-  // Refetch function for manual refresh
+  // Manual refresh function
   const refetch = useCallback(() => {
     fetchProfile();
   }, [fetchProfile]);
 
   return {
-    profile,
+    data: profile,
     loading,
     error,
     refetch,
@@ -60,5 +56,3 @@ export const useProfile = (username) => {
     notFound: !loading && !error && profile === null,
   };
 };
-
-

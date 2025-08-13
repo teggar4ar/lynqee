@@ -31,7 +31,6 @@ const AvatarUpload = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState(currentAvatarUrl);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
   // Size configuration - Mobile-first approach using design system
@@ -73,7 +72,6 @@ const AvatarUpload = ({
   const handleFileSelect = useCallback(async (file) => {
     if (!file) return;
 
-    setError('');
     setIsUploading(true);
     setUploadProgress(0);
 
@@ -116,7 +114,6 @@ const AvatarUpload = ({
 
     } catch (err) {
       console.error('Avatar upload failed:', err);
-      setError(err.message);
       setPreviewUrl(currentAvatarUrl); // Revert to original
       
       if (onUploadError) {
@@ -166,7 +163,6 @@ const AvatarUpload = ({
 
   // Remove avatar
   const handleRemoveAvatar = async () => {
-    setError('');
     setIsUploading(true);
 
     try {
@@ -178,7 +174,6 @@ const AvatarUpload = ({
       }
     } catch (err) {
       console.error('Avatar removal failed:', err);
-      setError(err.message);
       
       if (onUploadError) {
         onUploadError(err);
@@ -313,15 +308,6 @@ const AvatarUpload = ({
           </p>
         </div>
       </div>
-
-      {/* Error Message - Using responsive card pattern */}
-      {error && (
-        <div className="p-3 md:p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className={`${config.instructions} text-red-600 text-center font-medium`}>
-            {error}
-          </p>
-        </div>
-      )}
 
       {/* Hidden File Input */}
       <input
