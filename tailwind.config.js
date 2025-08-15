@@ -57,7 +57,15 @@ export default {
           700: '#374151',
           800: '#1f2937',
           900: '#111827',
-        }
+        },
+        // Added new nature-inspired palette
+        'mint-cream': '#f2f7f5',
+        'forest-green': '#00473e',
+        'sage-gray': '#475d5b',
+        'golden-yellow': '#faae2b',
+        'deep-forest': '#00332c',
+        'coral-pink': '#ffa8ba',
+        'coral-red': '#fa5246',
       }
     },
     // Enhanced spacing for touch-friendly design
