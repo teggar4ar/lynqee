@@ -1,22 +1,17 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SignInForm from './SignInForm';
 import SignUpForm from './SignUpForm';
-import EmailVerificationUI from './EmailVerificationUI';
 
 const AuthContainer = () => {
-  const [currentView, setCurrentView] = useState('signin'); // 'signin', 'signup', or 'verify-email'
-  const [userEmail, setUserEmail] = useState('');
+  const [currentView, setCurrentView] = useState('signin'); // 'signin' or 'signup'
+  const navigate = useNavigate();
 
   const switchToSignUp = () => setCurrentView('signup');
   const switchToSignIn = () => setCurrentView('signin');
-  const switchToEmailVerification = (email) => {
-    setUserEmail(email);
-    setCurrentView('verify-email');
-  };
 
-  const handleResendEmail = async () => {
-    // Implement resend email logic here
-    console.log('Resending verification email to:', userEmail);
+  const handleSignUpSuccess = (email) => {
+    navigate('/check-email', { state: { email } });
   };
 
   return (
@@ -27,14 +22,7 @@ const AuthContainer = () => {
       {currentView === 'signup' && (
         <SignUpForm
           onSwitchToSignIn={switchToSignIn}
-          onSignUpSuccess={switchToEmailVerification}
-        />
-      )}
-      {currentView === 'verify-email' && (
-        <EmailVerificationUI
-          email={userEmail}
-          onBackToSignIn={switchToSignIn}
-          onResendEmail={handleResendEmail}
+          onSignUpSuccess={handleSignUpSuccess}
         />
       )}
     </>
