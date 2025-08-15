@@ -16,7 +16,7 @@ import { useUserLinks } from '../hooks/useUserLinks.js';
 import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { LinksSkeleton, RefreshIndicator } from '../components/common/ModernLoading.jsx';
 import { DashboardLayout } from '../components/dashboard';
-import { AddLinkModal, EditLinkModal, LinkManagerCard } from '../components/links';
+import { AddLinkModal, DeleteLinkModal, EditLinkModal, LinkManagerCard } from '../components/links';
 import { getErrorType } from '../utils/errorUtils';
 
 const LinksPage = () => {
@@ -26,12 +26,15 @@ const LinksPage = () => {
     loading, 
     refreshing,
     error, 
-    refetch
+    refetch,
+    removeOptimistic
   } = useUserLinks(user?.id);
 
   const [showAddLinkModal, setShowAddLinkModal] = useState(false);
   const [showEditLinkModal, setShowEditLinkModal] = useState(false);
+  const [showDeleteLinkModal, setShowDeleteLinkModal] = useState(false);
   const [editingLink, setEditingLink] = useState(null);
+  const [deletingLink, setDeletingLink] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter links based on search query
@@ -68,6 +71,25 @@ const LinksPage = () => {
   const handleLinkUpdated = (_updatedLink) => {
     // Real-time subscription will handle the update automatically
     // No need to refetch since real-time updates are working
+  };
+
+  // Handle Delete Link Modal
+  const handleOpenDeleteLinkModal = (link) => {
+    setDeletingLink(link);
+    setShowDeleteLinkModal(true);
+  };
+
+  const handleCloseDeleteLinkModal = () => {
+    setShowDeleteLinkModal(false);
+    setDeletingLink(null);
+  };
+
+  const handleLinkDeleted = (deletedLink) => {
+    // Manual state update: Remove the link immediately from UI
+    // This provides instant feedback while real-time catches up
+    if (deletedLink?.id) {
+      removeOptimistic(deletedLink.id);
+    }
   };
 
   return (
@@ -207,8 +229,8 @@ const LinksPage = () => {
                       onEdit={(link) => {
                         handleOpenEditLinkModal(link);
                       }}
-                      onDelete={() => {
-                        // TODO: Implement delete functionality
+                      onDelete={(link) => {
+                        handleOpenDeleteLinkModal(link);
                       }}
                       className="border-0 rounded-none hover:bg-gray-50"
                     />
@@ -234,6 +256,14 @@ const LinksPage = () => {
           onClose={handleCloseEditLinkModal}
           onLinkUpdated={handleLinkUpdated}
           link={editingLink}
+        />
+
+        {/* Delete Link Modal */}
+        <DeleteLinkModal
+          isOpen={showDeleteLinkModal}
+          onClose={handleCloseDeleteLinkModal}
+          onLinkDeleted={handleLinkDeleted}
+          link={deletingLink}
         />
       </ProfileSetupGuard>
     </ProtectedRoute>
