@@ -65,11 +65,18 @@ const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
           validatedData.password,
           { signup_method: 'email' }
         );
-        if (onSignUpSuccess && result.user) {
-          onSignUpSuccess(result.user.email);
+
+        if (result.error) {
+          if (onError) onError({ message: result.error });
+        } else if (result.user) {
+          if (onSignUpSuccess) onSignUpSuccess(result.user.email);
         }
       });
-      if (!isValid) console.warn('[SignUpForm] Form validation failed');
+
+      if (!isValid) {
+        setIsSubmitting(false);
+        return;
+      };
     } catch (error) {
       console.error('[SignUpForm] Registration failed:', error);
       if (onError) onError(error);

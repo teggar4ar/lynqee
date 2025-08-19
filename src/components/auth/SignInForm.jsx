@@ -51,9 +51,17 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
     try {
       const isValid = await submitForm(formData, async (validatedData) => {
         const result = await signIn(validatedData.email, validatedData.password);
-        if (onSuccess) onSuccess(result);
+        if (result.error) {
+          if (onError) onError({ message: result.error });
+        } else {
+          if (onSuccess) onSuccess(result);
+        }
       });
-      if (!isValid) console.warn('[SignInForm] Form validation failed');
+      if (!isValid) {
+        // This path is taken if form validation fails before submitting
+        setIsSubmitting(false);
+        return;
+      };
     } catch (error) {
       console.error('[SignInForm] Login failed:', error);
       if (onError) onError(error);
