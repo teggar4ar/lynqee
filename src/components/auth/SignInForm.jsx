@@ -191,6 +191,7 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
             <GoogleOAuthButton
                 onSuccess={onSuccess}
                 onError={onError}
+                redirectTo={`${window.location.origin}/dashboard`}
                 className="w-full bg-white text-sage-gray font-medium py-3 px-4 rounded-lg border border-sage-gray/30 hover:border-sage-gray/50 hover:bg-sage-gray/5 focus:outline-none focus:ring-2 focus:ring-golden-yellow focus:ring-offset-2 transition-all duration-200 flex items-center justify-center"
             />
 
