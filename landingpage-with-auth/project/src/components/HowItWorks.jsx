@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserPlus, Edit3, Share2 } from 'lucide-react';
+import { Edit3, Share2, UserPlus } from 'lucide-react';
 
 const steps = [
   {

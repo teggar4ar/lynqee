@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Check, X } from 'lucide-react';
+import { ArrowRight, Check, Eye, EyeOff, Lock, Mail, User, X } from 'lucide-react';
 
 const SignUp = ({ onSwitchToSignIn, onSignUpSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);

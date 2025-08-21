@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, BarChart3, Palette, Smartphone } from 'lucide-react';
+import { BarChart3, Link, Palette, Smartphone } from 'lucide-react';
 
 const features = [
   {

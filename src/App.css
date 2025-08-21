@@ -2,7 +2,7 @@
 
 /* Mobile-first app container */
 .app-container {
-  @apply min-h-screen w-full max-w-lg mx-auto bg-white md:max-w-7xl;
+  @apply min-h-screen w-full max-w-lg bg-white md:max-w-7xl lg:max-w-full;
 }
 
 /* Mobile-optimized loading states */

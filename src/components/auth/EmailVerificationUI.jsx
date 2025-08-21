@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useAuth } from '../../hooks/useAuth.js';
-import { Mail, ArrowLeft, CheckCircle, Clock, RefreshCw } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Clock, Mail, RefreshCw } from 'lucide-react';
 
 const EmailVerificationUI = ({ email, onBackToSignIn }) => {
   const { resetPassword } = useAuth();

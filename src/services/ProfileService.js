@@ -346,6 +346,7 @@ class ProfileService {
       const result = await this.getProfileByUserId(userId);
       return result.success && result.data !== null;
     } catch (error) {
+      console.error('[ProfileService] userHasProfile error:', error);
       return false;
     }
   }

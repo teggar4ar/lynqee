@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 
 const SignIn = ({ onSwitchToSignUp }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -55,7 +55,7 @@ const SignIn = ({ onSwitchToSignUp }) => {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      console.log('Sign in attempt:', formData);
+      console.warn('Sign in attempt:', formData);
     }, 1500);
   };
 

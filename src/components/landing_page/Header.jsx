@@ -21,7 +21,7 @@ const Header = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8" role="navigation" aria-label="Main navigation">
+          <nav className="hidden md:flex space-x-8 pt-4" role="navigation" aria-label="Main navigation">
             <a href="#home" className="text-sage-gray hover:text-forest-green transition-colors duration-200 font-medium">
               Home
             </a>
@@ -35,11 +35,8 @@ const Header = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login" className="text-forest-green hover:text-deep-forest transition-colors duration-200 font-medium px-4 py-2 rounded-lg hover:bg-forest-green/5" aria-label="Login to your account">
-              Login
-            </Link>
             <Link to="/login" className="bg-golden-yellow text-forest-green font-medium px-6 py-2 rounded-lg hover:bg-golden-yellow/80 transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg" aria-label="Register for new account">
-              Register
+              Sign In
             </Link>
           </div>
 

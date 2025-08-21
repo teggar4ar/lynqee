@@ -4,7 +4,7 @@ import { useFormValidation } from '../../hooks/useFormValidation.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { VALIDATION_MESSAGES } from '../../constants/validationMessages.js';
 import { isValidEmail } from '../../utils/validators.js';
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import GoogleOAuthButton from './GoogleOAuthButton.jsx';
 
 const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {

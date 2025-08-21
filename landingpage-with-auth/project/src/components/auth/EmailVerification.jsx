@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Mail, ArrowLeft, CheckCircle, Clock, RefreshCw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeft, CheckCircle, Clock, Mail, RefreshCw } from 'lucide-react';
 
-const EmailVerification = ({ email, onBackToSignIn, onResendEmail }) => {
+const EmailVerification = ({ email, onBackToSignIn }) => {
   const [isResending, setIsResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendSuccess, setResendSuccess] = useState(false);
@@ -39,6 +39,7 @@ const EmailVerification = ({ email, onBackToSignIn, onResendEmail }) => {
       }, 5000);
       
     } catch (error) {
+      console.error('[EmailVerification] Resend failed:', error);
       setResendError('Failed to resend verification email. Please try again.');
     } finally {
       setIsResending(false);

@@ -4,7 +4,7 @@ import { useFormValidation } from '../../hooks/useFormValidation.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { VALIDATION_MESSAGES } from '../../constants/validationMessages.js';
 import { isValidEmail } from '../../utils/validators.js';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Check, X, User } from 'lucide-react';
+import { ArrowRight, Check, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 
 const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
   const { signUp } = useAuth();

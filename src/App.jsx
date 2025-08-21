@@ -2,7 +2,7 @@ import React from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import { AppStateProvider } from './contexts/AppStateContext.jsx';
-import { Dashboard, EmailVerification, LandingPage, LinksPage, NotFound, ProfileSetup, PublicProfile, ResetPassword, EnhancedLandingPage, CheckEmailPage } from './pages';
+import { Auth, CheckEmailPage, Dashboard, EmailVerification, LandingPage, LinksPage, NotFound, ProfileSetup, PublicProfile, ResetPassword } from './pages';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 import './App.css';
@@ -15,8 +15,8 @@ function App() {
           <div className="app-container">
             <Routes>
             {/* Rute Publik: bisa diakses siapa saja */}
-            <Route path="/" element={<EnhancedLandingPage />} />
-            <Route path="/login" element={<LandingPage />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<EmailVerification />} />
             <Route path="/check-email" element={<CheckEmailPage />} />

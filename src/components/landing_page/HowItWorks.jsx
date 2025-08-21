@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserPlus, Edit3, Share2 } from 'lucide-react';
+import { Edit3, Share2, UserPlus } from 'lucide-react';
 
 const steps = [
   {
@@ -37,13 +37,6 @@ const HowItWorks = () => {
         </div>
 
         <div className="relative">
-          {/* Connection Line - Desktop Only */}
-          <div className="hidden lg:block absolute top-24 left-1/2 transform -translate-x-1/2 w-full max-w-4xl">
-            <div className="relative h-2">
-              <div className="absolute inset-0 bg-gradient-to-r from-golden-yellow via-coral-pink to-coral-red rounded-full opacity-30"></div>
-            </div>
-          </div>
-
           <div className="grid lg:grid-cols-3 gap-8 lg:gap-12 relative">
             {steps.map((step, index) => {
               const Icon = step.icon;

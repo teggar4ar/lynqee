@@ -1,10 +1,10 @@
 export { default as Dashboard } from './Dashboard.jsx';
 export { default as EmailVerification } from './EmailVerification.jsx';
-export { default as LandingPage } from './LandingPage.jsx';
+export { default as Auth } from './Auth.jsx';
 export { default as LinksPage } from './LinksPage.jsx';
 export { default as NotFound } from './NotFound.jsx';
 export { default as ProfileSetup } from './ProfileSetup.jsx';
 export { default as PublicProfile } from './PublicProfile.jsx';
 export { default as ResetPassword } from './ResetPassword.jsx';
-export { default as EnhancedLandingPage } from './EnhancedLandingPage.jsx';
+export { default as LandingPage } from './LandingPage.jsx';
 export { default as CheckEmailPage } from './CheckEmailPage.jsx';

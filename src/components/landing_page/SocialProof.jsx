@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Quote, TrendingUp, Users, Link as LinkIcon } from 'lucide-react';
+import { Link as LinkIcon, Quote, Star, TrendingUp, Users } from 'lucide-react';
 
 const testimonials = [
   {

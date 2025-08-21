@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowRight, Users, Star } from 'lucide-react';
+import { ArrowRight, Star, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
@@ -21,11 +22,10 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-              <button className="bg-golden-yellow text-forest-green font-semibold px-8 py-4 rounded-lg hover:bg-golden-yellow/80 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center group">
+              <Link to="/login" className="bg-golden-yellow text-forest-green font-semibold px-8 py-4 rounded-lg hover:bg-golden-yellow/80 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center group">
                 Get Started Free
                 <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform duration-200" />
-              </button>
-
+              </Link>
               <button className="border-2 border-forest-green text-forest-green font-semibold px-8 py-4 rounded-lg hover:bg-forest-green hover:text-mint-cream transition-all duration-200">
                 View Demo
               </button>

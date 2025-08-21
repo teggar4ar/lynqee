@@ -16,7 +16,7 @@ const AuthContainer = () => {
 
   const handleResendEmail = async () => {
     // Implement resend email logic here
-    console.log('Resending verification email to:', userEmail);
+    console.warn('Resending verification email to:', userEmail);
   };
 
   return (
