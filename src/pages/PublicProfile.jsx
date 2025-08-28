@@ -268,19 +268,6 @@ const PublicProfile = () => {
           {/* Safe area spacing for mobile devices */}
           <div className="h-safe-area-inset-bottom sm:hidden" aria-hidden="true" />
         </div>
-
-        {/* Background pattern for larger screens */}
-        <div className="
-          hidden 
-          sm:block 
-          fixed 
-          inset-0 
-          -z-10 
-          bg-gradient-to-br 
-          from-blue-50 
-          via-white 
-          to-purple-50
-        " />
       </div>
     </ErrorBoundary>
   );
