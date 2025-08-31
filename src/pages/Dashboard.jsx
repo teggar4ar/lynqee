@@ -11,6 +11,7 @@
  */
 
 import React, { useState } from 'react';
+import Modal from '../components/common/Modal';
 import { useAuth } from '../hooks/useAuth.js';
 import { useUserProfile } from '../hooks/useUserProfile.js';
 import { useUserLinks } from '../hooks/useUserLinks.js';
@@ -19,7 +20,6 @@ import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../compon
 import { ProfileSkeleton, RefreshIndicator, StatsSkeleton } from '../components/common/ModernLoading.jsx';
 import { ProfileSettings } from '../components/profile';
 import { DashboardLayout, DashboardStats, ProfileQuickPreview } from '../components/dashboard';
-// import RealTimeDebugger from '../components/common/RealTimeDebugger.jsx';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -39,15 +39,15 @@ const Dashboard = () => {
   // Dashboard statistics from DashboardContext
   const { dashboardStats: stats } = useDashboard();
 
-  const [showProfileSettings, setShowProfileSettings] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleProfileUpdate = (_updatedProfile) => {
     refetchProfile();
-    setShowProfileSettings(false);
+    setIsEditModalOpen(false);
   };
 
   const handleCancelProfileEdit = () => {
-    setShowProfileSettings(false);
+    setIsEditModalOpen(false);
   };
 
   const handleViewPublicProfile = () => {
@@ -71,14 +71,6 @@ const Dashboard = () => {
         <DashboardLayout title="Dashboard">
           {/* Background refresh indicator */}
           <RefreshIndicator isVisible={isRefreshing} />
-          
-          {showProfileSettings && profile ? (
-            <ProfileSettings
-              profile={profile}
-              onUpdate={handleProfileUpdate}
-              onCancel={handleCancelProfileEdit}
-            />
-          ) : (
             <>
               {/* Profile Quick Preview - show skeleton only on initial load */}
               {profileLoading ? (
@@ -86,7 +78,7 @@ const Dashboard = () => {
               ) : profile ? (
                 <ProfileQuickPreview
                   profile={profile}
-                  onEditProfile={() => setShowProfileSettings(true)}
+                  onEditProfile={() => setIsEditModalOpen(true)}
                   onViewPublicProfile={handleViewPublicProfile}
                 />
               ) : profileError ? (
@@ -134,7 +126,7 @@ const Dashboard = () => {
                     <Button
                       variant="outline"
                       onClick={() => window.location.href = '/links'}
-                      className="px-3 py-2 text-sm"
+                      className="px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm"
                     >
                       View All
                     </Button>
@@ -168,8 +160,8 @@ const Dashboard = () => {
                   <div className="space-y-3">
                     {links.slice(0, 3).map((link) => (
                       <div key={link.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-10 h-10 bg-golden-yellow/20 rounded-lg flex items-center justify-center">
+                          <svg className="w-5 h-5 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                           </svg>
                         </div>
@@ -214,8 +206,21 @@ const Dashboard = () => {
                 )}
               </div>
             </>
-          )}
         </DashboardLayout>
+        {isEditModalOpen && profile && (
+          <Modal
+            isOpen={isEditModalOpen}
+            onClose={handleCancelProfileEdit}
+            title="Edit Profile"
+            size="medium"
+          >
+            <ProfileSettings
+              profile={profile}
+              onUpdate={handleProfileUpdate}
+              onCancel={handleCancelProfileEdit}
+            />
+          </Modal>
+        )}
       </ProfileSetupGuard>
     </ProtectedRoute>
   );

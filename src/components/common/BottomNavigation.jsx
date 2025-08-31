@@ -41,7 +41,7 @@ const BottomNavigation = ({ className = '' }) => {
       label: 'Dashboard',
       icon: (isActive) => (
         <svg 
-          className={`w-6 h-6 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} 
+          className={`w-6 h-6 ${isActive ? 'text-golden-yellow' : 'text-sage-gray'}`} 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -67,7 +67,7 @@ const BottomNavigation = ({ className = '' }) => {
       label: 'Links',
       icon: (isActive) => (
         <svg 
-          className={`w-6 h-6 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} 
+          className={`w-6 h-6 ${isActive ? 'text-golden-yellow' : 'text-sage-gray'}`} 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -87,7 +87,7 @@ const BottomNavigation = ({ className = '' }) => {
       label: 'Preview',
       icon: (isActive) => (
         <svg 
-          className={`w-6 h-6 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} 
+          className={`w-6 h-6 ${isActive ? 'text-golden-yellow' : 'text-sage-gray'}`} 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -114,7 +114,7 @@ const BottomNavigation = ({ className = '' }) => {
       label: 'Sign Out',
       icon: (isActive) => (
         <svg 
-          className={`w-6 h-6 ${isActive ? 'text-red-600' : 'text-gray-500'}`} 
+          className={`w-6 h-6 ${isActive ? 'text-coral-red' : 'text-sage-gray'}`} 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -163,7 +163,7 @@ const BottomNavigation = ({ className = '' }) => {
                 aria-label={item.label}
               >
                 {item.icon(false)}
-                <span className="text-xs mt-1 text-gray-500 truncate max-w-[60px]">
+                <span className="text-xs mt-1 text-sage-gray truncate max-w-[60px]">
                   {item.label}
                 </span>
               </button>
@@ -191,7 +191,7 @@ const BottomNavigation = ({ className = '' }) => {
                   {item.icon(isActive)}
                   <span className={`
                     text-xs mt-1 truncate max-w-[60px]
-                    ${isActive ? 'text-blue-600 font-medium' : 'text-gray-500'}
+                    ${isActive ? 'text-golden-yellow font-medium' : 'text-sage-gray'}
                   `}>
                     {item.label}
                   </span>

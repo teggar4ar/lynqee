@@ -43,7 +43,7 @@ const HowItWorks = () => {
               return (
                 <div key={index} className="text-center relative">
                   {/* Step Number */}
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-golden-yellow rounded-full text-forest-green font-bold text-xl mb-6 relative z-10 hover:scale-110 transition-transform duration-200">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow rounded-full text-forest-green font-bold text-xl mb-6 relative z-10 hover:scale-110 transition-transform duration-200">
                     {step.number}
                   </div>
 
@@ -68,7 +68,7 @@ const HowItWorks = () => {
         </div>
 
         <div className="text-center mt-12">
-          <button className="bg-golden-yellow text-forest-green font-semibold px-8 py-4 rounded-lg hover:bg-golden-yellow/80 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl">
+          <button className="bg-yellow text-forest-green font-semibold px-8 py-4 rounded-lg hover:bg-golden-yellow/80 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl">
             Start Building Your Page
           </button>
         </div>

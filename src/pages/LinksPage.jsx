@@ -118,7 +118,7 @@ const LinksPage = () => {
                     block w-full pl-10 pr-3 py-2
                     border border-gray-300 rounded-lg
                     placeholder-gray-500 text-gray-900
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                    focus:outline-none focus:ring-2 focus:ring-golden-yellow focus:border-golden-yellow
                     sm:text-sm
                   "
                 />
@@ -189,8 +189,8 @@ const LinksPage = () => {
                 ) : (links || []).length === 0 ? (
                   // No links at all
                   <>
-                    <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-golden-yellow/20 rounded-full flex items-center justify-center">
+                      <svg className="w-8 h-8 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                       </svg>
                     </div>

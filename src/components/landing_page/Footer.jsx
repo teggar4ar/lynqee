@@ -10,7 +10,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="md:col-span-2">
-            <h3 className="text-2xl font-bold text-golden-yellow mb-4">
+            <h3 className="text-2xl font-bold text-yellow mb-4">
               Lynqee
             </h3>
             <p className="text-mint-cream/80 leading-body mb-6 max-w-md">
@@ -22,14 +22,14 @@ const Footer = () => {
             <div className="flex space-x-4">
               <a
                 href="#"
-                className="w-10 h-10 bg-mint-cream/10 rounded-full flex items-center justify-center hover:bg-golden-yellow hover:text-deep-forest transition-all duration-200"
+                className="w-10 h-10 bg-mint-cream/10 rounded-full flex items-center justify-center hover:bg-yellow hover:text-deep-forest transition-all duration-200"
                 aria-label="Follow us on Twitter"
               >
                 <Twitter size={20} />
               </a>
               <a
                 href="#"
-                className="w-10 h-10 bg-mint-cream/10 rounded-full flex items-center justify-center hover:bg-golden-yellow hover:text-deep-forest transition-all duration-200"
+                className="w-10 h-10 bg-mint-cream/10 rounded-full flex items-center justify-center hover:bg-yellow hover:text-deep-forest transition-all duration-200"
                 aria-label="Connect with us on LinkedIn"
               >
                 <Linkedin size={20} />
@@ -46,27 +46,27 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-semibold text-golden-yellow mb-4">
+            <h4 className="font-semibold text-yellow mb-4">
               Quick Links
             </h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-mint-cream/80 hover:text-golden-yellow transition-colors duration-200">
+                <a href="#" className="text-mint-cream/80 hover:text-yellow transition-colors duration-200">
                   Privacy Policy
                 </a>
               </li>
               <li>
-                <a href="#" className="text-mint-cream/80 hover:text-golden-yellow transition-colors duration-200">
+                <a href="#" className="text-mint-cream/80 hover:text-yellow transition-colors duration-200">
                   Terms of Service
                 </a>
               </li>
               <li>
-                <a href="#" className="text-mint-cream/80 hover:text-golden-yellow transition-colors duration-200">
+                <a href="#" className="text-mint-cream/80 hover:text-yellow transition-colors duration-200">
                   Help Center
                 </a>
               </li>
               <li>
-                <a href="#" className="text-mint-cream/80 hover:text-golden-yellow transition-colors duration-200">
+                <a href="#" className="text-mint-cream/80 hover:text-yellow transition-colors duration-200">
                   API Documentation
                 </a>
               </li>
@@ -75,31 +75,31 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h4 className="font-semibold text-golden-yellow mb-4">
+            <h4 className="font-semibold text-yellow mb-4">
               Contact
             </h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-mint-cream/80 hover:text-golden-yellow transition-colors duration-200">
+                <a href="#" className="text-mint-cream/80 hover:text-yellow transition-colors duration-200">
                   Support
                 </a>
               </li>
               <li>
                 <a
                   href="mailto:hello@lynqee.com"
-                  className="text-mint-cream/80 hover:text-golden-yellow transition-colors duration-200 flex items-center"
+                  className="text-mint-cream/80 hover:text-yellow transition-colors duration-200 flex items-center"
                 >
                   <Mail size={16} className="mr-2" />
                   hello@lynqee.com
                 </a>
               </li>
               <li>
-                <a href="#" className="text-mint-cream/80 hover:text-golden-yellow transition-colors duration-200">
+                <a href="#" className="text-mint-cream/80 hover:text-yellow transition-colors duration-200">
                   Feature Requests
                 </a>
               </li>
               <li>
-                <a href="#" className="text-mint-cream/80 hover:text-golden-yellow transition-colors duration-200">
+                <a href="#" className="text-mint-cream/80 hover:text-yellow transition-colors duration-200">
                   Partner With Us
                 </a>
               </li>

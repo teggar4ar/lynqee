@@ -117,15 +117,15 @@ const AddLinkModal = ({
 
         {/* Help Text */}
         <div className="
-          p-3 bg-blue-50 border border-blue-200 rounded-lg
-          text-sm text-blue-700
+          p-3 bg-mint-cream border border-golden-yellow/30 rounded-lg
+          text-sm text-sage-gray
         ">
           <div className="flex items-start space-x-2">
-            <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-golden-yellow flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <p className="font-medium mb-1">Adding Link #{existingLinksCount + 1}</p>
+              <p className="font-medium mb-1 text-forest-green">Adding Link #{existingLinksCount + 1}</p>
               <p>This link will appear at the bottom of your profile. You can reorder links later.</p>
             </div>
           </div>

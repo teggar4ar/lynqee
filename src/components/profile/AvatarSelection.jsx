@@ -77,7 +77,6 @@ const AvatarSelection = ({
           className="mb-4" 
         />
       )}
-
       {/* Preview Section */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
         <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">
@@ -101,13 +100,13 @@ const AvatarSelection = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-3">
+      <div className="flex flex-row space-x-3">
         <Button
           type="button"
           variant="primary"
           onClick={handleContinue}
           disabled={loading}
-          className="w-full py-3 text-base md:flex-1 md:py-2 md:text-sm"
+          className="flex-1 py-3 text-base min-h-[44px]"
         >
           {loading ? 'Continuing...' : 'Continue'}
         </Button>
@@ -117,7 +116,7 @@ const AvatarSelection = ({
           variant="ghost"
           onClick={handleSkip}
           disabled={loading}
-          className="w-full py-3 text-base md:flex-1 md:py-2 md:text-sm"
+          className="flex-1 py-3 text-base min-h-[44px]"
         >
           Skip for now
         </Button>

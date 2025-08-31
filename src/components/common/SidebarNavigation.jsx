@@ -45,7 +45,7 @@ const SidebarNavigation = ({ className = '' }) => {
       icon: (isActive) => (
         <svg 
           className={`w-6 h-6 transition-colors duration-200 ${
-            isActive ? 'text-blue-600' : 'text-gray-600 group-hover:text-blue-500'
+            isActive ? 'text-golden-yellow' : 'text-sage-gray group-hover:text-golden-yellow'
           }`}
           fill="none" 
           stroke="currentColor" 
@@ -73,7 +73,7 @@ const SidebarNavigation = ({ className = '' }) => {
       icon: (isActive) => (
         <svg 
           className={`w-6 h-6 transition-colors duration-200 ${
-            isActive ? 'text-blue-600' : 'text-gray-600 group-hover:text-blue-500'
+            isActive ? 'text-golden-yellow' : 'text-sage-gray group-hover:text-golden-yellow'
           }`}
           fill="none" 
           stroke="currentColor" 
@@ -95,7 +95,7 @@ const SidebarNavigation = ({ className = '' }) => {
       icon: (isActive) => (
         <svg 
           className={`w-6 h-6 transition-colors duration-200 ${
-            isActive ? 'text-blue-600' : 'text-gray-600 group-hover:text-blue-500'
+            isActive ? 'text-golden-yellow' : 'text-sage-gray group-hover:text-golden-yellow'
           }`}
           fill="none" 
           stroke="currentColor" 
@@ -126,7 +126,7 @@ const SidebarNavigation = ({ className = '' }) => {
       label: 'Sign Out',
       icon: () => (
         <svg 
-          className="w-6 h-6 text-gray-600 group-hover:text-red-500 transition-colors duration-200"
+          className="w-6 h-6 text-sage-gray group-hover:text-coral-red transition-colors duration-200"
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -147,7 +147,7 @@ const SidebarNavigation = ({ className = '' }) => {
     <div className="relative group">
       {children}
       {show && (
-        <div className="absolute left-full ml-3 px-2 py-1 bg-gray-900 text-white text-sm rounded-md whitespace-nowrap z-50 transform transition-all duration-200 opacity-100 scale-100">
+        <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md whitespace-nowrap z-50 transform transition-all duration-200 opacity-100 scale-100">
           {text}
           <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
         </div>
@@ -168,7 +168,7 @@ const SidebarNavigation = ({ className = '' }) => {
     >
       {/* Logo/Brand */}
       <div className="flex items-center justify-center h-20 border-b border-gray-200/50">
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+        <div className="w-10 h-10 bg-gradient-to-br from-forest-green to-golden-yellow rounded-xl flex items-center justify-center">
           <span className="text-white font-bold text-lg">L</span>
         </div>
       </div>
@@ -192,7 +192,7 @@ const SidebarNavigation = ({ className = '' }) => {
                         transition-all duration-200 ease-in-out
                         ${item.disabled 
                           ? 'opacity-50 cursor-not-allowed' 
-                          : 'hover:bg-blue-50 hover:scale-105 hover:shadow-lg active:scale-95'
+                          : 'hover:bg-mint-cream hover:scale-105 hover:shadow-lg active:scale-95'
                         }
                       `}
                       aria-label={item.label}
@@ -217,8 +217,8 @@ const SidebarNavigation = ({ className = '' }) => {
                       transition-all duration-200 ease-in-out
                       hover:scale-105 hover:shadow-lg active:scale-95
                       ${isActive
-                        ? 'bg-blue-100 border-2 border-blue-200 shadow-md'
-                        : 'hover:bg-blue-50'
+                        ? 'bg-mint-cream border-2 border-golden-yellow shadow-md'
+                        : 'hover:bg-mint-cream'
                       }
                     `}
                     aria-label={item.label}
@@ -245,7 +245,7 @@ const SidebarNavigation = ({ className = '' }) => {
                   className="
                     group w-14 h-14 rounded-xl flex items-center justify-center
                     transition-all duration-200 ease-in-out
-                    hover:bg-red-50 hover:scale-105 hover:shadow-lg active:scale-95
+                    hover:bg-coral-red/10 hover:scale-105 hover:shadow-lg active:scale-95
                   "
                   aria-label={item.label}
                 >

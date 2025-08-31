@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../services/supabase.js';
+import { ProfileService } from '../services';
 import LinksService from '../services/LinksService.js';
 
 export const usePublicRealtimeLinks = (username) => {
@@ -42,7 +43,6 @@ export const usePublicRealtimeLinks = (username) => {
         console.warn('[usePublicRealtimeLinks] No links found, trying to get profile ID from profile service');
         // If no links, we need to get the profile ID another way
         try {
-          const { ProfileService } = await import('../services');
           const profile = await ProfileService.getProfileByUsername(username);
           if (profile?.id) {
             console.warn('[usePublicRealtimeLinks] Setting profileId from profile service:', profile.id);

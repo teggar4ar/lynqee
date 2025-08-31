@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight, Star, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Button } from '../common';
 
 const Hero = () => {
   return (
@@ -11,7 +12,7 @@ const Hero = () => {
           <div className="text-center lg:text-left">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-forest-green leading-heading mb-6">
               One Link,{' '}
-              <span className="text-golden-yellow">Infinite</span>{' '}
+              <span className="text-yellow">Infinite</span>{' '}
               Possibilities
             </h1>
 
@@ -22,13 +23,23 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-              <Link to="/login" className="bg-golden-yellow text-forest-green font-semibold px-8 py-4 rounded-lg hover:bg-golden-yellow/80 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center group">
+              <Button
+                as={Link}
+                to="/login"
+                variant="accent"
+                size="large"
+                className="shadow-lg hover:shadow-xl group"
+              >
                 Get Started Free
                 <ArrowRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform duration-200" />
-              </Link>
-              <button className="border-2 border-forest-green text-forest-green font-semibold px-8 py-4 rounded-lg hover:bg-forest-green hover:text-mint-cream transition-all duration-200">
+              </Button>
+              <Button
+                variant="outline"
+                size="large"
+                onClick={() => {/* Handle demo */}}
+              >
                 View Demo
-              </button>
+              </Button>
             </div>
 
             {/* Social Proof */}

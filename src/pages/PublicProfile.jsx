@@ -1,6 +1,5 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import PropTypes from 'prop-types';
 import { usePublicProfile } from '../hooks/usePublicProfile';
 import { usePublicRealtimeLinks } from '../hooks/usePublicRealtimeLinks';
 import { ProfileHeader } from '../components/profile';
@@ -30,7 +29,7 @@ const PublicProfile = () => {
   
   // Fetch profile and links data
   const { data: profile, loading: profileLoading, error: profileError, notFound } = usePublicProfile(username);
-  const { data: links, loading: linksLoading, error: linksError, isRealTimeConnected } = usePublicRealtimeLinks(username);
+  const { data: links, loading: linksLoading, error: linksError } = usePublicRealtimeLinks(username);
 
   // Handle case where username is missing (shouldn't happen with proper routing)
   if (!username) {
@@ -212,16 +211,6 @@ const PublicProfile = () => {
               {username}'s Links
             </h2>
             
-            {/* Real-time indicator for links */}
-            {isRealTimeConnected && (
-              <div className="mb-4 flex items-center justify-center">
-                <div className="flex items-center space-x-2 px-3 py-1 bg-green-50 border border-green-200 rounded-full">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-green-700 font-medium">Live updates</span>
-                </div>
-              </div>
-            )}
-            
             
             {/* Enhanced LinkList with error state handling */}
             <ErrorBoundary 
@@ -270,17 +259,17 @@ const PublicProfile = () => {
         </div>
 
         {/* Background pattern for larger screens */}
-        <div className="
+        {/* <div className="
           hidden 
           sm:block 
           fixed 
           inset-0 
           -z-10 
           bg-gradient-to-br 
-          from-blue-50 
+          from-red-200
           via-white 
           to-purple-50
-        " />
+        " /> */}
       </div>
     </ErrorBoundary>
   );

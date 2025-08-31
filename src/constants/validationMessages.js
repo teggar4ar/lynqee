@@ -1,6 +1,9 @@
 // Validation error messages
 export const VALIDATION_MESSAGES = {
   REQUIRED: 'This field is required',
+  EMAIL_IS_REQUIRED: 'Email address is required',
+  PASSWORD_IS_REQUIRED: 'Password is required',
+  CONFIRM_PASSWORD_IS_REQUIRED: 'Confirm password is required',
   INVALID_EMAIL: 'Please enter a valid email address',
   INVALID_URL: 'Please enter a valid URL (must start with http:// or https://)',
   USERNAME_TOO_SHORT: 'Username must be at least 3 characters',

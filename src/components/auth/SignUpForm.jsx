@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth.js';
 import { VALIDATION_MESSAGES } from '../../constants/validationMessages.js';
 import { isValidEmail } from '../../utils/validators.js';
 import { ArrowRight, Check, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
+import { Button, Input } from '../common';
 
 const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
   const { signUp } = useAuth();
@@ -20,17 +21,17 @@ const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
   // Validation rules
   const validationRules = {
     email: (value) => {
-      if (!value) return VALIDATION_MESSAGES.REQUIRED;
+      if (!value) return VALIDATION_MESSAGES.EMAIL_IS_REQUIRED;
       if (!isValidEmail(value)) return VALIDATION_MESSAGES.INVALID_EMAIL;
       return null;
     },
     password: (value) => {
-      if (!value) return VALIDATION_MESSAGES.REQUIRED;
+      if (!value) return VALIDATION_MESSAGES.PASSWORD_IS_REQUIRED;
       if (value.length < 8) return VALIDATION_MESSAGES.PASSWORD_TOO_SHORT;
       return null;
     },
     confirmPassword: (value) => {
-      if (!value) return VALIDATION_MESSAGES.REQUIRED;
+      if (!value) return VALIDATION_MESSAGES.CONFIRM_PASSWORD_IS_REQUIRED;
       if (value !== formData.password) return VALIDATION_MESSAGES.PASSWORDS_DONT_MATCH;
       return null;
     },
@@ -155,20 +156,47 @@ const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
           </div>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-forest-green mb-2">Email Address</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Mail className="h-5 w-5 text-sage-gray" /></div>
-                <input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} onBlur={handleInputBlur} disabled={isSubmitting} className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-golden-yellow focus:border-transparent transition-colors ${errors.email && touched.email ? 'border-coral-red bg-coral-red/5' : 'border-sage-gray/30 bg-white hover:border-sage-gray/50'}`} placeholder="Enter your email" />
-              </div>
-              {errors.email && touched.email && <p className="mt-1 text-sm text-coral-red">{errors.email}</p>}
+              <Input
+                label="Email Address"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                disabled={isSubmitting}
+                placeholder="Enter your email"
+                error={errors.email}
+                touched={touched.email}
+                icon={<Mail className="h-5 w-5 text-sage-gray" />}
+              />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-forest-green mb-2">Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Lock className="h-5 w-5 text-sage-gray" /></div>
-                <input id="password" name="password" type={showPassword ? 'text' : 'password'} value={formData.password} onChange={handleInputChange} onBlur={handleInputBlur} disabled={isSubmitting} className={`block w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-golden-yellow focus:border-transparent transition-colors ${errors.password && touched.password ? 'border-coral-red bg-coral-red/5' : 'border-sage-gray/30 bg-white hover:border-sage-gray/50'}`} placeholder="Create a password" />
-                <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" /> : <Eye className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" />}</button>
-              </div>
+              <Input
+                label="Password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                disabled={isSubmitting}
+                placeholder="Create a password"
+                error={errors.password}
+                touched={touched.password}
+                icon={<Lock className="h-5 w-5 text-sage-gray" />}
+                rightElement={
+                  <button
+                    type="button"
+                    className="flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" />
+                    )}
+                  </button>
+                }
+              />
               {formData.password && (
                 <div className="mt-2">
                   <div className="flex items-center justify-between mb-1">
@@ -178,16 +206,34 @@ const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
                   <div className="w-full bg-sage-gray/20 rounded-full h-2"><div className={`h-2 rounded-full transition-all duration-300 bg-${passwordStrength.color}`} style={{ width: `${(passwordStrength.score / 5) * 100}%` }}></div></div>
                 </div>
               )}
-              {errors.password && touched.password && <p className="mt-1 text-sm text-coral-red">{errors.password}</p>}
             </div>
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-forest-green mb-2">Confirm Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Lock className="h-5 w-5 text-sage-gray" /></div>
-                <input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} value={formData.confirmPassword} onChange={handleInputChange} onBlur={handleInputBlur} disabled={isSubmitting} className={`block w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-golden-yellow focus:border-transparent transition-colors ${errors.confirmPassword && touched.confirmPassword ? 'border-coral-red bg-coral-red/5' : 'border-sage-gray/30 bg-white hover:border-sage-gray/50'}`} placeholder="Confirm your password" />
-                <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>{showConfirmPassword ? <EyeOff className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" /> : <Eye className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" />}</button>
-              </div>
-              {errors.confirmPassword && touched.confirmPassword && <p className="mt-1 text-sm text-coral-red">{errors.confirmPassword}</p>}
+              <Input
+                label="Confirm Password"
+                name="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                disabled={isSubmitting}
+                placeholder="Confirm your password"
+                error={errors.confirmPassword}
+                touched={touched.confirmPassword}
+                icon={<Lock className="h-5 w-5 text-sage-gray" />}
+                rightElement={
+                  <button
+                    type="button"
+                    className="flex items-center"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" />
+                    )}
+                  </button>
+                }
+              />
             </div>
             <p className="text-xs text-sage-gray text-center leading-relaxed">
               By creating an account, you agree to our{' '}
@@ -195,9 +241,16 @@ const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
               {' '}and{' '}
               <a href="/privacy" className="text-forest-green hover:text-deep-forest underline">Privacy Policy</a>.
             </p>
-            <button type="submit" disabled={isSubmitting} className="w-full bg-golden-yellow text-forest-green font-semibold py-3 px-4 rounded-lg hover:bg-golden-yellow/80 focus:outline-none focus:ring-2 focus:ring-golden-yellow focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center">
-              {isSubmitting ? <div className="w-5 h-5 border-2 border-forest-green border-t-transparent rounded-full animate-spin"></div> : <>Create Account <ArrowRight className="ml-2 h-5 w-5" /></>}
-            </button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              loading={isSubmitting}
+              fullWidth
+              className="flex items-center justify-center"
+            >
+              Create Account
+              {!isSubmitting && <ArrowRight className="ml-2 h-5 w-5" />}
+            </Button>
             <div className="text-center">
               <p className="text-sage-gray">
                 Already have an account?{' '}

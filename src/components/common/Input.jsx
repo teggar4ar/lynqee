@@ -28,6 +28,8 @@ const Input = ({
   disabled = false,
   autoComplete,
   className = '',
+  icon,
+  rightElement,
   ...props
 }) => {
   // Generate unique ID using name or fallback to counter
@@ -44,49 +46,78 @@ const Input = ({
     w-full px-4 py-3 border rounded-lg
     text-base font-medium
     transition-colors duration-200
-    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-    disabled:bg-gray-100 disabled:cursor-not-allowed
-    placeholder:text-gray-500
+    focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-forest-green
+    disabled:bg-sage-gray/20 disabled:cursor-not-allowed
+    placeholder:text-sage-gray
   `;
   
   // Dynamic classes based on state
   const stateClasses = error && touched
-    ? 'border-red-500 bg-red-50 text-red-900'
-    : 'border-gray-300 bg-white text-gray-900 hover:border-gray-400';
+    ? 'border-coral-red bg-coral-red/5 text-coral-red'
+    : 'border-sage-gray/30 bg-white text-forest-green hover:border-sage-gray/50';
     
   const inputClasses = `${baseInputClasses} ${stateClasses} ${className}`.trim();
+
+  // Adjust padding if icon or right element is present
+  const hasIcon = icon !== undefined;
+  const hasRightElement = rightElement !== undefined;
+  
+  let paddingClasses = 'px-4';
+  if (hasIcon && hasRightElement) {
+    paddingClasses = 'pl-10 pr-12';
+  } else if (hasIcon) {
+    paddingClasses = 'pl-10';
+  } else if (hasRightElement) {
+    paddingClasses = 'pr-12';
+  }
+  
+  const adjustedInputClasses = inputClasses.replace('px-4', paddingClasses);
 
   return (
     <div className="w-full">
       {label && (
         <label 
           htmlFor={inputId}
-          className="block text-sm font-medium text-gray-700 mb-2"
+          className="block text-sm font-medium text-forest-green mb-2"
         >
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-coral-red ml-1">*</span>}
         </label>
       )}
       
-      <input
-        id={inputId}
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={placeholder}
-        required={required}
-        disabled={disabled}
-        autoComplete={autoComplete}
-        className={inputClasses}
-        // Ensure minimum touch target size on mobile
-        style={{ minHeight: '44px' }}
-        {...props}
-      />
+      <div className="relative">
+        {icon && (
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            {icon}
+          </div>
+        )}
+        
+        <input
+          id={inputId}
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          required={required}
+          disabled={disabled}
+          autoComplete={autoComplete}
+          className={adjustedInputClasses}
+          // Ensure minimum touch target size on mobile
+          style={{ minHeight: '44px' }}
+          {...props}
+        />
+        
+        {rightElement && (
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+            {rightElement}
+          </div>
+        )}
+      </div>
       
       {error && touched && (
-        <p className="mt-2 text-sm text-red-600" role="alert">
+        <p className="mt-2 text-sm text-coral-red" role="alert">
           {error}
         </p>
       )}
@@ -108,6 +139,8 @@ Input.propTypes = {
   disabled: PropTypes.bool,
   autoComplete: PropTypes.string,
   className: PropTypes.string,
+  icon: PropTypes.node,
+  rightElement: PropTypes.node,
 };
 
 export default Input;

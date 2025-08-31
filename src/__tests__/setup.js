@@ -25,6 +25,7 @@ global.process = {
     VITE_SUPABASE_URL: 'http://localhost:54321',
     VITE_SUPABASE_ANON_KEY: 'test-anon-key',
   },
+  listeners: vi.fn(() => []),
 };
 
 // Mock localStorage for tests
@@ -77,3 +78,46 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 // Mock URL.createObjectURL for file upload tests
 global.URL.createObjectURL = vi.fn(() => 'mocked-url');
 global.URL.revokeObjectURL = vi.fn();
+
+// Mock Supabase client globally
+vi.mock('../services/supabase.js', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      then: vi.fn(),
+    })),
+    storage: {
+      from: vi.fn(() => ({
+        upload: vi.fn(),
+        remove: vi.fn(),
+        getPublicUrl: vi.fn(),
+      })),
+    },
+    auth: {
+      signInWithOAuth: vi.fn(),
+      signInWithPassword: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+      resetPasswordForEmail: vi.fn(),
+      getSession: vi.fn(),
+      getUser: vi.fn(),
+      onAuthStateChange: vi.fn(() => ({
+        data: { subscription: { unsubscribe: vi.fn() } },
+      })),
+    },
+    channel: vi.fn(() => ({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(),
+    })),
+  },
+  SUPABASE_TABLES: {
+    PROFILES: 'profiles',
+    LINKS: 'links',
+  },
+}));

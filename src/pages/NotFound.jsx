@@ -50,7 +50,7 @@ const NotFound = ({ type = 'page', username = null }) => {
           <div className="text-6xl font-bold text-gray-300 mb-2 md:text-7xl">
             404
           </div>
-          <div className="w-16 h-1 bg-blue-500 mx-auto rounded-full"></div>
+          <div className="w-16 h-1 bg-golden-yellow mx-auto rounded-full"></div>
         </div>
 
         {/* Error Content */}
@@ -70,7 +70,7 @@ const NotFound = ({ type = 'page', username = null }) => {
         <div className="space-y-3">
           <button
             onClick={() => navigate('/')}
-            className="w-full px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
+            className="w-full px-6 py-3 bg-golden-yellow text-deep-forest rounded-lg font-semibold hover:bg-golden-yellow/80 transition-colors"
           >
             Go to Home
           </button>
@@ -85,16 +85,16 @@ const NotFound = ({ type = 'page', username = null }) => {
 
         {/* Additional Help for Profile Not Found */}
         {type === 'profile' && (
-          <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
-            <h3 className="text-sm font-medium text-blue-900 mb-2">
+          <div className="mt-8 p-4 bg-mint-cream rounded-lg border border-golden-yellow/30">
+            <h3 className="text-sm font-medium text-forest-green mb-2">
               Looking to create your own profile?
             </h3>
-            <p className="text-xs text-blue-700 mb-3">
+            <p className="text-xs text-sage-gray mb-3">
               Sign up to create your personalized link page and share all your important links in one place.
             </p>
             <button
               onClick={() => navigate('/')}
-              className="text-xs font-medium text-blue-600 hover:text-blue-800 underline"
+              className="text-xs font-semibold text-deep-forest hover:text-forest-green underline"
             >
               Get Started →
             </button>

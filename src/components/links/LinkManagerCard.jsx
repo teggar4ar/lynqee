@@ -65,7 +65,7 @@ const LinkManagerCard = ({
               type="checkbox"
               checked={isSelected}
               onChange={handleSelect}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-golden-yellow border-gray-300 rounded focus:ring-golden-yellow"
             />
           </div>
         )}
@@ -81,8 +81,8 @@ const LinkManagerCard = ({
 
         {/* Link Icon */}
         <div className="flex-shrink-0">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 bg-golden-yellow/20 rounded-lg flex items-center justify-center">
+            <svg className="w-5 h-5 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
             </svg>
           </div>
@@ -110,7 +110,7 @@ const LinkManagerCard = ({
               {showEditButton && (
                 <button
                   onClick={handleEdit}
-                  className="p-1 text-gray-400 hover:text-blue-600 rounded"
+                  className="p-1 text-gray-400 hover:text-golden-yellow rounded"
                   title="Edit link"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

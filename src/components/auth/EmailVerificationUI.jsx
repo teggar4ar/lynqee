@@ -87,7 +87,7 @@ const EmailVerificationUI = ({ email, onBackToSignIn }) => {
             <button
               onClick={handleResendEmail}
               disabled={isResending || resendCooldown > 0}
-              className="w-full bg-golden-yellow text-forest-green font-semibold py-3 px-4 rounded-lg hover:bg-golden-yellow/80 focus:outline-none focus:ring-2 focus:ring-golden-yellow focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+              className="w-full bg-forest-green text-white font-semibold py-3 px-4 rounded-lg hover:bg-deep-forest focus:outline-none focus:ring-2 focus:ring-forest-green focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
             >
               {isResending ? (
                 <><RefreshCw className="w-5 h-5 mr-2 animate-spin" />Sending...</>

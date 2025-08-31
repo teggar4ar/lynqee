@@ -137,15 +137,15 @@ const EditLinkModal = ({
 
         {/* Help Text */}
         <div className="
-          p-3 bg-blue-50 border border-blue-200 rounded-lg
-          text-sm text-blue-700
+          p-3 bg-mint-cream border border-golden-yellow/30 rounded-lg
+          text-sm text-sage-gray
         ">
           <div className="flex items-start space-x-2">
-            <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-golden-yellow flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
             <div>
-              <p className="font-medium mb-1">Editing Link</p>
+              <p className="font-medium mb-1 text-forest-green">Editing Link</p>
               <p>Make your changes below. The position of this link will remain the same.</p>
             </div>
           </div>

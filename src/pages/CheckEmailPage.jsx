@@ -22,7 +22,7 @@ const CheckEmailPage = () => {
           <p className="text-sage-gray mb-8">
             Please sign up first to receive a verification email.
           </p>
-          <Link to="/login" className="bg-golden-yellow text-forest-green font-medium px-6 py-2 rounded-lg hover:bg-golden-yellow/80">
+          <Link to="/login" className="bg-golden-yellow text-deep-forest font-semibold px-6 py-2 rounded-lg hover:bg-golden-yellow/80">
             Back to Sign In
           </Link>
         </div>

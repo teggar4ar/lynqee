@@ -54,7 +54,7 @@ const Avatar = ({
       items-center 
       justify-center 
       overflow-hidden 
-      bg-gray-200 
+      bg-mint-cream 
       ${className}
     `}>
       {currentSrc && !imageError ? (
@@ -66,7 +66,7 @@ const Avatar = ({
           loading="lazy"
         />
       ) : (
-        <span className="font-bold text-gray-500 flex items-center justify-center w-full h-full">
+        <span className="font-bold text-sage-gray flex items-center justify-center w-full h-full">
           {fallbackInitial}
         </span>
       )}

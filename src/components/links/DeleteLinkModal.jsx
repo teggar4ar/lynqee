@@ -106,8 +106,8 @@ const DeleteLinkModal = ({
         {link && (
           <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
             <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-golden-yellow/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                 </svg>
               </div>
@@ -136,12 +136,17 @@ const DeleteLinkModal = ({
         )}
 
         {/* Action Buttons */}
-        <div className="flex flex-col-reverse space-y-reverse space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3 pt-2">
+        <div className="flex flex-row space-x-3 pt-2">
           <Button
-            variant="secondary"
+            variant="outline"
             onClick={handleCancel}
             disabled={loading}
-            className="w-full sm:w-auto min-h-[44px]"
+            className="
+              flex-1
+              py-3
+              text-base
+              min-h-[44px]
+            "
           >
             Cancel
           </Button>
@@ -150,7 +155,12 @@ const DeleteLinkModal = ({
             onClick={handleDelete}
             loading={loading}
             disabled={loading || !link}
-            className="w-full sm:w-auto min-h-[44px]"
+            className="
+              flex-1
+              py-3
+              text-base
+              min-h-[44px]
+            "
           >
             {loading ? 'Deleting...' : 'Delete Link'}
           </Button>

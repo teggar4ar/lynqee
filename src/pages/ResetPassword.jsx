@@ -108,7 +108,7 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-golden-yellow mx-auto"></div>
           <h2 className="mt-4 text-xl font-semibold">Memverifikasi link...</h2>
         </div>
       </div>

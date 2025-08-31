@@ -96,14 +96,14 @@ const Modal = ({
       onClick={handleBackdropClick}
     >
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
+      <div className="fixed inset-0 bg-black bg-opacity-50 animate-backdrop-in" />
       
       {/* Modal */}
       <div
         ref={modalRef}
         tabIndex={-1}
         className={`
-          relative w-full bg-white shadow-xl
+          relative w-full bg-white shadow-xl modal-content
           ${sizeConfig[size]}
           
           /* Mobile-first design */
@@ -114,7 +114,10 @@ const Modal = ({
           sm:rounded-lg sm:max-h-[80vh]
           
           /* Focus styling */
-          focus:outline-none focus:ring-2 focus:ring-blue-500
+          focus:outline-none focus:ring-2 focus:ring-forest-green
+          
+          /* Animation classes */
+          animate-modal-in
           
           ${className}
         `}
@@ -124,12 +127,12 @@ const Modal = ({
       >
         {/* Header */}
         {(title || showCloseButton || headerActions) && (
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white sticky top-0 z-10">
+          <div className="flex items-center justify-between p-4 border-b border-sage-gray/30 bg-white sticky top-0 z-10">
             <div className="flex-1 min-w-0">
               {title && (
                 <h2 
                   id="modal-title"
-                  className="text-lg font-semibold text-gray-900 truncate sm:text-xl"
+                  className="text-lg font-semibold text-forest-green truncate sm:text-xl"
                 >
                   {title}
                 </h2>
@@ -144,10 +147,10 @@ const Modal = ({
                   type="button"
                   onClick={onClose}
                   className="
-                    p-2 text-gray-400 hover:text-gray-600 
-                    rounded-lg hover:bg-gray-100
+                    p-2 text-sage-gray hover:text-forest-green
+                    rounded-lg hover:bg-mint-cream
                     transition-colors duration-200
-                    focus:outline-none focus:ring-2 focus:ring-blue-500
+                    focus:outline-none focus:ring-2 focus:ring-forest-green
                     min-w-[44px] min-h-[44px]
                   "
                   aria-label="Close modal"

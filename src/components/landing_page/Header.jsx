@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { Button } from '../common';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -35,9 +36,15 @@ const Header = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login" className="bg-golden-yellow text-forest-green font-medium px-6 py-2 rounded-lg hover:bg-golden-yellow/80 transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg" aria-label="Register for new account">
+            <Button
+              as={Link}
+              to="/login"
+              variant="accent"
+              className="shadow-md hover:shadow-lg"
+              aria-label="Register for new account"
+            >
               Sign In
-            </Link>
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -67,9 +74,6 @@ const Header = () => {
               <div className="flex flex-col space-y-2 pt-4 border-t border-deep-forest/10">
                 <Link to="/login" className="text-forest-green hover:text-deep-forest transition-colors duration-200 font-medium py-2 text-left">
                   Login
-                </Link>
-                <Link to="/login" className="bg-golden-yellow text-forest-green font-medium px-6 py-2 rounded-lg hover:bg-golden-yellow/80 transition-colors duration-200 w-full text-center">
-                  Register
                 </Link>
               </div>
             </div>

@@ -135,7 +135,7 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
             placeholder="Tell people a little about yourself..."
             rows={3}
             maxLength={BIO_MAX_LENGTH}
-            className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-base md:text-sm"
+            className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-golden-yellow focus:border-golden-yellow resize-none text-base md:text-sm"
             style={{ minHeight: '44px' }}
           />
           <div className="mt-1 flex justify-between text-xs text-gray-500">
@@ -144,12 +144,12 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
           </div>
         </div>
 
-        <div className="flex flex-col space-y-2 pt-2 md:flex-row md:space-y-0 md:space-x-3 md:pt-4">
+        <div className="flex flex-row space-x-3 pt-2">
           <Button
             type="submit"
             variant="primary"
             disabled={loading}
-            className="w-full py-3 text-base md:flex-1 md:py-2 md:text-sm" // Touch-friendly button
+            className="flex-1 py-3 text-base min-h-[44px]" // Touch-friendly button
           >
             {loading ? 'Creating Profile...' : 'Create Profile'}
           </Button>
@@ -159,7 +159,7 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
             variant="ghost"
             onClick={handleSkip}
             disabled={loading}
-            className="w-full py-3 text-base md:flex-1 md:py-2 md:text-sm"
+            className="flex-1 py-3 text-base min-h-[44px]"
           >
             Skip for now
           </Button>

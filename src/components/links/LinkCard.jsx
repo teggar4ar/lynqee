@@ -111,9 +111,9 @@ const LinkCard = ({
     active:scale-[0.98]
     focus:outline-none
     focus:ring-2
-    focus:ring-blue-500
+    focus:ring-golden-yellow
     focus:ring-offset-2
-    focus:border-blue-300
+    focus:border-golden-yellow
     ${isPressed ? 'scale-[0.98] shadow-sm' : ''}
     ${variant === 'default' ? 'hover:bg-gray-50' : ''}
     ${variant === 'compact' ? 'hover:bg-gray-100' : ''}

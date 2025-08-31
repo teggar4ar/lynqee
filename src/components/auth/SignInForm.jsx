@@ -4,8 +4,9 @@ import { useFormValidation } from '../../hooks/useFormValidation.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { VALIDATION_MESSAGES } from '../../constants/validationMessages.js';
 import { isValidEmail } from '../../utils/validators.js';
-import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { ArrowRight, CheckCircle , Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import GoogleOAuthButton from './GoogleOAuthButton.jsx';
+import { Button, Input } from '../common';
 
 const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
   const { signIn, resetPassword } = useAuth();
@@ -13,15 +14,16 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [resetSuccessMessage, setResetSuccessMessage] = useState('');
 
   const validationRules = {
     email: (value) => {
-      if (!value) return VALIDATION_MESSAGES.REQUIRED;
+      if (!value) return VALIDATION_MESSAGES.EMAIL_IS_REQUIRED;
       if (!isValidEmail(value)) return VALIDATION_MESSAGES.INVALID_EMAIL;
       return null;
     },
     password: (value) => {
-      if (!value) return VALIDATION_MESSAGES.REQUIRED;
+      if (!value) return VALIDATION_MESSAGES.PASSWORD_IS_REQUIRED;
       return null;
     },
   };
@@ -78,7 +80,9 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
     setIsResettingPassword(true);
     try {
       await resetPassword(formData.email);
-      alert('Password reset link sent to your email!');
+      setResetSuccessMessage('Verification email sent successfully! Please check your inbox.');
+      // Clear message after 5 seconds
+      setTimeout(() => setResetSuccessMessage(''), 5000);
     } catch (error) {
       console.error('[SignInForm] Password reset failed:', error);
       if (onError) onError(error);
@@ -100,74 +104,60 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
             </p>
           </div>
 
+          {resetSuccessMessage && (
+            <div className="bg-forest-green/10 border border-forest-green/20 rounded-lg p-4 mb-6 flex items-center space-x-3 animate-in slide-in-from-top-2 duration-300">
+              <CheckCircle className="w-5 h-5 text-forest-green flex-shrink-0" />
+              <p className="text-forest-green font-medium">
+                {resetSuccessMessage}
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-forest-green mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-sage-gray" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  disabled={isSubmitting || isResettingPassword}
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-golden-yellow focus:border-transparent transition-colors ${
-                    errors.email && touched.email
-                      ? 'border-coral-red bg-coral-red/5'
-                      : 'border-sage-gray/30 bg-white hover:border-sage-gray/50'
-                  }`}
-                  placeholder="Enter your email"
-                />
-              </div>
-              {errors.email && touched.email && (
-                <p className="mt-1 text-sm text-coral-red">{errors.email}</p>
-              )}
+              <Input
+                label="Email Address"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                disabled={isSubmitting || isResettingPassword}
+                placeholder="Enter your email"
+                error={errors.email}
+                touched={touched.email}
+                icon={<Mail className="h-5 w-5 text-sage-gray" />}
+              />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-forest-green mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-sage-gray" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  disabled={isSubmitting || isResettingPassword}
-                  className={`block w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-golden-yellow focus:border-transparent transition-colors ${
-                    errors.password && touched.password
-                      ? 'border-coral-red bg-coral-red/5'
-                      : 'border-sage-gray/30 bg-white hover:border-sage-gray/50'
-                  }`}
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" />
-                  )}
-                </button>
-              </div>
-              {errors.password && touched.password && (
-                <p className="mt-1 text-sm text-coral-red">{errors.password}</p>
-              )}
+              <Input
+                label="Password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                disabled={isSubmitting || isResettingPassword}
+                placeholder="Enter your password"
+                error={errors.password}
+                touched={touched.password}
+                icon={<Lock className="h-5 w-5 text-sage-gray" />}
+                rightElement={
+                  <button
+                    type="button"
+                    className="flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-sage-gray hover:text-forest-green transition-colors" />
+                    )}
+                  </button>
+                }
+              />
             </div>
 
             <div className="text-right">
@@ -181,26 +171,22 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
               </button>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-golden-yellow text-forest-green font-semibold py-3 px-4 rounded-lg hover:bg-golden-yellow/80 focus:outline-none focus:ring-2 focus:ring-golden-yellow focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+              loading={isSubmitting}
+              fullWidth
+              className="flex items-center justify-center"
             >
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-forest-green border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </>
-              )}
-            </button>
+              Sign In
+              {!isSubmitting && <ArrowRight className="ml-2 h-5 w-5" />}
+            </Button>
 
             <GoogleOAuthButton
                 onSuccess={onSuccess}
                 onError={onError}
                 redirectTo={`${window.location.origin}/dashboard`}
-                className="w-full bg-white text-sage-gray font-medium py-3 px-4 rounded-lg border border-sage-gray/30 hover:border-sage-gray/50 hover:bg-sage-gray/5 focus:outline-none focus:ring-2 focus:ring-golden-yellow focus:ring-offset-2 transition-all duration-200 flex items-center justify-center"
+                className="w-full bg-white text-sage-gray font-medium py-3 px-4 rounded-lg border border-sage-gray/30 hover:border-sage-gray/50 hover:bg-sage-gray/5 focus:outline-none focus:ring-2 focus:ring-forest-green focus:ring-offset-2 transition-all duration-200 flex items-center justify-center"
             />
 
             <div className="text-center">
@@ -224,7 +210,7 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
               <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-deep-forest/10">
                 <div className="space-y-6">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-golden-yellow rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-yellow rounded-full flex items-center justify-center mx-auto mb-4">
                       <Lock className="w-8 h-8 text-forest-green" />
                     </div>
                     <h3 className="text-xl font-bold text-forest-green mb-2">Secure Access</h3>

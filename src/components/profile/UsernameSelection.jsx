@@ -127,8 +127,8 @@ const UsernameSelection = ({ initialUsername, onComplete, userEmail }) => {
         <p className="text-sm text-gray-600 mb-2 md:text-base">
           Your username will be part of your unique Lynqee URL:
         </p>
-        <p className="text-sm font-medium text-blue-600 md:text-base">
-          lynqee.com/<span className="bg-blue-50 px-1 rounded">{username || 'username'}</span>
+        <p className="text-sm font-medium text-golden-yellow md:text-base">
+          lynqee.com/<span className="bg-golden-yellow/10 px-1 rounded">{username || 'username'}</span>
         </p>
       </div>
 
@@ -168,12 +168,12 @@ const UsernameSelection = ({ initialUsername, onComplete, userEmail }) => {
 
         {/* Suggested username - Mobile optimized */}
         {suggestedUsername && suggestedUsername !== username && !username && (
-          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-xs text-blue-700 mb-2 md:text-sm">Suggestion:</p>
+          <div className="p-3 bg-mint-cream rounded-lg border border-golden-yellow/30">
+            <p className="text-xs text-sage-gray mb-2 md:text-sm">Suggestion:</p>
             <button
               type="button"
               onClick={() => setUsername(suggestedUsername)}
-              className="text-xs font-medium text-blue-600 hover:text-blue-800 underline md:text-sm"
+              className="text-xs font-medium text-golden-yellow hover:text-golden-yellow/80 underline md:text-sm"
             >
               Use "{suggestedUsername}"
             </button>
