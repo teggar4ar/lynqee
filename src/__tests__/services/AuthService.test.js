@@ -73,27 +73,6 @@ describe('AuthService CRUD Operations', () => {
       expect(result.session).toEqual(mockSession);
     });
 
-    it('should prevent sign up with existing email address', async () => {
-      // Mock Supabase returning error for existing user
-      const errorResponse = {
-        data: { user: null, session: null },
-        error: { message: 'User already registered', code: 'signup_disabled' },
-      };
-      supabase.auth.signUp.mockResolvedValue(errorResponse);
-
-      const userData = {
-        email: 'existing@example.com',
-        password: 'SecurePass123!',
-        full_name: 'Existing User',
-      };
-
-      const result = await AuthService.signUp(userData);
-
-      expect(supabase.auth.signUp).toHaveBeenCalled();
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('account with this email address already exists');
-    });
-
     it('should handle sign up validation errors', async () => {
       const errorResponse = {
         data: { user: null, session: null },

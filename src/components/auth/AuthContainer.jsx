@@ -16,16 +16,7 @@ const AuthContainer = ({ onSuccess, onError }) => {
   };
 
   const handleSignUpError = (error) => {
-    // If user already exists, automatically switch to sign-in with helpful message
-    if (error.type === 'user_exists') {
-      setCurrentView('signin');
-      if (onError) onError({
-        message: `${error.message} We've switched you to the sign-in form.`,
-        email: error.email
-      });
-    } else {
-      if (onError) onError(error);
-    }
+    if (onError) onError(error);
   };
 
   return (

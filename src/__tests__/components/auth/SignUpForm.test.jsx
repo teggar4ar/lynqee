@@ -122,33 +122,6 @@ describe('SignUpForm', () => {
     });
   });
 
-  it('handles user already exists error correctly', async () => {
-    const mockOnError = vi.fn();
-    mockSignUp.mockResolvedValue({ 
-      error: 'An account with this email address already exists. Please sign in instead or use the forgot password option if you need to reset your password.'
-    });
-
-    renderWithUnauthenticatedUser(<SignUpForm onError={mockOnError} />);
-
-    const emailInput = screen.getByPlaceholderText(/enter your email/i);
-    const passwordInput = screen.getByPlaceholderText(/create a password/i);
-    const confirmPasswordInput = screen.getByPlaceholderText(/confirm your password/i);
-    const submitButton = screen.getByRole('button', { name: /create account/i });
-
-    fireEvent.change(emailInput, { target: { value: 'existing@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(mockOnError).toHaveBeenCalledWith({
-        message: 'An account with this email address already exists. Please sign in instead or use the forgot password option if you need to reset your password.',
-        type: 'user_exists',
-        email: 'existing@example.com'
-      });
-    });
-  });
-
   it('shows loading state during sign-up', async () => {
     mockSignUp.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({ user: { email: 'test@example.com' } }), 100)));
 

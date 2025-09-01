@@ -51,21 +51,9 @@ vi.mock('../../../components/auth/SignUpForm.jsx', () => ({
         Sign Up Success
       </button>
       {onError && (
-        <>
-          <button data-testid="signup-error" onClick={() => onError(new Error('Sign up failed'))}>
-            Sign Up Error
-          </button>
-          <button 
-            data-testid="user-exists-error" 
-            onClick={() => onError({ 
-              message: 'An account with this email address already exists.',
-              type: 'user_exists',
-              email: 'existing@example.com'
-            })}
-          >
-            User Exists Error
-          </button>
-        </>
+        <button data-testid="signup-error" onClick={() => onError(new Error('Sign up failed'))}>
+          Sign Up Error
+        </button>
       )}
     </div>
   ),
@@ -201,33 +189,5 @@ describe('AuthContainer', () => {
 
     expect(screen.getByTestId('signup-form')).toBeInTheDocument();
     expect(screen.queryByTestId('signin-form')).not.toBeInTheDocument();
-  });
-
-  it('automatically switches to sign-in when user already exists error occurs', () => {
-    const mockOnError = vi.fn();
-
-    renderWithUnauthenticatedUser(<AuthContainer onError={mockOnError} />);
-
-    // Switch to signup form
-    act(() => {
-      fireEvent.click(screen.getByTestId('switch-to-signup'));
-    });
-
-    expect(screen.getByTestId('signup-form')).toBeInTheDocument();
-
-    // Trigger user exists error
-    act(() => {
-      fireEvent.click(screen.getByTestId('user-exists-error'));
-    });
-
-    // Should automatically switch to sign-in form
-    expect(screen.getByTestId('signin-form')).toBeInTheDocument();
-    expect(screen.queryByTestId('signup-form')).not.toBeInTheDocument();
-
-    // Should call onError with enhanced message
-    expect(mockOnError).toHaveBeenCalledWith({
-      message: 'An account with this email address already exists. We\'ve switched you to the sign-in form.',
-      email: 'existing@example.com'
-    });
   });
 });
