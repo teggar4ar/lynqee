@@ -68,7 +68,16 @@ const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
         );
 
         if (result.error) {
-          if (onError) onError({ message: result.error });
+          // Handle specific case where user already exists
+          if (result.error.includes('account with this email address already exists')) {
+            if (onError) onError({ 
+              message: result.error,
+              type: 'user_exists',
+              email: validatedData.email
+            });
+          } else {
+            if (onError) onError({ message: result.error });
+          }
         } else if (result.user) {
           if (onSignUpSuccess) onSignUpSuccess(result.user.email);
         }

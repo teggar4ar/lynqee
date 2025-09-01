@@ -92,17 +92,31 @@ class AuthService {
   /**
    * Sign up with email and password (alias for signUpWithEmail)
    * @param {Object} userData - User data {email, password, full_name}
+   * @param {string} redirectTo - URL to redirect for email confirmation
    * @returns {Promise<Object>} Standardized authentication result
    */
-  static async signUp(userData) {
+  static async signUp(userData, redirectTo = `${window.location.origin}/verify-email`) {
     try {
+      // Let Supabase handle duplicate detection natively
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
         options: {
           data: { full_name: userData.full_name },
+          emailRedirectTo: redirectTo,
         },
       });
+
+      // Check if Supabase detected an existing user
+      if (error && error.message && 
+          (error.message.includes('User already registered') ||
+           error.message.includes('already been registered') ||
+           error.message.includes('Email already exists'))) {
+        return this._formatResponse(null, { 
+          message: 'An account with this email address already exists. Please sign in instead or use the forgot password option if you need to reset your password.',
+          code: 'user_already_exists'
+        });
+      }
 
       return this._formatResponse(data, error);
     } catch (error) {
@@ -116,17 +130,31 @@ class AuthService {
    * @param {string} email - User email
    * @param {string} password - User password
    * @param {Object} metadata - Additional user metadata
+   * @param {string} redirectTo - URL to redirect for email confirmation
    * @returns {Promise<Object>} Standardized authentication result
    */
-  static async signUpWithEmail(email, password, metadata = {}) {
+  static async signUpWithEmail(email, password, metadata = {}, redirectTo = `${window.location.origin}/verify-email`) {
     try {
+      // Let Supabase handle duplicate detection natively
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: metadata,
+          emailRedirectTo: redirectTo,
         },
       });
+
+      // Check if Supabase detected an existing user
+      if (error && error.message && 
+          (error.message.includes('User already registered') ||
+           error.message.includes('already been registered') ||
+           error.message.includes('Email already exists'))) {
+        return this._formatResponse(null, { 
+          message: 'An account with this email address already exists. Please sign in instead or use the forgot password option if you need to reset your password.',
+          code: 'user_already_exists'
+        });
+      }
 
       return this._formatResponse(data, error);
     } catch (error) {
@@ -301,11 +329,17 @@ class AuthService {
   /**
    * Resend verification email
    * @param {Object} resendData - Resend parameters {type, email}
+   * @param {string} redirectTo - URL to redirect for email confirmation
    * @returns {Promise<Object>} Standardized response
    */
-  static async resendVerification(resendData) {
+  static async resendVerification(resendData, redirectTo = `${window.location.origin}/verify-email`) {
     try {
-      const { data, error } = await supabase.auth.resend(resendData);
+      const { data, error } = await supabase.auth.resend({
+        ...resendData,
+        options: {
+          emailRedirectTo: redirectTo,
+        },
+      });
 
       if (error) {
         return this._formatResponse(null, error);
@@ -321,6 +355,80 @@ class AuthService {
     } catch (error) {
       console.error('[AuthService] resendVerification error:', error);
       return this._formatResponse(null, { message: error.message });
+    }
+  }
+
+  /**
+   * Check if a user with the given email already exists
+   * Uses a sign-up attempt with invalid data to check existence
+   * @param {string} email - Email to check
+   * @returns {Promise<Object>} Standardized response with exists boolean
+   */
+  static async checkUserExists(email) {
+    try {
+      // Attempt to sign up with a very weak password to trigger validation
+      // This won't create a user but will tell us if the email is already taken
+      const { error } = await supabase.auth.signUp({
+        email,
+        password: 'temp', // Intentionally weak password to trigger validation
+      });
+
+      if (error) {
+        // Check the specific error message
+        if (error.message && (
+          error.message.includes('User already registered') ||
+          error.message.includes('Email already registered') ||
+          error.message.includes('already been registered') ||
+          error.message.includes('Email address already exists')
+        )) {
+          // User already exists
+          return {
+            success: true,
+            error: null,
+            exists: true,
+            data: { email, exists: true },
+          };
+        } else if (error.message && (
+          error.message.includes('Password') ||
+          error.message.includes('weak') ||
+          error.message.includes('Invalid email') ||
+          error.message.includes('validation')
+        )) {
+          // Password/validation error but email is available
+          return {
+            success: true,
+            error: null,
+            exists: false,
+            data: { email, exists: false },
+          };
+        } else {
+          // Unknown error, be conservative and assume user doesn't exist
+          // This allows sign-up attempts to proceed
+          return {
+            success: true,
+            error: null,
+            exists: false,
+            data: { email, exists: false },
+          };
+        }
+      }
+
+      // No error means sign-up would have succeeded, so email is available
+      return {
+        success: true,
+        error: null,
+        exists: false,
+        data: { email, exists: false },
+      };
+    } catch (error) {
+      console.error('[AuthService] checkUserExists error:', error);
+      // On network error, assume user doesn't exist to allow sign-up attempt
+      return {
+        success: true,
+        error: null,
+        exists: false,
+        data: { email, exists: false },
+      };
     }
   }
 

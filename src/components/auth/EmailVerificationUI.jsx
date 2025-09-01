@@ -1,14 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { ArrowLeft, CheckCircle, Clock, Mail, RefreshCw } from 'lucide-react';
 
 const EmailVerificationUI = ({ email, onBackToSignIn }) => {
-  const { resetPassword } = useAuth();
+  const { resetPassword, user, isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
   const [isResending, setIsResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [resendError, setResendError] = useState('');
+
+  // Monitor authentication state changes for automatic redirect
+  useEffect(() => {
+    // If user becomes authenticated (email verified), redirect to dashboard
+    // The dashboard will handle profile setup via ProfileSetupGuard
+    if (!isLoading && isAuthenticated && user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, user, isLoading, navigate]);
 
   useEffect(() => {
     let timer;

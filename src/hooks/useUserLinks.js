@@ -66,8 +66,7 @@ const useBaseUserLinks = (userId) => {
   const setupRealTimeSubscription = useCallback(() => {
     if (!userId || subscriptionRef.current) return;
 
-    console.warn('[useUserLinks] Setting up real-time subscription for user:', userId);
-
+    // Initialize real-time monitoring for user links
     const subscription = supabase
       .channel(`user-links-${userId}`)
       .on(
@@ -86,7 +85,6 @@ const useBaseUserLinks = (userId) => {
                 const links = currentLinks || [];
                 const existingLink = links.find(link => link.id === payload.new.id);
                 if (existingLink) {
-                  console.warn('[useUserLinks] Link already exists, updating with server data. Total links:', links.length);
                   // Link already exists (likely from optimistic update), just update it with server data
                   return links.map(link => 
                     link.id === payload.new.id ? payload.new : link
@@ -153,7 +151,7 @@ const useBaseUserLinks = (userId) => {
     // Cleanup function
     return () => {
       if (subscriptionRef.current) {
-        console.warn('[useUserLinks] Cleaning up real-time subscription (effect cleanup)');
+        // Clean up real-time subscription
         supabase.removeChannel(subscriptionRef.current);
         subscriptionRef.current = null;
         setIsRealTimeConnected(false);

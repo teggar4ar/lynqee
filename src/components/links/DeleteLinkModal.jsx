@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal } from '../common';
+import { Button, ErrorDisplay, Modal } from '../common';
 import LinksService from '../../services/LinksService.js';
 
 const DeleteLinkModal = ({ 
@@ -125,14 +125,10 @@ const DeleteLinkModal = ({
 
         {/* Error Display */}
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-start space-x-2">
-              <svg className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          </div>
+          <ErrorDisplay 
+            error={error} 
+            showIcon={true}
+          />
         )}
 
         {/* Action Buttons */}

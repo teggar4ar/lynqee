@@ -4,12 +4,25 @@ import { fireEvent, screen } from '@testing-library/react';
 import { renderWithUnauthenticatedUser } from '../../mocks/testUtils.jsx';
 import EmailVerificationUI from '../../../components/auth/EmailVerificationUI.jsx';
 
+// Mock the navigate function
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
 // Mock the useAuth hook
 const mockResetPassword = vi.fn();
 
 vi.mock('../../../hooks/useAuth.js', () => ({
   useAuth: () => ({
     resetPassword: mockResetPassword,
+    user: null,
+    isAuthenticated: false,
+    isLoading: false,
   }),
 }));
 
@@ -29,6 +42,7 @@ describe('EmailVerificationUI', () => {
   beforeEach(() => {
     mockResetPassword.mockClear();
     mockOnBackToSignIn.mockClear();
+    mockNavigate.mockClear();
     vi.useFakeTimers();
   });
 
@@ -91,4 +105,8 @@ describe('EmailVerificationUI', () => {
     expect(screen.getByText('Email Verification')).toBeInTheDocument();
     expect(screen.getByText('Secure your account in just one click')).toBeInTheDocument();
   });
+
+  // Note: Authentication state monitoring test would require complex mock setup
+  // The useEffect in EmailVerificationUI now monitors authentication state changes
+  // and redirects to /dashboard when user becomes authenticated
 });

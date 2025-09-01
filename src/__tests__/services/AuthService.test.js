@@ -65,11 +65,33 @@ describe('AuthService CRUD Operations', () => {
         password: userData.password,
         options: {
           data: { full_name: userData.full_name },
+          emailRedirectTo: 'http://localhost:3000/verify-email',
         },
       });
       expect(result.success).toBe(true);
       expect(result.user).toEqual(mockUser);
       expect(result.session).toEqual(mockSession);
+    });
+
+    it('should prevent sign up with existing email address', async () => {
+      // Mock Supabase returning error for existing user
+      const errorResponse = {
+        data: { user: null, session: null },
+        error: { message: 'User already registered', code: 'signup_disabled' },
+      };
+      supabase.auth.signUp.mockResolvedValue(errorResponse);
+
+      const userData = {
+        email: 'existing@example.com',
+        password: 'SecurePass123!',
+        full_name: 'Existing User',
+      };
+
+      const result = await AuthService.signUp(userData);
+
+      expect(supabase.auth.signUp).toHaveBeenCalled();
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('account with this email address already exists');
     });
 
     it('should handle sign up validation errors', async () => {
@@ -314,7 +336,12 @@ describe('AuthService CRUD Operations', () => {
 
       const result = await AuthService.resendVerification(resendData);
 
-      expect(supabase.auth.resend).toHaveBeenCalledWith(resendData);
+      expect(supabase.auth.resend).toHaveBeenCalledWith({
+        ...resendData,
+        options: {
+          emailRedirectTo: 'http://localhost:3000/verify-email',
+        },
+      });
       expect(result.success).toBe(true);
     });
   });
