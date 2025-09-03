@@ -16,6 +16,7 @@ import { ErrorDisplay, Modal } from '../common';
 import LinkForm from './LinkForm';
 import { LinksService } from '../../services';
 import { useAuth } from '../../hooks/useAuth';
+import { getContextualErrorMessage } from '../../utils/errorUtils';
 
 const EditLinkModal = ({
   isOpen,
@@ -75,20 +76,9 @@ const EditLinkModal = ({
     } catch (err) {
       console.error('[EditLinkModal] Failed to update link:', err);
       
-      // Set user-friendly error message
-      if (err.message.includes('duplicate') || err.message.includes('unique')) {
-        setError('A link with this URL already exists');
-      } else if (err.message.includes('network') || err.message.includes('fetch')) {
-        setError('Network error. Please check your connection and try again.');
-      } else if (err.message.includes('not found') || err.message.includes('does not exist')) {
-        setError('This link no longer exists. It may have been deleted.');
-      } else if (err.message.includes('conflict') || err.message.includes('version')) {
-        setError('This link was modified by another session. Please refresh and try again.');
-      } else {
-        // Show actual error in development for debugging
-        const isDevelopment = import.meta.env.DEV;
-        setError(isDevelopment ? `Debug: ${err.message}` : 'Failed to update link. Please try again.');
-      }
+      // Use centralized error handling with context
+      const errorMessage = getContextualErrorMessage(err, 'link');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -15,13 +15,15 @@ export { default as useAvatar } from './useAvatar.js';
 // Links hooks - standardized naming convention  
 export { useUserLinks } from './useUserLinks.js';                    // For authenticated user's links
 export { usePublicRealtimeLinks } from './usePublicRealtimeLinks.js'; // For public links with real-time updates
+export { useLinkReordering } from './useLinkReordering.js';           // For drag-and-drop link reordering
 
 // Form and validation hooks
 export { useFormValidation } from './useFormValidation.js';
 
 // Utility hooks
 export { useAsync } from './useAsync.js';
-export { useRetry } from './useRetry.js';
+export { useRetry, useAsyncRetry } from './useRetry.js';
+export { useErrorReporting } from './useErrorReporting.js';
 export { useInactivityTimeout } from './useInactivityTimeout.js';
 
 // Optimistic update hooks

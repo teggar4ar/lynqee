@@ -137,19 +137,11 @@ class LinksService {
    */
   static async updateLinkPositions(linkUpdates) {
     try {
-      // Use a transaction to update multiple links
-      const updates = linkUpdates.map(({ id, position }) => ({
-        id,
-        position,
-        updated_at: new Date().toISOString()
-      }));
+      // Update links sequentially to avoid race conditions in real-time subscriptions
+      for (const { id, position } of linkUpdates) {
+        await this.updateLink(id, { position });
+      }
 
-      // Update each link individually (Supabase doesn't support bulk updates easily)
-      const promises = updates.map(update => 
-        this.updateLink(update.id, { position: update.position })
-      );
-
-      await Promise.all(promises);
       return true;
     } catch (error) {
       console.error('[LinksService] updateLinkPositions error:', error);

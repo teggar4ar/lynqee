@@ -16,7 +16,7 @@ import { useAuth } from '../hooks/useAuth.js';
 import { useUserProfile } from '../hooks/useUserProfile.js';
 import { useUserLinks } from '../hooks/useUserLinks.js';
 import { useDashboard } from '../contexts/DashboardContext.jsx';
-import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
+import { Button, ErrorDisplay, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { ProfileSkeleton, RefreshIndicator, StatsSkeleton } from '../components/common/ModernLoading.jsx';
 import { ProfileSettings } from '../components/profile';
 import { DashboardLayout, DashboardStats, ProfileQuickPreview } from '../components/dashboard';
@@ -84,8 +84,12 @@ const Dashboard = () => {
               ) : profileError ? (
                 <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
                   <div className="text-center py-6">
-                    <h3 className="text-lg font-medium text-red-600 mb-2">Profile Error</h3>
-                    <p className="text-gray-600 mb-4">{profileError}</p>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Profile Error</h3>
+                    <ErrorDisplay
+                      error={profileError}
+                      size="medium"
+                      className="mb-4"
+                    />
                     <Button onClick={refetchProfile} variant="outline">Retry</Button>
                   </div>
                 </div>
@@ -144,9 +148,12 @@ const Dashboard = () => {
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       Failed to load links
                     </h3>
-                    <p className="text-gray-600 mb-4">
-                      {linksError}
-                    </p>
+                    <ErrorDisplay
+                      error={linksError}
+                      size="medium"
+                      showIcon={false}
+                      className="mb-4"
+                    />
                     <Button
                       variant="outline"
                       onClick={refetchLinks}

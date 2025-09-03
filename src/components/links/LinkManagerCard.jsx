@@ -19,6 +19,7 @@ const LinkManagerCard = ({
   onEdit,
   onDelete,
   onSelect,
+  dragHandleProps = null,
   className = ''
 }) => {
   const [showActions, setShowActions] = useState(false);
@@ -72,8 +73,17 @@ const LinkManagerCard = ({
 
         {/* Drag Handle */}
         {showDragHandle && !showSelection && (
-          <div className="flex-shrink-0 cursor-move text-gray-400 hover:text-gray-600">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <div 
+            className="flex-shrink-0 cursor-move text-gray-400 hover:text-gray-600 touch-manipulation p-2 -m-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            {...dragHandleProps}
+            style={{ 
+              touchAction: 'none', // Prevent scrolling when touching drag handle
+              WebkitTouchCallout: 'none', // Disable iOS callout menu
+              WebkitUserSelect: 'none', // Disable text selection
+              userSelect: 'none'
+            }}
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
               <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
             </svg>
           </div>
@@ -214,6 +224,7 @@ LinkManagerCard.propTypes = {
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   onSelect: PropTypes.func,
+  dragHandleProps: PropTypes.object,
   className: PropTypes.string,
 };
 

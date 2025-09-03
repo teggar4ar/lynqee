@@ -15,6 +15,7 @@ import { ErrorDisplay, Modal } from '../common';
 import LinkForm from './LinkForm';
 import { LinksService } from '../../services';
 import { useAuth } from '../../hooks/useAuth';
+import { getContextualErrorMessage } from '../../utils/errorUtils';
 
 const AddLinkModal = ({
   isOpen,
@@ -65,16 +66,9 @@ const AddLinkModal = ({
     } catch (err) {
       console.error('[AddLinkModal] Failed to create link:', err);
       
-      // Set user-friendly error message
-      if (err.message.includes('duplicate') || err.message.includes('unique')) {
-        setError('A link with this URL already exists');
-      } else if (err.message.includes('network') || err.message.includes('fetch')) {
-        setError('Network error. Please check your connection and try again.');
-      } else {
-        // Show actual error in development for debugging
-        const isDevelopment = import.meta.env.DEV;
-        setError(isDevelopment ? `Debug: ${err.message}` : 'Failed to add link. Please try again.');
-      }
+      // Use centralized error handling with context
+      const errorMessage = getContextualErrorMessage(err, 'link');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

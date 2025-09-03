@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, ErrorDisplay, Modal } from '../common';
 import LinksService from '../../services/LinksService.js';
+import { getContextualErrorMessage } from '../../utils/errorUtils';
 
 const DeleteLinkModal = ({ 
   isOpen, 
@@ -44,18 +45,9 @@ const DeleteLinkModal = ({
     } catch (err) {
       console.error('[DeleteLinkModal] Failed to delete link:', err);
       
-      // Set user-friendly error message
-      if (err.message.includes('not found') || err.message.includes('does not exist')) {
-        setError('This link no longer exists. It may have already been deleted.');
-      } else if (err.message.includes('network') || err.message.includes('fetch')) {
-        setError('Network error. Please check your connection and try again.');
-      } else if (err.message.includes('permission') || err.message.includes('unauthorized')) {
-        setError('You do not have permission to delete this link.');
-      } else {
-        // Show actual error in development for debugging
-        const isDevelopment = import.meta.env.DEV;
-        setError(isDevelopment ? `Debug: ${err.message}` : 'Failed to delete link. Please try again.');
-      }
+      // Use centralized error handling with context
+      const errorMessage = getContextualErrorMessage(err, 'link');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

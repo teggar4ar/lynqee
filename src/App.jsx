@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext.jsx';
 import { AppStateProvider } from './contexts/AppStateContext.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { InitialLoading } from './components/common/ModernLoading.jsx';
+import { ErrorBoundary, ErrorState, GlobalErrorBoundary } from './components/common/error';
 import './App.css';
 
 // 2. UBAH SEMUA IMPORT HALAMAN MENJADI DYNAMIC menggunakan React.lazy
@@ -23,33 +24,95 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword.jsx'));
 
 function App() {
   return (
-    <AuthProvider>
-      <AppStateProvider>
-        <Router>
-          <div className="app-container">
-            {/* 4. BUNGKUS <Routes> DENGAN <Suspense> */}
-            <Suspense fallback={<InitialLoading />}>
+    <GlobalErrorBoundary onError={(error, errorInfo) => {
+      // Log errors for debugging and potential error reporting service
+      console.error('🚨 Global Error:', error);
+      console.error('🚨 Error Info:', errorInfo);
+      
+      // In production, you might want to send this to an error reporting service
+      // like Sentry, Bugsnag, or LogRocket
+    }}>
+      <AuthProvider>
+        <AppStateProvider>
+          <Router>
+            <div className="app-container">
+              {/* 4. BUNGKUS <Routes> DENGAN <Suspense> */}
+              <Suspense fallback={<InitialLoading />}>
               <Routes>
                 {/* Rute Publik: bisa diakses siapa saja */}
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<Auth />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/verify-email" element={<EmailVerification />} />
-                <Route path="/check-email" element={<CheckEmailPage />} />
-                <Route path="/:username" element={<PublicProfile />} />
+                <Route 
+                  path="/" 
+                  element={
+                    <ErrorBoundary fallback={<ErrorState type="general" />}>
+                      <LandingPage />
+                    </ErrorBoundary>
+                  } 
+                />
+                <Route 
+                  path="/login" 
+                  element={
+                    <ErrorBoundary fallback={<ErrorState type="general" />}>
+                      <Auth />
+                    </ErrorBoundary>
+                  } 
+                />
+                <Route 
+                  path="/reset-password" 
+                  element={
+                    <ErrorBoundary fallback={<ErrorState type="general" />}>
+                      <ResetPassword />
+                    </ErrorBoundary>
+                  } 
+                />
+                <Route 
+                  path="/verify-email" 
+                  element={
+                    <ErrorBoundary fallback={<ErrorState type="general" />}>
+                      <EmailVerification />
+                    </ErrorBoundary>
+                  } 
+                />
+                <Route 
+                  path="/check-email" 
+                  element={
+                    <ErrorBoundary fallback={<ErrorState type="general" />}>
+                      <CheckEmailPage />
+                    </ErrorBoundary>
+                  } 
+                />
+                <Route 
+                  path="/:username" 
+                  element={
+                    <ErrorBoundary fallback={<ErrorState type="profileNotFound" />}>
+                      <PublicProfile />
+                    </ErrorBoundary>
+                  } 
+                />
                 
                 {/* Rute yang Dilindungi: hanya untuk pengguna yang sudah login */}
                 <Route 
                   path="/dashboard" 
-                  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} 
+                  element={
+                    <ErrorBoundary fallback={<ErrorState type="general" />}>
+                      <ProtectedRoute><Dashboard /></ProtectedRoute>
+                    </ErrorBoundary>
+                  } 
                 />
                 <Route 
                   path="/links" 
-                  element={<ProtectedRoute><LinksPage /></ProtectedRoute>} 
+                  element={
+                    <ErrorBoundary fallback={<ErrorState type="general" />}>
+                      <ProtectedRoute><LinksPage /></ProtectedRoute>
+                    </ErrorBoundary>
+                  } 
                 />
                 <Route 
                   path="/setup" 
-                  element={<ProtectedRoute><ProfileSetup /></ProtectedRoute>} 
+                  element={
+                    <ErrorBoundary fallback={<ErrorState type="general" />}>
+                      <ProtectedRoute><ProfileSetup /></ProtectedRoute>
+                    </ErrorBoundary>
+                  } 
                 />
                 
                 {/* Rute Catch-all untuk 404 - harus selalu paling akhir */}
@@ -60,6 +123,7 @@ function App() {
         </Router>
       </AppStateProvider>
     </AuthProvider>
+    </GlobalErrorBoundary>
   );
 }
 

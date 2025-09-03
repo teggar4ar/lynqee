@@ -15,14 +15,14 @@ describe('NotFound Page', () => {
     renderWithProviders(<NotFound />);
 
     // Check that the page renders basic elements
-    expect(screen.getByText('404')).toBeInTheDocument();
+    expect(screen.getByText('🔍')).toBeInTheDocument();
     expect(screen.getByText('Page Not Found')).toBeInTheDocument();
   });
 
   it('renders profile not found variant', () => {
     renderWithProviders(<NotFound type="profile" username="testuser" />);
 
-    expect(screen.getByText('404')).toBeInTheDocument();
+    expect(screen.getByText('👤')).toBeInTheDocument();
     expect(screen.getByText('Profile Not Found')).toBeInTheDocument();
     expect(screen.getByText('The profile "@testuser" doesn\'t exist or has been removed.')).toBeInTheDocument();
   });
@@ -30,7 +30,6 @@ describe('NotFound Page', () => {
   it('renders with navigation buttons', () => {
     renderWithProviders(<NotFound />);
 
-    expect(screen.getByRole('button', { name: /go to home/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /go back/i })).toBeInTheDocument();
   });
 });

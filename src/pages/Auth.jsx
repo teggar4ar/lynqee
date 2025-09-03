@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AuthContainer } from '../components/auth';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
-import { ErrorDisplay } from '../components/common';
+import { ErrorDisplay, SuccessDisplay } from '../components/common';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -46,9 +46,10 @@ const Auth = () => {
       <main>
         {/* Display success/error messages */}
         {success && (
-          <div className="max-w-md mx-auto mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-green-800 text-sm">{success}</p>
-          </div>
+          <SuccessDisplay
+            message={success}
+            className="max-w-md mx-auto mt-4"
+          />
         )}
         {error && (
           <ErrorDisplay

@@ -8,7 +8,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
-import { Button } from '../components/common';
+import { Button, ErrorDisplay } from '../components/common';
 import { InitialLoading } from '../components/common/ModernLoading.jsx';
 
 const EmailVerification = () => {
@@ -113,9 +113,13 @@ const EmailVerification = () => {
             </div>
             
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Verification Failed</h2>
-            <p className="text-gray-600 mb-6">
-              {error}
-            </p>
+            
+            <ErrorDisplay
+              error={error}
+              size="large"
+              showIcon={false}
+              className="mb-6 max-w-md mx-auto"
+            />
             
             <Button
               onClick={handleGoToLogin}

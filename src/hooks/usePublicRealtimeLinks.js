@@ -37,21 +37,16 @@ export const usePublicRealtimeLinks = (username) => {
       
       // Get the user_id from the first link to set up real-time subscription
       if (linksData.length > 0 && linksData[0].user_id) {
-        console.warn('[usePublicRealtimeLinks] Setting profileId from first link:', linksData[0].user_id);
         setProfileId(linksData[0].user_id);
       } else {
-        console.warn('[usePublicRealtimeLinks] No links found, trying to get profile ID from profile service');
         // If no links, we need to get the profile ID another way
         try {
           const profile = await ProfileService.getProfileByUsername(username);
           if (profile?.id) {
-            console.warn('[usePublicRealtimeLinks] Setting profileId from profile service:', profile.id);
             setProfileId(profile.id);
-          } else {
-            console.warn('[usePublicRealtimeLinks] Could not get profile ID from profile service');
           }
         } catch (profileErr) {
-          console.warn('[usePublicRealtimeLinks] Could not get profile ID for subscription:', profileErr);
+          console.error('[usePublicRealtimeLinks] Could not get profile ID for subscription:', profileErr);
         }
       }
       
@@ -67,16 +62,12 @@ export const usePublicRealtimeLinks = (username) => {
   // Set up real-time subscription
   const setupRealTimeSubscription = useCallback(() => {
     if (!profileId) {
-      console.warn('[usePublicRealtimeLinks] No profileId available for subscription');
       return;
     }
     
     if (subscriptionRef.current) {
-      console.warn('[usePublicRealtimeLinks] Subscription already exists');
       return;
     }
-
-    console.warn('[usePublicRealtimeLinks] Setting up real-time subscription for user:', profileId);
 
     const subscription = supabase
       .channel(`public-links-${profileId}`)
@@ -89,37 +80,38 @@ export const usePublicRealtimeLinks = (username) => {
           filter: `user_id=eq.${profileId}`
         },
         (payload) => {
-          console.warn('[usePublicRealtimeLinks] Real-time update received:', payload);
-          
           switch (payload.eventType) {
             case 'INSERT':
-              console.warn('[usePublicRealtimeLinks] Processing INSERT event for link:', payload.new.id);
-              // Add the new link to the list
-              setLinks(prevLinks => [...prevLinks, payload.new]);
+              // Add the new link to the list and sort by position
+              setLinks(prevLinks => {
+                const newLinks = [...prevLinks, payload.new];
+                const sortedLinks = newLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
+                return sortedLinks;
+              });
               break;
               
             case 'UPDATE':
-              console.warn('[usePublicRealtimeLinks] Processing UPDATE event for link:', payload.new.id);
-              // Update the existing link
-              setLinks(prevLinks => 
-                prevLinks.map(link => 
+              // Update the existing link and re-sort by position
+              setLinks(prevLinks => {
+                const updatedLinks = prevLinks.map(link => 
                   link.id === payload.new.id ? payload.new : link
-                )
-              );
+                );
+                const sortedLinks = updatedLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
+                return sortedLinks;
+              });
               break;
               
             case 'DELETE':
-              console.warn('[usePublicRealtimeLinks] Processing DELETE event for link:', payload.old.id);
               // Remove the deleted link
-              setLinks(prevLinks => 
-                prevLinks.filter(link => link.id !== payload.old.id)
-              );
+              setLinks(prevLinks => {
+                const filteredLinks = prevLinks.filter(link => link.id !== payload.old.id);
+                return filteredLinks;
+              });
               break;
           }
         }
       )
       .subscribe((status) => {
-        console.warn('[usePublicRealtimeLinks] Subscription status:', status);
         setIsRealTimeConnected(status === 'SUBSCRIBED');
       });
 
@@ -129,7 +121,6 @@ export const usePublicRealtimeLinks = (username) => {
   // Clean up subscription
   const cleanupSubscription = useCallback(() => {
     if (subscriptionRef.current) {
-      console.warn('[usePublicRealtimeLinks] Cleaning up real-time subscription');
       supabase.removeChannel(subscriptionRef.current);
       subscriptionRef.current = null;
       setIsRealTimeConnected(false);

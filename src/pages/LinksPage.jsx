@@ -10,13 +10,28 @@
  * - Touch-optimized interface
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { useAuth } from '../hooks/useAuth.js';
 import { useUserLinks } from '../hooks/useUserLinks.js';
+import { useLinkReordering } from '../hooks/useLinkReordering.js';
 import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { LinksSkeleton, RefreshIndicator } from '../components/common/ModernLoading.jsx';
 import { DashboardLayout } from '../components/dashboard';
-import { AddLinkModal, DeleteLinkModal, EditLinkModal, LinkManagerCard } from '../components/links';
+import { AddLinkModal, DeleteLinkModal, DraggableLink, EditLinkModal } from '../components/links';
 import { getErrorType } from '../utils/errorUtils';
 
 const LinksPage = () => {
@@ -36,12 +51,57 @@ const LinksPage = () => {
   const [editingLink, setEditingLink] = useState(null);
   const [deletingLink, setDeletingLink] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [localLinks, setLocalLinks] = useState(links || []);
+
+  // Drag and drop functionality
+  const {
+    isDragging,
+    handleDragStart,
+    handleDragEnd,
+    handleDragCancel,
+  } = useLinkReordering(links, setLocalLinks);
+
+  // Set up sensors for drag and drop with mobile optimization
+  const sensors = useSensors(
+    // TouchSensor for mobile devices - handles touch events directly
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // 200ms delay prevents conflicts with scrolling
+        tolerance: 8, // 8px tolerance for touch drift
+      },
+    }),
+    // PointerSensor for desktop and hybrid devices
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required before drag starts (prevents accidental drags)
+      },
+    }),
+    // KeyboardSensor for accessibility
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Use local links for display when reordering, otherwise use real-time links
+  const displayLinks = (localLinks.length > 0 && isDragging) ? localLinks : (links || []);
 
   // Filter links based on search query
-  const filteredLinks = (links || []).filter(link =>
+  const filteredLinks = displayLinks.filter(link =>
     (link.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
     (link.url?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
+
+  // Update local links when real-time links change (but preserve optimistic updates during dragging)
+  useEffect(() => {
+    if (!isDragging && links && links.length > 0) {
+      // Only update if we're not dragging and we have real-time data
+      // This will overwrite optimistic updates with real server data
+      setLocalLinks(links);
+    } else if (!links || links.length === 0) {
+      // Clear local links if no real-time data
+      setLocalLinks([]);
+    }
+  }, [links, isDragging]);
 
   // Handle Add Link Modal
   const handleOpenAddLinkModal = () => {
@@ -214,29 +274,81 @@ const LinksPage = () => {
                 ) : null}
               </div>
             ) : (
-              // Links List
-              <div className="divide-y divide-gray-100">
-                {filteredLinks.map((link, index) => (
-                  <div key={link.id} className="relative">
-                    <LinkManagerCard
-                      link={link}
-                      position={index + 1}
-                      showEditButton={true}
-                      showDeleteButton={true}
-                      showDragHandle={true}
-                      showSelection={false}
-                      isSelected={false}
-                      onEdit={(link) => {
-                        handleOpenEditLinkModal(link);
-                      }}
-                      onDelete={(link) => {
-                        handleOpenDeleteLinkModal(link);
-                      }}
-                      className="border-0 rounded-none hover:bg-gray-50"
-                    />
+              // Drag and Drop Information Banner + Links List
+              <>
+                {filteredLinks.length > 1 && (
+                  <div className="bg-mint-cream border-l-4 border-golden-yellow p-4 mx-4 mt-4 rounded-r-lg">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <svg className="w-5 h-5 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-forest-green">
+                          Drag to Reorder Links
+                        </h3>
+                        <div className="mt-1 text-sm text-sage-gray">
+                          <p>
+                            Use the <span className="inline-flex items-center px-1">
+                              <svg className="w-3 h-3 text-sage-gray" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+                              </svg>
+                            </span> handle to drag and drop links to change their order. 
+                            On mobile, press and hold the handle to start dragging.
+                            Changes will be saved automatically and appear on your public profile in real-time.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
+                )}
+
+                {/* Links List with Drag and Drop */}
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                  onDragCancel={handleDragCancel}
+                  // Mobile-specific optimizations
+                  autoScroll={{
+                    enabled: true,
+                    threshold: {
+                      x: 0.2,
+                      y: 0.2
+                    },
+                    acceleration: 0.5
+                  }}
+                >
+                <SortableContext 
+                  items={filteredLinks.map(link => link.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="divide-y divide-gray-100">
+                    {filteredLinks.map((link, index) => (
+                      <DraggableLink
+                        key={link.id}
+                        link={link}
+                        position={index + 1}
+                        showEditButton={true}
+                        showDeleteButton={true}
+                        showSelection={false}
+                        isSelected={false}
+                        isDragging={isDragging}
+                        onEdit={(link) => {
+                          handleOpenEditLinkModal(link);
+                        }}
+                        onDelete={(link) => {
+                          handleOpenDeleteLinkModal(link);
+                        }}
+                        className="border-0 rounded-none hover:bg-gray-50"
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+              </>
             )}
           </div>
 

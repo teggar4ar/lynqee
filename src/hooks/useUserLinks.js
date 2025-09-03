@@ -86,13 +86,15 @@ const useBaseUserLinks = (userId) => {
                 const existingLink = links.find(link => link.id === payload.new.id);
                 if (existingLink) {
                   // Link already exists (likely from optimistic update), just update it with server data
-                  return links.map(link => 
+                  const updatedLinks = links.map(link => 
                     link.id === payload.new.id ? payload.new : link
                   );
+                  // Sort by position to maintain correct order
+                  return updatedLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
                 } else {
-                  // New link, add it to the list
+                  // New link, add it to the list and sort by position
                   const newLinks = [...links, payload.new];
-                  return newLinks;
+                  return newLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
                 }
               });
               break;
@@ -101,9 +103,12 @@ const useBaseUserLinks = (userId) => {
               // Update the existing link using functional update
               updateLinks(currentLinks => {
                 const links = currentLinks || [];
-                return links.map(link => 
+                const updatedLinks = links.map(link => 
                   link.id === payload.new.id ? payload.new : link
                 );
+                // Sort by position to maintain correct order after position updates
+                const sortedLinks = updatedLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
+                return sortedLinks;
               });
               break;
               
@@ -117,9 +122,6 @@ const useBaseUserLinks = (userId) => {
         }
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.warn('[useUserLinks] Real-time subscription connected');
-        }
         setIsRealTimeConnected(status === 'SUBSCRIBED');
       });
 
