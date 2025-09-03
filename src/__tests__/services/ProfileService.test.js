@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the supabase client before importing ProfileService
 vi.mock('../../services/supabase.js', () => ({
@@ -9,6 +9,7 @@ vi.mock('../../services/supabase.js', () => ({
       update: vi.fn(),
       delete: vi.fn(),
       eq: vi.fn(),
+      limit: vi.fn(),
       single: vi.fn(),
     })),
     storage: {
@@ -62,6 +63,7 @@ describe('ProfileService CRUD Operations', () => {
       update: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
       single: vi.fn().mockReturnThis(),
     };
     
@@ -126,13 +128,77 @@ describe('ProfileService CRUD Operations', () => {
       expect(result.error).toContain('Network error');
       expect(console.error).toHaveBeenCalled();
     });
+
+    it('should create profile safely with createOrGetProfile when none exists', async () => {
+      // Mock no existing profile
+      supabase.from().select().eq().limit.mockResolvedValueOnce({ data: [], error: null });
+      
+      // Mock successful creation
+      const mockResponse = { data: mockProfile, error: null };
+      supabase.from().insert().select().single.mockResolvedValueOnce(mockResponse);
+
+      const profileData = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        username: 'newuser',
+        name: 'New User',
+        bio: 'New user bio',
+      };
+
+      const result = await ProfileService.createOrGetProfile(profileData);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(mockProfile);
+    });
+
+    it('should return existing profile with createOrGetProfile when already exists', async () => {
+      // Mock existing profile found
+      const existingProfileResponse = { data: [mockProfile], error: null };
+      supabase.from().select().eq().limit.mockResolvedValueOnce(existingProfileResponse);
+
+      const profileData = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        username: 'existinguser',
+        name: 'Existing User',
+      };
+
+      const result = await ProfileService.createOrGetProfile(profileData);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(mockProfile);
+      // Should not call insert since profile already exists
+      expect(supabase.from().insert).not.toHaveBeenCalled();
+    });
+
+    it('should handle duplicate profile creation gracefully', async () => {
+      // Mock no existing profile initially
+      supabase.from().select().eq().limit.mockResolvedValueOnce({ data: [], error: null });
+      
+      // Mock creation failure due to duplicate
+      const duplicateError = { data: null, error: { message: 'duplicate key value violates unique constraint' } };
+      supabase.from().insert().select().single.mockResolvedValueOnce(duplicateError);
+      
+      // Mock successful fetch of existing profile after conflict
+      const existingProfileResponse = { data: [mockProfile], error: null };
+      supabase.from().select().eq().limit.mockResolvedValueOnce(existingProfileResponse);
+
+      const profileData = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        username: 'conflictuser',
+        name: 'Conflict User',
+      };
+
+      const result = await ProfileService.createOrGetProfile(profileData);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(mockProfile);
+    });
   });
 
   describe('READ Operations', () => {
     it('should get profile by user ID successfully', async () => {
-      const mockResponse = { data: mockProfile, error: null };
+      const mockResponse = { data: [mockProfile], error: null };
       
-      supabase.from().select().eq().single.mockResolvedValue(mockResponse);
+      supabase.from().select().eq().limit.mockResolvedValue(mockResponse);
 
       const result = await ProfileService.getProfileByUserId('123e4567-e89b-12d3-a456-426614174000');
 
@@ -142,9 +208,9 @@ describe('ProfileService CRUD Operations', () => {
     });
 
     it('should get public profile by username successfully', async () => {
-      const mockResponse = { data: mockPublicProfile, error: null };
+      const mockResponse = { data: [mockPublicProfile], error: null };
       
-      supabase.from().select().eq().single.mockResolvedValue(mockResponse);
+      supabase.from().select().eq().limit.mockResolvedValue(mockResponse);
 
       const result = await ProfileService.getPublicProfileByUsername('testuser');
 
@@ -155,22 +221,24 @@ describe('ProfileService CRUD Operations', () => {
 
     it('should handle profile not found', async () => {
       const errorResponse = {
-        data: null,
-        error: { message: 'No rows returned', code: 'PGRST116' },
+        data: [],
+        error: null,
       };
       
-      supabase.from().select().eq().single.mockResolvedValue(errorResponse);
+      supabase.from().select().eq().limit.mockResolvedValue(errorResponse);
 
       const result = await ProfileService.getProfileByUserId('nonexistent-id');
 
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('No rows returned');
+      // Profile not found should return success: true with data: null (not an error state)
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(null);
+      expect(result.error).toBe(null);
     });
 
     it('should check username availability - available', async () => {
-      const mockResponse = { data: null, error: { code: 'PGRST116' } }; // No rows found
+      const mockResponse = { data: [], error: null }; // No rows found
       
-      supabase.from().select().eq().single.mockResolvedValue(mockResponse);
+      supabase.from().select().eq().limit.mockResolvedValue(mockResponse);
 
       const result = await ProfileService.checkUsernameAvailability('availableuser');
 
@@ -178,9 +246,9 @@ describe('ProfileService CRUD Operations', () => {
     });
 
     it('should check username availability - not available', async () => {
-      const mockResponse = { data: { username: 'existinguser' }, error: null };
+      const mockResponse = { data: [{ username: 'existinguser' }], error: null };
       
-      supabase.from().select().eq().single.mockResolvedValue(mockResponse);
+      supabase.from().select().eq().limit.mockResolvedValue(mockResponse);
 
       const result = await ProfileService.checkUsernameAvailability('existinguser');
 
@@ -359,12 +427,12 @@ describe('ProfileService CRUD Operations', () => {
 
   describe('Error Handling & Edge Cases', () => {
     it('should handle malformed responses', async () => {
-      supabase.from().select().eq().single.mockResolvedValue(null);
+      supabase.from().select().eq().limit.mockResolvedValue(null);
 
       const result = await ProfileService.getProfileByUserId('123e4567-e89b-12d3-a456-426614174000');
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('destructure');
+      expect(result.error).toContain('Cannot destructure property');
     });
 
     it('should handle concurrent operations', async () => {
@@ -427,10 +495,10 @@ describe('ProfileService CRUD Operations', () => {
     it('should handle batch username validation', async () => {
       const usernames = ['user1', 'user2', 'user3'];
       
-      supabase.from().select().eq().single
-        .mockResolvedValueOnce({ data: { username: 'user1' }, error: null }) // taken
-        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } }) // available
-        .mockResolvedValueOnce({ data: { username: 'user3' }, error: null }); // taken
+      supabase.from().select().eq().limit
+        .mockResolvedValueOnce({ data: [{ username: 'user1' }], error: null }) // taken
+        .mockResolvedValueOnce({ data: [], error: null }) // available
+        .mockResolvedValueOnce({ data: [{ username: 'user3' }], error: null }); // taken
 
       const results = await Promise.all(
         usernames.map(username => ProfileService.checkUsernameAvailability(username))

@@ -15,6 +15,7 @@ import PropTypes from 'prop-types';
 import AuthService from '../services/AuthService.js';
 import { useInactivityTimeout } from '../hooks/useInactivityTimeout.js';
 import { SESSION_CONFIG } from '../constants/session.js';
+import { InitialLoading } from '../components/common/ModernLoading.jsx';
 
 // Create the context
 const AuthContext = createContext(null);
@@ -187,12 +188,7 @@ export const AuthProvider = ({ children }) => {
   // This prevents the flash for users who are already authenticated
   if (loadingInitial && showLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Initializing Application...</p>
-        </div>
-      </div>
+      <InitialLoading message="Initializing Application..." />
     );
   }
 

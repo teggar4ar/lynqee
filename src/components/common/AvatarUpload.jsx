@@ -203,7 +203,7 @@ const AvatarUpload = ({
               cursor-pointer
               transition-all
               duration-200
-              ${isDragOver ? 'border-blue-500 bg-blue-50' : ''}
+              ${isDragOver ? 'border-forest-green bg-mint-cream' : ''}
               ${isUploading ? 'opacity-75 cursor-not-allowed' : 'hover:border-gray-400'}
               relative
               group
@@ -262,10 +262,10 @@ const AvatarUpload = ({
               className="
                 absolute -top-2 -right-2 
                 w-8 h-8 md:w-9 md:h-9
-                bg-white hover:bg-red-50 active:bg-red-100
-                text-red-500 hover:text-red-600 active:text-red-700
+                bg-white hover:bg-coral-red/10 active:bg-coral-red/20
+                text-coral-red hover:text-coral-red active:text-coral-red
                 rounded-full
-                border-2 border-red-200 hover:border-red-300 active:border-red-400
+                border-2 border-coral-red/30 hover:border-coral-red/50 active:border-coral-red/70
                 shadow-lg hover:shadow-xl
                 flex items-center justify-center
                 transition-all duration-200
@@ -303,7 +303,7 @@ const AvatarUpload = ({
               </>
             )}
           </p>
-          <p className="text-xs md:text-sm text-gray-500 mt-1">
+          <p className="text-xs md:text-sm text-sage-gray mt-1">
             JPEG, PNG, WebP up to 1.5MB
           </p>
         </div>

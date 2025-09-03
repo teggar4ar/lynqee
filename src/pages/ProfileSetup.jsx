@@ -8,14 +8,18 @@
  * - Username selection with real-time availability
  * - Profile information setup (name, bio)
  * - Mobile-optimized form design
+ * - Cross-tab synchronization for profile creation
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import useAsync from '../hooks/useAsync.js';
 import ProfileSetupWizard from '../components/profile/ProfileSetupWizard.jsx';
 import { ProfileService } from '../services';
+import { supabase } from '../services/supabase.js';
+import { InitialLoading } from '../components/common/ModernLoading.jsx';
+
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
@@ -23,6 +27,47 @@ const ProfileSetup = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const { loading, error, execute } = useAsync();
+  const subscriptionRef = useRef(null);
+
+  // Set up real-time monitoring for profile creation in other tabs
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const setupProfileMonitoring = () => {
+      if (subscriptionRef.current) return;
+
+      // Set up real-time monitoring for profile creation
+      const subscription = supabase
+        .channel(`profile-setup-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${user.id}`
+          },
+          (_payload) => {
+            // Profile was created in another tab, redirect immediately
+            navigate('/dashboard', { replace: true });
+          }
+        )
+        .subscribe();
+
+      subscriptionRef.current = subscription;
+    };
+
+    setupProfileMonitoring();
+
+    // Cleanup subscription on unmount
+    return () => {
+      if (subscriptionRef.current) {
+        // Clean up real-time subscription
+        supabase.removeChannel(subscriptionRef.current);
+        subscriptionRef.current = null;
+      }
+    };
+  }, [user?.id, navigate]);
 
   // Check if user already has a profile
   useEffect(() => {
@@ -55,13 +100,17 @@ const ProfileSetup = () => {
   const handleProfileCreated = async (profileData) => {
     try {
       await execute(async () => {
-        const newProfile = await ProfileService.createProfile({
+        const newProfile = await ProfileService.createOrGetProfile({
           id: user.id,
           username: profileData.username,
           name: profileData.name || '',
           bio: profileData.bio || '',
           avatar_url: profileData.avatarUrl || null,
         });
+
+        if (!newProfile.success) {
+          throw new Error(newProfile.error || 'Failed to create profile');
+        }
 
         // Update auth context to reflect profile creation
         if (updateUserProfile) {
@@ -91,12 +140,7 @@ const ProfileSetup = () => {
   // Show loading while checking profile
   if (isLoading || checkingProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Setting up your profile...</p>
-        </div>
-      </div>
+      <InitialLoading message="Setting up your profile..." />
     );
   }
 

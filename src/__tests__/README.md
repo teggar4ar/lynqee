@@ -14,11 +14,28 @@ src/
 │   │   └── testUtils.jsx         # Test utilities and mock providers
 │   ├── components/               # Component tests (mirrors src/components)
 │   │   ├── auth/                 # Authentication component tests
+│   │   │   └── AuthButton.test.jsx
+│   │   │   └── AuthContainer.test.jsx
+│   │   │   └── EmailVerificationUI.test.jsx
+│   │   │   └── GoogleOAuthButton.test.jsx
+│   │   │   └── SignInForm.test.jsx
+│   │   │   └── SignUpForm.test.jsx
 │   │   ├── common/               # Common component tests
 │   │   │   ├── Avatar.test.jsx
 │   │   │   └── Button.test.jsx
 │   │   ├── links/                # Links component tests
 │   │   └── profile/              # Profile component tests
+│   ├── pages/                    # Page smoke tests
+│   │   ├── Auth.test.jsx         # Auth page smoke test
+│   │   ├── CheckEmailPage.test.jsx # CheckEmailPage smoke test
+│   │   ├── Dashboard.test.jsx    # Dashboard page smoke test
+│   │   ├── EmailVerification.test.jsx # EmailVerification smoke test
+│   │   ├── LandingPage.test.jsx  # LandingPage smoke test
+│   │   ├── LinksPage.test.jsx    # LinksPage smoke test
+│   │   ├── NotFound.test.jsx     # NotFound page smoke test
+│   │   ├── ProfileSetup.test.jsx # ProfileSetup smoke test
+│   │   ├── PublicProfile.test.jsx # PublicProfile smoke test
+│   │   └── ResetPassword.test.jsx # ResetPassword smoke test
 │   ├── hooks/                    # Custom hook tests
 │   │   ├── useAuth.test.js
 │   │   └── useFormValidation.test.js
@@ -38,6 +55,29 @@ src/
 ### Development Tools
 - **ESLint Plugin Vitest**: Linting rules for test files
 - **@vitest/coverage-v8**: Code coverage reporting
+
+## Smoke Tests
+
+The project includes comprehensive smoke tests for all page components to ensure they render without crashing. These tests are located in `src/__tests__/pages/` and cover:
+
+- **Auth.jsx** - Authentication page
+- **CheckEmailPage.jsx** - Email verification check page
+- **Dashboard.jsx** - Main dashboard for authenticated users
+- **EmailVerification.jsx** - Email verification handling
+- **LandingPage.jsx** - Public landing page
+- **LinksPage.jsx** - Link management page
+- **NotFound.jsx** - 404 error page
+- **ProfileSetup.jsx** - User profile setup wizard
+- **PublicProfile.jsx** - Public profile display
+- **ResetPassword.jsx** - Password reset page
+
+Each smoke test:
+- Renders the page component with appropriate context providers
+- Verifies the component doesn't crash during rendering
+- Tests both authenticated and unauthenticated states where applicable
+- Uses mocked services and contexts to isolate component behavior
+
+Run smoke tests with: `npm run test:run -- src/__tests__/pages/`
 
 ## Configuration Files
 

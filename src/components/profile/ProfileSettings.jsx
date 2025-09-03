@@ -213,16 +213,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
   const usernameStatus = getUsernameStatus();
 
   return (
-    <div className="w-full bg-white rounded-lg border border-gray-200 p-4 md:p-6 md:max-w-md md:mx-auto">
-      <div className="mb-4 md:mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-1 md:text-xl md:mb-2">
-          Edit Profile
-        </h2>
-        <p className="text-sm text-gray-600 md:text-base">
-          Update your profile information and settings.
-        </p>
-      </div>
-
+    <div className="w-full bg-white rounded-lg p-4 md:p-2 md:max-w-md md:mx-auto">
       {error && (
         <ErrorDisplay 
           error={error} 
@@ -304,7 +295,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
             placeholder="Tell people a little about yourself..."
             rows={3}
             maxLength={BIO_MAX_LENGTH}
-            className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-base md:text-sm"
+            className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-golden-yellow focus:border-golden-yellow resize-none text-base md:text-sm"
             style={{ minHeight: '44px' }}
           />
           <div className="mt-1 flex justify-between text-xs text-gray-500">
@@ -313,12 +304,12 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
           </div>
         </div>
 
-        <div className="flex flex-col space-y-3 pt-2 md:flex-row md:space-y-0 md:space-x-3 md:pt-4">
+        <div className="flex flex-row space-x-3 pt-2">
           <Button
             type="submit"
             variant="primary"
             disabled={!canSubmit}
-            className="w-full py-3 text-base md:flex-1 md:py-2 md:text-sm"
+            className="flex-1 py-3 text-base min-h-[44px]"
           >
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
@@ -328,7 +319,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
             variant="ghost"
             onClick={onCancel}
             disabled={loading}
-            className="w-full py-3 text-base md:flex-1 md:py-2 md:text-sm"
+            className="flex-1 py-3 text-base min-h-[44px]"
           >
             Cancel
           </Button>

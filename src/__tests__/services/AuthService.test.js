@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the supabase client before importing AuthService
 vi.mock('../../services/supabase.js', () => ({
@@ -65,6 +65,7 @@ describe('AuthService CRUD Operations', () => {
         password: userData.password,
         options: {
           data: { full_name: userData.full_name },
+          emailRedirectTo: 'http://localhost:3000/verify-email',
         },
       });
       expect(result.success).toBe(true);
@@ -314,7 +315,12 @@ describe('AuthService CRUD Operations', () => {
 
       const result = await AuthService.resendVerification(resendData);
 
-      expect(supabase.auth.resend).toHaveBeenCalledWith(resendData);
+      expect(supabase.auth.resend).toHaveBeenCalledWith({
+        ...resendData,
+        options: {
+          emailRedirectTo: 'http://localhost:3000/verify-email',
+        },
+      });
       expect(result.success).toBe(true);
     });
   });

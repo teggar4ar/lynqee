@@ -22,7 +22,7 @@ import { Navigate, useLocation } from 'react-router-dom';
  */
 const ProtectedRoute = ({ 
   children, 
-  redirectTo = '/login',
+  redirectTo = '/',
   // Anda bisa menambahkan properti lain seperti requirePermission jika perlu
 }) => {
   const { isAuthenticated, isLoading } = useAuth();

@@ -8,7 +8,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
-import { Button } from '../components/common';
+import { Button, ErrorDisplay } from '../components/common';
+import { InitialLoading } from '../components/common/ModernLoading.jsx';
 
 const EmailVerification = () => {
   const navigate = useNavigate();
@@ -53,13 +54,7 @@ const EmailVerification = () => {
   // Show loading while checking auth state
   if (isLoading || status === 'verifying') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Verifying your email...</h2>
-          <p className="text-gray-600">Please wait while we confirm your account.</p>
-        </div>
-      </div>
+      <InitialLoading message="Verifying your email..." />
     );
   }
 
@@ -87,16 +82,16 @@ const EmailVerification = () => {
             
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Email Verified!</h2>
             <p className="text-gray-600 mb-6">
-              Your email has been successfully verified. You're being redirected to your dashboard...
+              Your email has been successfully verified. You're being redirected to setup your profile...
             </p>
             
-            <Button
+            {/* <Button
               onClick={handleGoToLogin}
               variant="primary"
               fullWidth
             >
               Continue to Dashboard
-            </Button>
+            </Button> */}
           </div>
         ) : (
           <div className="text-center">
@@ -118,9 +113,13 @@ const EmailVerification = () => {
             </div>
             
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Verification Failed</h2>
-            <p className="text-gray-600 mb-6">
-              {error}
-            </p>
+            
+            <ErrorDisplay
+              error={error}
+              size="large"
+              showIcon={false}
+              className="mb-6 max-w-md mx-auto"
+            />
             
             <Button
               onClick={handleGoToLogin}

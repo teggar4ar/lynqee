@@ -5,7 +5,7 @@
  * Following the testing patterns established in the project
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the supabase module before importing the service
 vi.mock('../../services/supabase.js', () => {
@@ -27,8 +27,16 @@ import { mockLinks, mockUser } from '../mocks/testUtils.jsx';
 import { supabase } from '../../services/supabase.js';
 
 describe('LinksService CRUD Operations', () => {
+  let consoleErrorSpy;
+  
   beforeEach(() => {
     // Reset all mocks before each test
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    // Restore console.error after each test
+    consoleErrorSpy.mockRestore();
     vi.clearAllMocks();
   });
 
@@ -82,10 +90,7 @@ describe('LinksService CRUD Operations', () => {
       const mockError = new Error('Database connection failed');
 
       const mockSelect = vi.fn().mockReturnValue({
-        single: vi.fn().mockResolvedValue({
-          data: null,
-          error: mockError,
-        }),
+        single: vi.fn().mockRejectedValue(mockError),
       });
 
       const mockInsert = vi.fn().mockReturnValue({
@@ -218,10 +223,7 @@ describe('LinksService CRUD Operations', () => {
       const userId = mockUser.id;
       const mockError = new Error('Network error');
 
-      const mockOrder = vi.fn().mockResolvedValue({
-        data: null,
-        error: mockError,
-      });
+      const mockOrder = vi.fn().mockRejectedValue(mockError);
 
       const mockEq = vi.fn().mockReturnValue({
         order: mockOrder,
@@ -292,10 +294,7 @@ describe('LinksService CRUD Operations', () => {
       const updates = { title: 'Failed Update' };
       const mockError = new Error('Update failed');
 
-      const mockSingle = vi.fn().mockResolvedValue({
-        data: null,
-        error: mockError,
-      });
+      const mockSingle = vi.fn().mockRejectedValue(mockError);
 
       const mockSelect = vi.fn().mockReturnValue({
         single: mockSingle,
@@ -381,9 +380,7 @@ describe('LinksService CRUD Operations', () => {
       const linkId = 'link-to-delete';
       const mockError = new Error('Delete failed');
 
-      const mockEq = vi.fn().mockResolvedValue({
-        error: mockError,
-      });
+      const mockEq = vi.fn().mockRejectedValue(mockError);
 
       const mockDelete = vi.fn().mockReturnValue({
         eq: mockEq,

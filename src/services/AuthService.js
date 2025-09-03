@@ -92,15 +92,17 @@ class AuthService {
   /**
    * Sign up with email and password (alias for signUpWithEmail)
    * @param {Object} userData - User data {email, password, full_name}
+   * @param {string} redirectTo - URL to redirect for email confirmation
    * @returns {Promise<Object>} Standardized authentication result
    */
-  static async signUp(userData) {
+  static async signUp(userData, redirectTo = `${window.location.origin}/verify-email`) {
     try {
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
         options: {
           data: { full_name: userData.full_name },
+          emailRedirectTo: redirectTo,
         },
       });
 
@@ -116,15 +118,17 @@ class AuthService {
    * @param {string} email - User email
    * @param {string} password - User password
    * @param {Object} metadata - Additional user metadata
+   * @param {string} redirectTo - URL to redirect for email confirmation
    * @returns {Promise<Object>} Standardized authentication result
    */
-  static async signUpWithEmail(email, password, metadata = {}) {
+  static async signUpWithEmail(email, password, metadata = {}, redirectTo = `${window.location.origin}/verify-email`) {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: metadata,
+          emailRedirectTo: redirectTo,
         },
       });
 
@@ -301,11 +305,17 @@ class AuthService {
   /**
    * Resend verification email
    * @param {Object} resendData - Resend parameters {type, email}
+   * @param {string} redirectTo - URL to redirect for email confirmation
    * @returns {Promise<Object>} Standardized response
    */
-  static async resendVerification(resendData) {
+  static async resendVerification(resendData, redirectTo = `${window.location.origin}/verify-email`) {
     try {
-      const { data, error } = await supabase.auth.resend(resendData);
+      const { data, error } = await supabase.auth.resend({
+        ...resendData,
+        options: {
+          emailRedirectTo: redirectTo,
+        },
+      });
 
       if (error) {
         return this._formatResponse(null, error);

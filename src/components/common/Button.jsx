@@ -22,6 +22,7 @@ const Button = ({
   onClick,
   className = '',
   fullWidth = false,
+  as,
   ...props
 }) => {
   // Base button classes (mobile-first)
@@ -44,34 +45,40 @@ const Button = ({
   // Color variants
   const variantClasses = {
     primary: `
-      bg-blue-500 text-white 
-      hover:bg-blue-600 
-      focus:ring-blue-500
-      active:bg-blue-700
+      bg-forest-green text-white
+      hover:bg-deep-forest
+      focus:ring-forest-green
+      active:bg-deep-forest
     `,
     secondary: `
-      bg-gray-500 text-white 
-      hover:bg-gray-600 
-      focus:ring-gray-500
-      active:bg-gray-700
+      bg-sage-gray text-white
+      hover:bg-sage-gray/80
+      focus:ring-sage-gray
+      active:bg-sage-gray/90
     `,
     outline: `
-      border-2 border-blue-500 text-blue-500 bg-transparent
-      hover:bg-blue-50 
-      focus:ring-blue-500
-      active:bg-blue-100
+      border-2 border-forest-green text-forest-green bg-transparent
+      hover:bg-forest-green/10
+      focus:ring-forest-green
+      active:bg-forest-green/20
     `,
     ghost: `
-      text-blue-500 bg-transparent
-      hover:bg-blue-50 
-      focus:ring-blue-500
-      active:bg-blue-100
+      text-forest-green bg-transparent
+      hover:bg-mint-cream
+      focus:ring-transparent
+      active:bg-mint-cream/80
     `,
     danger: `
-      bg-red-500 text-white 
-      hover:bg-red-600 
-      focus:ring-red-500
-      active:bg-red-700
+      bg-coral-red text-white
+      hover:bg-coral-red/80
+      focus:ring-coral-red
+      active:bg-coral-red/90
+    `,
+    accent: `
+      bg-yellow text-deep-forest
+      hover:bg-yellow/80
+      focus:ring-yellow
+      active:bg-yellow/90
     `,
   };
 
@@ -111,30 +118,42 @@ const Button = ({
     </svg>
   );
 
+  // Determine which component to render
+  const Component = as || 'button';
+  
+  // Prepare props based on component type
+  const componentProps = as ? {
+    to: props.to,
+    href: props.href,
+    className: buttonClasses,
+    ...props
+  } : {
+    type,
+    disabled: disabled || loading,
+    onClick,
+    className: buttonClasses,
+    ...props
+  };
+
   return (
-    <button
-      type={type}
-      disabled={disabled || loading}
-      onClick={onClick}
-      className={buttonClasses}
-      {...props}
-    >
+    <Component {...componentProps}>
       {loading && <LoadingSpinner />}
       {children}
-    </button>
+    </Component>
   );
 };
 
 Button.propTypes = {
   children: PropTypes.node.isRequired,
   type: PropTypes.oneOf(['button', 'submit', 'reset']),
-  variant: PropTypes.oneOf(['primary', 'secondary', 'outline', 'ghost', 'danger']),
+  variant: PropTypes.oneOf(['primary', 'secondary', 'outline', 'ghost', 'danger', 'accent']),
   size: PropTypes.oneOf(['small', 'medium', 'large']),
   disabled: PropTypes.bool,
   loading: PropTypes.bool,
   onClick: PropTypes.func,
   className: PropTypes.string,
   fullWidth: PropTypes.bool,
+  as: PropTypes.elementType,
 };
 
 export default Button;

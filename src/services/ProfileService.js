@@ -51,6 +51,38 @@ class ProfileService {
       return this._formatResponse(null, { message: error.message });
     }
   }
+
+  /**
+   * Safely create or get existing profile (handles race conditions between tabs)
+   * @param {Object} profileData - Profile data to create
+   * @returns {Promise<Object>} Standardized response with profile data
+   */
+  static async createOrGetProfile(profileData) {
+    try {
+      // First, check if profile already exists
+      const existingProfileResult = await this.getProfileByUserId(profileData.id);
+      
+      if (existingProfileResult.success && existingProfileResult.data) {
+        // Profile already exists (created by another tab), return it
+        return existingProfileResult;
+      }
+
+      // Profile doesn't exist, try to create it
+      const createResult = await this.createProfile(profileData);
+      
+      // If creation failed due to conflict (another tab created it), get the existing one
+      if (!createResult.success && createResult.error && 
+          (createResult.error.includes('duplicate') || createResult.error.includes('unique'))) {
+        // Handle race condition: fetch existing profile
+        return await this.getProfileByUserId(profileData.id);
+      }
+
+      return createResult;
+    } catch (error) {
+      console.error('[ProfileService] createOrGetProfile error:', error);
+      return this._formatResponse(null, { message: error.message });
+    }
+  }
   /**
    * Get profile by user ID
    * @param {string} userId - The user ID
@@ -58,13 +90,29 @@ class ProfileService {
    */
   static async getProfileByUserId(userId) {
     try {
+      // Use select() without .single() to avoid 406 errors
       const { data, error } = await supabase
         .from(SUPABASE_TABLES.PROFILES)
         .select('*')
         .eq('id', userId)
-        .single();
+        .limit(1);
 
-      return this._formatResponse(data, error);
+      if (error) {
+        return this._formatResponse(null, error);
+      }
+
+      // Check if we got any results
+      if (!data || data.length === 0) {
+        // No profile found - this is a valid state for new users
+        return {
+          success: true,
+          error: null,
+          data: null,
+        };
+      }
+
+      // Return the first (and should be only) result
+      return this._formatResponse(data[0], null);
     } catch (error) {
       console.error('[ProfileService] getProfileByUserId error:', error);
       return this._formatResponse(null, { message: error.message });
@@ -78,13 +126,29 @@ class ProfileService {
    */
   static async getPublicProfileByUsername(username) {
     try {
+      // Use select() without .single() to avoid 406 errors
       const { data, error } = await supabase
         .from(SUPABASE_TABLES.PROFILES)
         .select('*')
         .eq('username', username)
-        .single();
+        .limit(1);
 
-      return this._formatResponse(data, error);
+      if (error) {
+        return this._formatResponse(null, error);
+      }
+
+      // Check if we got any results
+      if (!data || data.length === 0) {
+        // No profile found with this username
+        return {
+          success: true,
+          error: null,
+          data: null,
+        };
+      }
+
+      // Return the first (and should be only) result
+      return this._formatResponse(data[0], null);
     } catch (error) {
       console.error('[ProfileService] getPublicProfileByUsername error:', error);
       return this._formatResponse(null, { message: error.message });
@@ -98,13 +162,19 @@ class ProfileService {
    */
   static async checkUsernameAvailability(username) {
     try {
+      // Use select() without .single() to avoid 406 errors
       const { data, error } = await supabase
         .from(SUPABASE_TABLES.PROFILES)
         .select('username')
         .eq('username', username)
-        .single();
+        .limit(1);
 
-      if (error && error.code === 'PGRST116') {
+      if (error) {
+        return this._formatResponse(null, error);
+      }
+
+      // Check if we got any results
+      if (!data || data.length === 0) {
         // No rows returned - username is available
         return {
           success: true,
@@ -112,10 +182,6 @@ class ProfileService {
           available: true,
           data: null,
         };
-      }
-
-      if (error) {
-        return this._formatResponse(null, error);
       }
 
       // Username exists - not available
@@ -346,6 +412,7 @@ class ProfileService {
       const result = await this.getProfileByUserId(userId);
       return result.success && result.data !== null;
     } catch (error) {
+      console.error('[ProfileService] userHasProfile error:', error);
       return false;
     }
   }

@@ -17,34 +17,42 @@ import { supabase } from '../services/supabase.js';
 import { useAuth } from '../hooks/useAuth.js';
 import Button from '../components/common/Button.jsx';
 import Input from '../components/common/Input.jsx';
+import { ErrorDisplay } from '../components/common/index.js';
 import { useFormValidation } from '../hooks/useFormValidation.js';
 import { VALIDATION_MESSAGES } from '../constants/validationMessages.js';
+import { InitialLoading } from '../components/common/ModernLoading.jsx';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
-  const { isLoading, isAuthenticated } = useAuth(); // Kita hanya butuh status dari context
+  const { isLoading, isAuthenticated } = useAuth();
   
   const [formData, setFormData] = useState({ password: '', confirmPassword: '' });
   const [status, setStatus] = useState('verifying'); // 'verifying', 'ready', 'error', 'success'
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasBeenAuthenticated, setHasBeenAuthenticated] = useState(false); // Track if we were ever authenticated
 
-  // Effect ini sekarang menjadi satu-satunya sumber kebenaran, berdasarkan state global
+  // Effect to handle authentication state changes
   useEffect(() => {
-    // Jangan lakukan apa-apa jika AuthContext masih memuat sesi awal
+    // Don't do anything if AuthContext is still loading initial session
     if (isLoading) {
       return;
     }
 
-    // Jika loading selesai dan kita terotentikasi, berarti link reset valid
+    // If we're authenticated, mark that we've been authenticated and set ready status
     if (isAuthenticated) {
+      setHasBeenAuthenticated(true);
       setStatus('ready');
     } else {
-      // Jika loading selesai dan kita TIDAK terotentikasi, link tidak valid
-      setError('Link reset password tidak valid atau telah kedaluwarsa.');
-      setStatus('error');
+      // Only show error if we were never authenticated (invalid link)
+      // If we were authenticated before, it means we successfully reset password and signed out
+      if (!hasBeenAuthenticated) {
+        setError('Password reset link is invalid or has expired.');
+        setStatus('error');
+      }
+      // If hasBeenAuthenticated is true, don't change status - keep current state
     }
-  }, [isLoading, isAuthenticated]); // Bergantung pada state global
+  }, [isLoading, isAuthenticated, hasBeenAuthenticated]);
 
   // Aturan validasi (tidak berubah)
   const validationRules = {
@@ -81,14 +89,14 @@ const ResetPassword = () => {
 
         setStatus('success');
         
-        setTimeout(async () => {
-          await supabase.auth.signOut();
-          navigate('/?passwordReset=success');
+        // Redirect to dashboard after successful password reset (keep user logged in)
+        setTimeout(() => {
+          navigate('/dashboard');
         }, 3000);
       });
     } catch (err) {
       console.error('[ResetPassword] Password reset failed:', err);
-      setError(err.message || 'Gagal mengubah password. Silakan coba lagi.');
+      setError(err.message || 'Failed to change password. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -101,17 +109,12 @@ const ResetPassword = () => {
     if (error) setError('');
   };
 
-  // ----- Tampilan UI Berdasarkan Status -----
+  // ----- UI Display Based on Status -----
   
-  // Tampilkan spinner selama AuthContext masih bekerja atau kita masih 'verifying'
+  // Show spinner while AuthContext is still working or we're still 'verifying'
   if (isLoading || status === 'verifying') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-          <h2 className="mt-4 text-xl font-semibold">Memverifikasi link...</h2>
-        </div>
-      </div>
+      <InitialLoading message="Verifying link..." />
     );
   }
 
@@ -119,9 +122,9 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="max-w-md w-full space-y-6 text-center">
-          <h2 className="text-xl font-semibold text-red-600">Link Tidak Valid</h2>
+          <h2 className="text-xl font-semibold text-red-600">Invalid Link</h2>
           <p className="text-gray-600">{error}</p>
-          <Button onClick={() => navigate('/')} variant="primary">Kembali ke Halaman Login</Button>
+          <Button onClick={() => navigate('/')} variant="primary">Back to Login Page</Button>
         </div>
       </div>
     );
@@ -131,24 +134,24 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="max-w-md w-full space-y-6 text-center">
-          <h2 className="text-xl font-semibold text-green-600">Password Berhasil Diubah!</h2>
-          <p className="text-gray-600">Anda akan diarahkan ke halaman login.</p>
+          <h2 className="text-xl font-semibold text-green-600">Password Successfully Changed!</h2>
+          <p className="text-gray-600">You will be redirected to the dashboard in a few seconds.</p>
         </div>
       </div>
     );
   }
 
-  // Jika status === 'ready', tampilkan form
+  // If status === 'ready', show form
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Reset Password Anda</h2>
-          <p className="mt-2 text-sm text-gray-600">Masukkan password baru Anda di bawah</p>
+          <h2 className="text-2xl font-bold text-gray-900">Reset Your Password</h2>
+          <p className="mt-2 text-sm text-gray-600">Enter your new password below</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input type="password" name="password" value={formData.password} onChange={handleInputChange} onBlur={handleBlur} label="Password Baru" placeholder="Minimal 8 karakter" error={errors.password} touched={touched.password} required disabled={isSubmitting} />
-          <Input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} onBlur={handleBlur} label="Konfirmasi Password Baru" placeholder="Ketik ulang password baru Anda" error={errors.confirmPassword} touched={touched.confirmPassword} required disabled={isSubmitting} />
+          <Input type="password" name="password" value={formData.password} onChange={handleInputChange} onBlur={handleBlur} label="New Password" placeholder="Minimum 8 characters" error={errors.password} touched={touched.password} required disabled={isSubmitting} />
+          <Input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} onBlur={handleBlur} label="Confirm New Password" placeholder="Retype your new password" error={errors.confirmPassword} touched={touched.confirmPassword} required disabled={isSubmitting} />
           {error && 
             <ErrorDisplay 
               error={error} 
@@ -156,7 +159,7 @@ const ResetPassword = () => {
             />
           }
           <div className="pt-2">
-            <Button type="submit" variant="primary" loading={isSubmitting} fullWidth>Ubah Password</Button>
+            <Button type="submit" variant="primary" loading={isSubmitting} fullWidth>Change Password</Button>
           </div>
         </form>
       </div>

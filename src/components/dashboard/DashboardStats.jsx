@@ -15,7 +15,7 @@ const DashboardStats = ({
   stats = {},
   loading = false,
   className = '',
-  showRealTimeIndicator = false 
+  
 }) => {
   const defaultStats = {
     totalLinks: 0,
@@ -30,7 +30,7 @@ const DashboardStats = ({
       label: 'Links',
       value: defaultStats.totalLinks,
       icon: (
-        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
         </svg>
       ),
@@ -85,12 +85,6 @@ const DashboardStats = ({
         <h2 className="text-lg font-semibold text-gray-900 md:text-xl">
           Quick Stats
         </h2>
-        {showRealTimeIndicator && (
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-xs text-gray-600 hidden md:inline">Live</span>
-          </div>
-        )}
       </div>
       
       {/* Mobile: Horizontal 3-column layout, Desktop: Keep same layout */}
@@ -101,7 +95,7 @@ const DashboardStats = ({
             className={`
               relative p-3 md:p-4 rounded-lg border-2 transition-all duration-200
               ${item.available 
-                ? 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-sm' 
+                ? 'bg-white border-gray-200 hover:border-golden-yellow hover:shadow-sm' 
                 : 'bg-gray-50 border-gray-100'
               }
             `}
@@ -112,7 +106,7 @@ const DashboardStats = ({
               <div className={`
                 w-8 h-8 md:w-10 md:h-10 rounded-lg mb-2 
                 flex items-center justify-center
-                ${item.available ? 'bg-blue-50' : 'bg-gray-100'}
+                ${item.available ? 'bg-golden-yellow/10' : 'bg-gray-100'}
               `}>
                 {React.cloneElement(item.icon, {
                   className: `w-4 h-4 md:w-6 md:h-6 ${item.icon.props.className.replace('w-6 h-6', 'w-4 h-4 md:w-6 md:h-6')}`
@@ -157,19 +151,19 @@ const DashboardStats = ({
       </div>
 
       {/* Coming soon message for unavailable features - more compact on mobile */}
-      <div className="mt-3 md:mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+      <div className="mt-3 md:mt-4 p-3 bg-mint-cream rounded-lg border border-golden-yellow/30">
         <div className="flex items-start space-x-2">
-          <svg className="w-4 h-4 md:w-5 md:h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 md:w-5 md:h-5 text-golden-yellow mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div>
-            <h3 className="text-xs md:text-sm font-medium text-blue-900">
+            <h3 className="text-xs md:text-sm font-medium text-forest-green">
               Analytics Coming Soon
             </h3>
-            <p className="text-xs text-blue-800 mt-1 hidden md:block">
+            <p className="text-xs text-sage-gray mt-1 hidden md:block">
               Click tracking and profile view analytics will be available in upcoming updates.
             </p>
-            <p className="text-xs text-blue-800 mt-1 md:hidden">
+            <p className="text-xs text-sage-gray mt-1 md:hidden">
               Analytics features coming soon.
             </p>
           </div>

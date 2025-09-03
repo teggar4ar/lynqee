@@ -19,6 +19,7 @@ const LinkManagerCard = ({
   onEdit,
   onDelete,
   onSelect,
+  dragHandleProps = null,
   className = ''
 }) => {
   const [showActions, setShowActions] = useState(false);
@@ -65,15 +66,24 @@ const LinkManagerCard = ({
               type="checkbox"
               checked={isSelected}
               onChange={handleSelect}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-golden-yellow border-gray-300 rounded focus:ring-golden-yellow"
             />
           </div>
         )}
 
         {/* Drag Handle */}
         {showDragHandle && !showSelection && (
-          <div className="flex-shrink-0 cursor-move text-gray-400 hover:text-gray-600">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <div 
+            className="flex-shrink-0 cursor-move text-gray-400 hover:text-gray-600 touch-manipulation p-2 -m-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            {...dragHandleProps}
+            style={{ 
+              touchAction: 'none', // Prevent scrolling when touching drag handle
+              WebkitTouchCallout: 'none', // Disable iOS callout menu
+              WebkitUserSelect: 'none', // Disable text selection
+              userSelect: 'none'
+            }}
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
               <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
             </svg>
           </div>
@@ -81,8 +91,8 @@ const LinkManagerCard = ({
 
         {/* Link Icon */}
         <div className="flex-shrink-0">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 bg-golden-yellow/20 rounded-lg flex items-center justify-center">
+            <svg className="w-5 h-5 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
             </svg>
           </div>
@@ -110,7 +120,7 @@ const LinkManagerCard = ({
               {showEditButton && (
                 <button
                   onClick={handleEdit}
-                  className="p-1 text-gray-400 hover:text-blue-600 rounded"
+                  className="p-1 text-gray-400 hover:text-golden-yellow rounded"
                   title="Edit link"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -214,6 +224,7 @@ LinkManagerCard.propTypes = {
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   onSelect: PropTypes.func,
+  dragHandleProps: PropTypes.object,
   className: PropTypes.string,
 };
 

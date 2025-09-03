@@ -102,18 +102,27 @@ const LinkForm = ({
       url: true
     });
 
+    // Format URL before validation
+    const formattedUrl = formatUrl(formData.url.trim());
+
+    // Create data object with formatted URL for validation
+    const dataToValidate = {
+      title: formData.title.trim(),
+      url: formattedUrl
+    };
+
     // Validate all data
-    const validation = validateLinkData(formData);
-    
+    const validation = validateLinkData(dataToValidate);
+
     if (!validation.isValid) {
       setErrors(validation.errors);
       return;
     }
 
-    // Trim whitespace from form data
+    // Use the validated and formatted data
     const cleanedData = {
-      title: formData.title.trim(),
-      url: formData.url.trim()
+      title: dataToValidate.title,
+      url: dataToValidate.url
     };
 
     try {
@@ -177,7 +186,7 @@ const LinkForm = ({
       {/* URL Field */}
       <div>
         <Input
-          type="url"
+          type="text"
           name="url"
           label="URL"
           placeholder="https://example.com"

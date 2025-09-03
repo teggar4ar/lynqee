@@ -66,8 +66,7 @@ const useBaseUserLinks = (userId) => {
   const setupRealTimeSubscription = useCallback(() => {
     if (!userId || subscriptionRef.current) return;
 
-    console.warn('[useUserLinks] Setting up real-time subscription for user:', userId);
-
+    // Initialize real-time monitoring for user links
     const subscription = supabase
       .channel(`user-links-${userId}`)
       .on(
@@ -86,15 +85,16 @@ const useBaseUserLinks = (userId) => {
                 const links = currentLinks || [];
                 const existingLink = links.find(link => link.id === payload.new.id);
                 if (existingLink) {
-                  console.warn('[useUserLinks] Link already exists, updating with server data. Total links:', links.length);
                   // Link already exists (likely from optimistic update), just update it with server data
-                  return links.map(link => 
+                  const updatedLinks = links.map(link => 
                     link.id === payload.new.id ? payload.new : link
                   );
+                  // Sort by position to maintain correct order
+                  return updatedLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
                 } else {
-                  // New link, add it to the list
+                  // New link, add it to the list and sort by position
                   const newLinks = [...links, payload.new];
-                  return newLinks;
+                  return newLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
                 }
               });
               break;
@@ -103,9 +103,12 @@ const useBaseUserLinks = (userId) => {
               // Update the existing link using functional update
               updateLinks(currentLinks => {
                 const links = currentLinks || [];
-                return links.map(link => 
+                const updatedLinks = links.map(link => 
                   link.id === payload.new.id ? payload.new : link
                 );
+                // Sort by position to maintain correct order after position updates
+                const sortedLinks = updatedLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
+                return sortedLinks;
               });
               break;
               
@@ -119,9 +122,6 @@ const useBaseUserLinks = (userId) => {
         }
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.warn('[useUserLinks] Real-time subscription connected');
-        }
         setIsRealTimeConnected(status === 'SUBSCRIBED');
       });
 
@@ -153,7 +153,7 @@ const useBaseUserLinks = (userId) => {
     // Cleanup function
     return () => {
       if (subscriptionRef.current) {
-        console.warn('[useUserLinks] Cleaning up real-time subscription (effect cleanup)');
+        // Clean up real-time subscription
         supabase.removeChannel(subscriptionRef.current);
         subscriptionRef.current = null;
         setIsRealTimeConnected(false);
