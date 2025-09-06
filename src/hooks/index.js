@@ -12,6 +12,9 @@ export { useUserProfile } from './useUserProfile.js';        // For authenticate
 export { usePublicProfile } from './usePublicProfile.js';    // For public profile by username
 export { default as useAvatar } from './useAvatar.js';
 
+// UI hooks
+export { default as useAlerts } from './useAlerts.js';       // Alert system
+
 // Links hooks - standardized naming convention  
 export { useUserLinks } from './useUserLinks.js';                    // For authenticated user's links
 export { usePublicRealtimeLinks } from './usePublicRealtimeLinks.js'; // For public links with real-time updates

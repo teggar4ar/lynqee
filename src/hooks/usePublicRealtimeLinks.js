@@ -32,7 +32,13 @@ export const usePublicRealtimeLinks = (username) => {
       setLoading(true);
       setError(null);
       
-      const linksData = await LinksService.getLinksByUsername(username);
+      const result = await LinksService.getLinksByUsername(username);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch links');
+      }
+      
+      const linksData = result.data;
       setLinks(linksData);
       
       // Get the user_id from the first link to set up real-time subscription
@@ -41,9 +47,9 @@ export const usePublicRealtimeLinks = (username) => {
       } else {
         // If no links, we need to get the profile ID another way
         try {
-          const profile = await ProfileService.getProfileByUsername(username);
-          if (profile?.id) {
-            setProfileId(profile.id);
+          const profileResult = await ProfileService.getPublicProfileByUsername(username);
+          if (profileResult.success && profileResult.data?.id) {
+            setProfileId(profileResult.data.id);
           }
         } catch (profileErr) {
           console.error('[usePublicRealtimeLinks] Could not get profile ID for subscription:', profileErr);

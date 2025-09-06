@@ -147,7 +147,7 @@ describe('SignInForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockOnError).toHaveBeenCalledWith(new Error('Invalid credentials'));
+      expect(mockOnError).toHaveBeenCalledWith({ skipInlineDisplay: true });
     });
   });
 

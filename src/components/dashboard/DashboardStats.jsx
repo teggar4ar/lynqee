@@ -10,6 +10,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Eye, Info, Link, MousePointer } from 'lucide-react';
+import { useAlerts } from '../../hooks';
 
 const DashboardStats = ({ 
   stats = {},
@@ -17,11 +19,23 @@ const DashboardStats = ({
   className = '',
   
 }) => {
+  const { showInfo } = useAlerts();
+  
   const defaultStats = {
     totalLinks: 0,
     totalClicks: 0,
     profileViews: 0,
     ...stats
+  };
+
+  // Handle click on unavailable features
+  const handleUnavailableFeatureClick = (featureName) => {
+    showInfo({
+      title: 'Feature Coming Soon',
+      message: `${featureName} analytics will be available in an upcoming update. Stay tuned!`,
+      duration: 4000,
+      position: 'bottom-center'
+    });
   };
 
   const statItems = [
@@ -30,9 +44,7 @@ const DashboardStats = ({
       label: 'Links',
       value: defaultStats.totalLinks,
       icon: (
-        <svg className="w-6 h-6 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-        </svg>
+        <Link className="w-6 h-6 text-golden-yellow" />
       ),
       available: true
     },
@@ -41,9 +53,7 @@ const DashboardStats = ({
       label: 'Total Clicks',
       value: defaultStats.totalClicks,
       icon: (
-        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-        </svg>
+        <MousePointer className="w-6 h-6 text-green-600" />
       ),
       available: false // Future feature
     },
@@ -52,10 +62,7 @@ const DashboardStats = ({
       label: 'Profile Views',
       value: defaultStats.profileViews,
       icon: (
-        <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-        </svg>
+        <Eye className="w-6 h-6 text-purple-600" />
       ),
       available: false // Future feature
     }
@@ -92,11 +99,12 @@ const DashboardStats = ({
         {statItems.map((item) => (
           <div
             key={item.id}
+            onClick={!item.available ? () => handleUnavailableFeatureClick(item.label) : undefined}
             className={`
               relative p-3 md:p-4 rounded-lg border-2 transition-all duration-200
               ${item.available 
                 ? 'bg-white border-gray-200 hover:border-golden-yellow hover:shadow-sm' 
-                : 'bg-gray-50 border-gray-100'
+                : 'bg-gray-50 border-gray-100 cursor-pointer hover:bg-gray-100'
               }
             `}
           >
@@ -153,9 +161,7 @@ const DashboardStats = ({
       {/* Coming soon message for unavailable features - more compact on mobile */}
       <div className="mt-3 md:mt-4 p-3 bg-mint-cream rounded-lg border border-golden-yellow/30">
         <div className="flex items-start space-x-2">
-          <svg className="w-4 h-4 md:w-5 md:h-5 text-golden-yellow mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <Info className="w-4 h-4 md:w-5 md:h-5 text-golden-yellow mt-0.5 flex-shrink-0" />
           <div>
             <h3 className="text-xs md:text-sm font-medium text-forest-green">
               Analytics Coming Soon

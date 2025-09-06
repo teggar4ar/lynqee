@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useFormValidation } from '../../hooks/useFormValidation.js';
 import { useAuth } from '../../hooks/useAuth.js';
-import { VALIDATION_MESSAGES } from '../../constants/validationMessages.js';
+import { useAlerts } from '../../hooks';
+import { SERVICE_ERROR_MESSAGES, VALIDATION_MESSAGES } from '../../constants/validationMessages.js';
 import { isValidEmail } from '../../utils/validators.js';
+import { getUserFriendlyErrorMessage } from '../../utils/errorUtils.js';
 import { ArrowRight, Check, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 import { Button, Input } from '../common';
 
 const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
   const { signUp } = useAuth();
+  const { showSuccess, showError, showInfo } = useAlerts();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -68,19 +71,47 @@ const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
         );
 
         if (result.error) {
-          if (onError) onError({ message: result.error });
+          showError({
+            title: 'Registration Failed',
+            message: result.error,
+            position: 'bottom-center'
+          });
+          if (onError) onError({ 
+            message: result.error,
+            skipInlineDisplay: true
+          });
         } else if (result.user) {
+          showSuccess({
+            title: 'Account Created',
+            message: 'Registration successful! Please verify your email.',
+            duration: 6000
+          });
           if (onSignUpSuccess) onSignUpSuccess(result.user.email);
         }
+      }, { 
+        showAlerts: false  // Disable automatic validation alerts to prevent duplicates
       });
 
       if (!isValid) {
+        showInfo({
+          title: SERVICE_ERROR_MESSAGES.FORM.VALIDATION_TITLE,
+          message: SERVICE_ERROR_MESSAGES.FORM.VALIDATION_MESSAGE,
+          position: 'bottom-center'
+        });
         setIsSubmitting(false);
         return;
       };
     } catch (error) {
       console.error('[SignUpForm] Registration failed:', error);
-      if (onError) onError(error);
+      showError({
+        title: 'Registration Error',
+        message: getUserFriendlyErrorMessage(error),
+        position: 'bottom-center'
+      });
+      if (onError) onError({
+        ...error,
+        skipInlineDisplay: true
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -125,8 +156,8 @@ const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
                     <div className="flex items-start space-x-3 p-3 bg-mint-cream rounded-lg">
                       <div className="w-6 h-6 bg-golden-yellow rounded-full flex items-center justify-center mt-0.5"><Check className="w-3 h-3 text-forest-green" /></div>
                       <div>
-                        <div className="text-forest-green font-medium text-sm">Unlimited Links</div>
-                        <div className="text-sage-gray text-xs">Add as many links as you want</div>
+                        <div className="text-forest-green font-medium text-sm">Up to 150 Links</div>
+                        <div className="text-sage-gray text-xs">Add up to 150 links to your profile</div>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3 p-3 bg-mint-cream rounded-lg">

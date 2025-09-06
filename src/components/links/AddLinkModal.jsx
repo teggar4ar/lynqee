@@ -11,10 +11,11 @@
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { Info } from 'lucide-react';
 import { ErrorDisplay, Modal } from '../common';
 import LinkForm from './LinkForm';
 import { LinksService } from '../../services';
-import { useAuth } from '../../hooks/useAuth';
+import { useAlerts, useAuth } from '../../hooks';
 import { getContextualErrorMessage } from '../../utils/errorUtils';
 
 const AddLinkModal = ({
@@ -22,11 +23,13 @@ const AddLinkModal = ({
   onClose,
   onLinkAdded,
   existingLinksCount = 0,
+  existingLinks = [], // Array of existing links for duplicate checking
   className = ''
 }) => {
   const { user } = useAuth();
+  const { showSuccess } = useAlerts();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null); // Add local error state for service-level errors
 
   // Calculate next position for the new link
   const getNextPosition = () => {
@@ -35,13 +38,15 @@ const AddLinkModal = ({
 
   // Handle form submission
   const handleSubmit = async (formData) => {
+    // Clear any previous errors
+    setError(null);
+    
     if (!user) {
       setError('You must be logged in to add links');
       return;
     }
 
     setLoading(true);
-    setError('');
 
     try {
       // Prepare link data
@@ -53,11 +58,23 @@ const AddLinkModal = ({
       };
 
       // Create the link via service
-      const newLink = await LinksService.createLink(linkData);
+      const result = await LinksService.createLink(linkData);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create link');
+      }
+
+      // Show success notification
+      showSuccess({
+        title: 'Link Added',
+        message: `"${formData.title}" has been added to your profile!`,
+        duration: 3000,
+        position: 'bottom-center'
+      });
 
       // Notify parent component of successful creation
       if (onLinkAdded) {
-        onLinkAdded(newLink);
+        onLinkAdded(result.data);
       }
 
       // Close modal on success
@@ -68,6 +85,8 @@ const AddLinkModal = ({
       
       // Use centralized error handling with context
       const errorMessage = getContextualErrorMessage(err, 'link');
+      
+      // Set local error state for inline display
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -77,16 +96,14 @@ const AddLinkModal = ({
   // Handle modal close
   const handleClose = () => {
     if (loading) return; // Prevent closing while saving
-    
-    setError('');
+    setError(null); // Clear errors when closing
     onClose();
   };
 
   // Handle cancel
   const handleCancel = () => {
     if (loading) return; // Prevent cancel while saving
-    
-    setError('');
+    setError(null); // Clear errors when canceling
     onClose();
   };
 
@@ -101,11 +118,12 @@ const AddLinkModal = ({
       className={className}
     >
       <div className="space-y-4">
-        {/* Error Message */}
+        {/* Service-level error display */}
         {error && (
           <ErrorDisplay 
             error={error} 
-            showIcon={true}
+            className="mb-4"
+            showDetails={false}
           />
         )}
 
@@ -115,11 +133,11 @@ const AddLinkModal = ({
           text-sm text-sage-gray
         ">
           <div className="flex items-start space-x-2">
-            <svg className="w-5 h-5 text-golden-yellow flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <Info className="w-5 h-5 text-golden-yellow flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium mb-1 text-forest-green">Adding Link #{existingLinksCount + 1}</p>
+              <p className="font-medium mb-1 text-forest-green">
+                Adding Link #{existingLinksCount + 1}
+              </p>
               <p>This link will appear at the bottom of your profile. You can reorder links later.</p>
             </div>
           </div>
@@ -132,6 +150,7 @@ const AddLinkModal = ({
           loading={loading}
           submitLabel="Add Link"
           cancelLabel="Cancel"
+          existingLinks={existingLinks}
         />
       </div>
     </Modal>
@@ -147,6 +166,12 @@ AddLinkModal.propTypes = {
   onLinkAdded: PropTypes.func,
   /** Number of existing links (for position calculation) */
   existingLinksCount: PropTypes.number,
+  /** Array of existing links for duplicate checking */
+  existingLinks: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string,
+    title: PropTypes.string,
+    url: PropTypes.string,
+  })),
   /** Additional CSS classes */
   className: PropTypes.string,
 };

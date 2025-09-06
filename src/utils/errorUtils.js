@@ -6,6 +6,8 @@
  * messaging for various error scenarios.
  */
 
+import { ERROR_MESSAGES } from '../constants/validationMessages.js';
+
 /**
  * Determines the error type based on error details
  * @param {Error|string|any} error - The error to analyze
@@ -54,12 +56,27 @@ export const getErrorType = (error) => {
     errorLower.includes('forbidden') ||
     errorLower.includes('access denied') ||
     errorLower.includes('invalid token') ||
+    errorLower.includes('invalid login credentials') ||
+    errorLower.includes('invalid credentials') ||
+    errorLower.includes('email or password') ||
+    errorLower.includes('sign in failed') ||
+    errorLower.includes('login failed') ||
     (error.status === 401) ||
     (error.status === 403)
   ) {
     return 'auth';
   }
   
+  // Email verification errors
+  if (
+    errorLower.includes('email not confirmed') ||
+    errorLower.includes('email not verified') ||
+    errorLower.includes('confirm your email') ||
+    errorLower.includes('verification required')
+  ) {
+    return 'emailVerification';
+  }
+
   // Rate limiting errors
   if (
     errorLower.includes('rate limit') ||
@@ -92,6 +109,16 @@ export const getErrorType = (error) => {
     return 'duplicate';
   }
   
+  // Link limit errors
+  if (
+    errorLower.includes('maximum limit') ||
+    errorLower.includes('link limit') ||
+    errorLower.includes('reached the maximum') ||
+    errorLower.includes('quota exceeded')
+  ) {
+    return 'linkLimit';
+  }
+  
   return 'general';
 };
 
@@ -107,15 +134,7 @@ export const getUserFriendlyErrorMessage = (error) => {
     const errorType = getErrorType(error);
     if (errorType !== 'general') {
       // Return typed message instead of original string
-      const messages = {
-        network: 'Unable to connect to the server. Please check your internet connection and try again.',
-        profileNotFound: 'The requested content was not found.',
-        auth: 'Please check your sign in credentials and try again.',
-        rateLimit: 'Please slow down and try again later.',
-        validation: 'Please check your information is correct and try again.',
-        duplicate: 'This item already exists. Please try a different value.',
-      };
-      return messages[errorType];
+      return ERROR_MESSAGES.TYPE[errorType] || ERROR_MESSAGES.TYPE.general;
     }
     return error; // Return original string only for general type
   }
@@ -133,22 +152,14 @@ export const getUserFriendlyErrorMessage = (error) => {
       // Apply type detection to extracted message
       const errorType = getErrorType(error);
       if (errorType !== 'general') {
-        const messages = {
-          network: 'Unable to connect to the server. Please check your internet connection and try again.',
-          profileNotFound: 'The requested content was not found.',
-          auth: 'Please check your sign in credentials and try again.',
-          rateLimit: 'Please slow down and try again later.',
-          validation: 'Please check your information is correct and try again.',
-          duplicate: 'This item already exists. Please try a different value.',
-        };
-        return messages[errorType];
+        return ERROR_MESSAGES.TYPE[errorType] || ERROR_MESSAGES.TYPE.general;
       }
       // For general errors from Error objects
       if (error instanceof Error) {
         // If the message looks like a generic error message, return user-friendly version
         const message = error.message.toLowerCase();
         if (message.includes('unknown error') || message.includes('error occurred') || message === 'error') {
-          return 'An unexpected error occurred. Please try again.';
+          return ERROR_MESSAGES.TYPE.general;
         }
         // Otherwise return the original message (for specific error messages)
         return error.message;
@@ -161,16 +172,7 @@ export const getUserFriendlyErrorMessage = (error) => {
   const errorType = getErrorType(error);
   
   // Only return generic message if we have no actual message to show
-  const messages = {
-    network: 'Unable to connect to the server. Please check your internet connection and try again.',
-    profileNotFound: 'The requested content was not found.',
-    auth: 'Please check your sign in credentials and try again.',
-    rateLimit: 'Please slow down and try again later.',
-    validation: 'Please check your information is correct and try again.',
-    duplicate: 'This item already exists. Please try a different value.'
-  };
-  
-  return messages[errorType] || 'An unexpected error occurred. Please try again.';
+  return ERROR_MESSAGES.TYPE[errorType] || ERROR_MESSAGES.TYPE.general;
 };
 
 /**
@@ -182,7 +184,7 @@ export const formatError = (error) => {
   if (!error) return null;
   if (typeof error === 'string') return error;
   if (error.message) return error.message;
-  return 'An unexpected error occurred';
+  return ERROR_MESSAGES.TYPE.general;
 };
 
 /**
@@ -274,36 +276,13 @@ export const isDuplicateError = (error) => {
 export const getContextualErrorMessage = (error, context = 'general') => {
   const errorType = getErrorType(error);
   
-  // Context-specific messages for better UX
-  const contextualMessages = {
-    link: {
-      duplicate: 'A link with this URL already exists in your collection.',
-      validation: 'Please ensure you have a valid URL and link information, then try again.',
-      network: 'Unable to save your link. Please check your connection and try again.',
-      general: 'Failed to save the link. Please try again.'
-    },
-    profile: {
-      duplicate: 'This username is already taken. Please choose a different profile name.',
-      validation: 'Please check your profile information is in the correct format and try again.',
-      network: 'Unable to update your profile. Please check your connection and try again.',
-      general: 'Failed to update your profile. Please try again.'
-    },
-    auth: {
-      duplicate: 'This email address is already registered. Please try signing in instead.',
-      validation: 'Please check your email and password, then try again.',
-      network: 'Unable to sign in. Please check your connection and try again.',
-      auth: 'Please check your email and password, then sign in again.',
-      general: 'Sign in failed. Please try again.'
-    }
-  };
-  
   // For unknown contexts, return a generic unexpected error message
-  if (context !== 'link' && context !== 'profile' && context !== 'auth') {
-    return 'An unexpected error occurred. Please try again.';
+  if (!ERROR_MESSAGES.CONTEXT[context]) {
+    return ERROR_MESSAGES.TYPE.general;
   }
   
   // Return context-specific message if available, otherwise fall back to general
-  return contextualMessages[context]?.[errorType] || getUserFriendlyErrorMessage(error);
+  return ERROR_MESSAGES.CONTEXT[context][errorType] || getUserFriendlyErrorMessage(error);
 };
 
 /**

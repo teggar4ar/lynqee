@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { ExternalLink, Eye } from 'lucide-react';
 import { RESPONSIVE_PATTERNS, TOUCH_TARGETS } from '../../utils/mobileUtils';
 
 /**
@@ -176,7 +177,7 @@ const LinkCard = ({
         {/* External link icon */}
         {showIcon && (
           <div className="ml-3 flex-shrink-0">
-            <svg 
+            <ExternalLink 
               className={`
                 w-4 
                 h-4 
@@ -188,18 +189,8 @@ const LinkCard = ({
                 transition-all
                 duration-200
               `}
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
               aria-hidden="true"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" 
-              />
-            </svg>
+            />
           </div>
         )}
       </div>
@@ -208,10 +199,7 @@ const LinkCard = ({
       {link.click_count && variant === 'default' && (
         <div className="mt-3 pt-3 border-t border-gray-100">
           <div className="flex items-center text-xs text-gray-400">
-            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-            </svg>
+            <Eye className="w-3 h-3 mr-1" />
             {link.click_count} {link.click_count === 1 ? 'click' : 'clicks'}
           </div>
         </div>

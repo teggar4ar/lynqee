@@ -11,6 +11,7 @@
  */
 
 import React, { useState } from 'react';
+import { AlertCircle, Link } from 'lucide-react';
 import Modal from '../components/common/Modal';
 import { useAuth } from '../hooks/useAuth.js';
 import { useUserProfile } from '../hooks/useUserProfile.js';
@@ -141,9 +142,7 @@ const Dashboard = () => {
                   // Error state for links
                   <div className="text-center py-6">
                     <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+                      <AlertCircle className="w-8 h-8 text-red-600" />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       Failed to load links
@@ -168,9 +167,7 @@ const Dashboard = () => {
                     {links.slice(0, 3).map((link) => (
                       <div key={link.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                         <div className="w-10 h-10 bg-golden-yellow/20 rounded-lg flex items-center justify-center">
-                          <svg className="w-5 h-5 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                          </svg>
+                          <Link className="w-5 h-5 text-golden-yellow" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-sm font-medium text-gray-900 truncate">
@@ -196,9 +193,7 @@ const Dashboard = () => {
                   // Empty state - no links yet
                   <div className="text-center py-8">
                     <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                      </svg>
+                      <Link className="w-8 h-8 text-gray-400" />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       No links yet

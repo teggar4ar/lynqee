@@ -5,8 +5,10 @@
  * Includes drag handles, selection checkboxes, and management actions
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
+import { Edit, GripVertical, Link, MoreVertical, Trash2 } from 'lucide-react';
 
 const LinkManagerCard = ({ 
   link, 
@@ -23,6 +25,56 @@ const LinkManagerCard = ({
   className = ''
 }) => {
   const [showActions, setShowActions] = useState(false);
+  const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+
+  // Calculate dropdown position when showing
+  useEffect(() => {
+    if (showActions && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: buttonRect.bottom + window.scrollY + 4, // 4px spacing
+        left: buttonRect.right - 128 + window.scrollX, // 128px is dropdown width, align right
+      });
+    }
+  }, [showActions]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+          buttonRef.current && !buttonRef.current.contains(event.target)) {
+        setShowActions(false);
+      }
+    };
+
+    const handleScroll = () => {
+      if (showActions) {
+        setShowActions(false);
+      }
+    };
+
+    const handleResize = () => {
+      if (showActions) {
+        setShowActions(false);
+      }
+    };
+
+    if (showActions) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+      window.addEventListener('scroll', handleScroll, true); // Use capture to catch all scroll events
+      window.addEventListener('resize', handleResize);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [showActions]);
 
   const handleEdit = (e) => {
     e.preventDefault();
@@ -83,18 +135,14 @@ const LinkManagerCard = ({
               userSelect: 'none'
             }}
           >
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-            </svg>
+            <GripVertical className="w-6 h-6" />
           </div>
         )}
 
         {/* Link Icon */}
         <div className="flex-shrink-0">
           <div className="w-10 h-10 bg-golden-yellow/20 rounded-lg flex items-center justify-center">
-            <svg className="w-5 h-5 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
+            <Link className="w-5 h-5 text-golden-yellow" />
           </div>
         </div>
 
@@ -123,9 +171,7 @@ const LinkManagerCard = ({
                   className="p-1 text-gray-400 hover:text-golden-yellow rounded"
                   title="Edit link"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
+                  <Edit className="w-4 h-4" />
                 </button>
               )}
               {showDeleteButton && (
@@ -134,51 +180,21 @@ const LinkManagerCard = ({
                   className="p-1 text-gray-400 hover:text-red-600 rounded"
                   title="Delete link"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                  <Trash2 className="w-4 h-4" />
                 </button>
               )}
             </div>
 
             {/* Mobile Actions Menu */}
-            <div className="md:hidden relative">
+            <div className="md:hidden">
               <button
+                ref={buttonRef}
                 onClick={handleToggleActions}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded"
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+                aria-label="More actions"
               >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                </svg>
+                <MoreVertical className="w-5 h-5" />
               </button>
-
-              {/* Mobile Actions Dropdown */}
-              {showActions && (
-                <div className="absolute right-0 top-8 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  {showEditButton && (
-                    <button
-                      onClick={handleEdit}
-                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      Edit
-                    </button>
-                  )}
-                  {showDeleteButton && (
-                    <button
-                      onClick={handleDelete}
-                      className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Delete
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -196,13 +212,39 @@ const LinkManagerCard = ({
         </div>
       )}
 
-      {/* Close mobile actions when clicking outside */}
-      {showActions && (
-        <div
-          className="fixed inset-0 z-0"
-          onClick={() => setShowActions(false)}
-        />
-      )}
+      {/* Portal-rendered Mobile Actions Dropdown to prevent layout shifts */}
+      {showActions && typeof window !== 'undefined' && 
+        createPortal(
+          <div 
+            ref={dropdownRef}
+            className="fixed w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999]"
+            style={{
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+            }}
+          >
+            {showEditButton && (
+              <button
+                onClick={handleEdit}
+                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center rounded-t-lg"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
+              </button>
+            )}
+            {showDeleteButton && (
+              <button
+                onClick={handleDelete}
+                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center rounded-b-lg"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </button>
+            )}
+          </div>,
+          document.body
+        )
+      }
     </div>
   );
 };

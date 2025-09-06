@@ -33,6 +33,11 @@ vi.mock('lucide-react', () => ({
   Clock: () => React.createElement('div', { 'data-testid': 'clock-icon' }),
   Mail: () => React.createElement('div', { 'data-testid': 'mail-icon' }),
   RefreshCw: () => React.createElement('div', { 'data-testid': 'refresh-cw-icon' }),
+  // Additional icons for Toast component
+  XCircle: () => React.createElement('div', { 'data-testid': 'x-circle-icon' }),
+  AlertTriangle: () => React.createElement('div', { 'data-testid': 'alert-triangle-icon' }),
+  Info: () => React.createElement('div', { 'data-testid': 'info-icon' }),
+  X: () => React.createElement('div', { 'data-testid': 'x-icon' }),
 }));
 
 describe('EmailVerificationUI', () => {

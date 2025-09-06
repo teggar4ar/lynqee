@@ -11,58 +11,81 @@
  * - Visual feedback for availability status
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Input } from '../common';
 import { ProfileService } from '../../services';
-import useAsync from '../../hooks/useAsync.js';
+import { useAlerts } from '../../hooks';
 import { validateUsername } from '../../utils/validators.js';
 
 const UsernameSelection = ({ initialUsername, onComplete, userEmail }) => {
   const [username, setUsername] = useState(initialUsername || '');
   const [validationError, setValidationError] = useState('');
+  const [touched, setTouched] = useState(false);
   const [isAvailable, setIsAvailable] = useState(null);
   const [isChecking, setIsChecking] = useState(false);
-  const { execute } = useAsync();
-
-  // Debounced availability check
-  const checkAvailability = useCallback(
-    async (usernameToCheck) => {
-      if (!usernameToCheck || validationError) {
-        setIsAvailable(null);
-        return;
-      }
-
-      setIsChecking(true);
-      try {
-        await execute(async () => {
-          const isAvailable = await ProfileService.isUsernameAvailable(usernameToCheck);
-          setIsAvailable(isAvailable);
-        });
-      } catch (error) {
-        console.error('Error checking username availability:', error);
-        setIsAvailable(null);
-      } finally {
-        setIsChecking(false);
-      }
-    },
-    [execute, validationError]
-  );
+  const lastCheckedUsernameRef = useRef('');
+  const { showSuccess, showError, showInfo } = useAlerts();
 
   // Debounce availability checking
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (username) {
-        checkAvailability(username);
+    // Skip if no username or validation error
+    if (!username || validationError) {
+      setIsAvailable(null);
+      return;
+    }
+
+    // Skip if we already checked this username
+    if (username === lastCheckedUsernameRef.current) {
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      setIsChecking(true);
+      try {
+        const isAvailable = await ProfileService.isUsernameAvailable(username);
+        setIsAvailable(isAvailable);
+        lastCheckedUsernameRef.current = username;
+        
+        // Show appropriate alert
+        if (isAvailable) {
+          showSuccess({
+            title: 'Username Available',
+            message: `"${username}" is available for you to use`,
+            duration: 3000,
+            position: 'bottom-center'
+          });
+        } else {
+          showError({
+            title: 'Username Not Available',
+            message: `"${username}" is already taken. Please try another username.`,
+            duration: 5000,
+            position: 'bottom-center'
+          });
+        }
+      } catch (error) {
+        console.error('Error checking username availability:', error);
+        setIsAvailable(null);
+        showError({
+          title: 'Availability Check Failed',
+          message: 'Could not verify if this username is available',
+          duration: 3000
+        });
+      } finally {
+        setIsChecking(false);
       }
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [username, checkAvailability]);
+  }, [username, validationError, showSuccess, showError]);
 
   const handleUsernameChange = (e) => {
     const value = e.target.value;
     setUsername(value);
+    setTouched(true); // Mark as touched when user starts typing
+
+    // Reset tracking for alerts when username changes
+    lastCheckedUsernameRef.current = '';
 
     // Validate format
     const validation = validateUsername(value);
@@ -79,16 +102,34 @@ const UsernameSelection = ({ initialUsername, onComplete, userEmail }) => {
     const validation = validateUsername(username);
     if (!validation.isValid) {
       setValidationError(validation.error);
+      showError({
+        title: 'Invalid Username',
+        message: validation.error,
+        position: 'bottom-center'
+      });
       return;
     }
 
     if (isAvailable === false) {
       setValidationError('This username is not available');
+      showError({
+        title: 'Username Not Available',
+        message: 'Please choose a different username that is available',
+        position: 'bottom-center'
+      });
       return;
     }
 
     if (isAvailable === true) {
       onComplete({ username });
+    } else if (isAvailable === null) {
+      showInfo({
+        title: 'Checking Availability',
+        message: 'Please wait while we check if this username is available',
+        position: 'bottom-center'
+      });
+      // Reset the last checked username to ensure alert shows on next check
+      lastCheckedUsernameRef.current = '';
     }
   };
 
@@ -142,6 +183,7 @@ const UsernameSelection = ({ initialUsername, onComplete, userEmail }) => {
             onChange={handleUsernameChange}
             placeholder="Enter your username"
             error={validationError}
+            touched={touched}
             className="text-base md:text-sm" // Mobile-friendly text size
             autoComplete="username"
             autoFocus

@@ -19,7 +19,8 @@ class ErrorBoundary extends React.Component {
     this.state = { 
       hasError: false, 
       error: null, 
-      errorInfo: null 
+      errorInfo: null,
+      retryCount: 0
     };
   }
 
@@ -29,22 +30,64 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error details for debugging
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // Enhanced error logging with more context
+    const errorContext = {
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
+      retryCount: this.state.retryCount,
+      boundaryName: this.constructor.name,
+      error: {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      },
+      componentStack: errorInfo.componentStack
+    };
+    
+    console.error('ErrorBoundary caught an error:', errorContext);
     
     this.setState({
       error,
       errorInfo
     });
+
+    // Call onError prop if provided with enhanced context
+    if (this.props.onError) {
+      this.props.onError(errorContext);
+    }
   }
 
   handleRetry = () => {
-    // Reset error state to retry rendering
-    this.setState({ 
-      hasError: false, 
-      error: null, 
-      errorInfo: null 
-    });
+    // Increment retry count and check if we should allow retry
+    const newRetryCount = this.state.retryCount + 1;
+    
+    // Maximum retry attempts (configurable via props)
+    const maxRetries = this.props.maxRetries || 3;
+    
+    if (newRetryCount > maxRetries) {
+      console.warn(`ErrorBoundary: Maximum retry attempts (${maxRetries}) reached`);
+      return;
+    }
+
+    // Call custom retry handler if provided
+    if (this.props.onRetry) {
+      try {
+        this.props.onRetry(this.state.error, newRetryCount);
+      } catch (retryError) {
+        console.error('ErrorBoundary: Custom retry handler failed:', retryError);
+        return;
+      }
+    }
+
+    // Reset error state with slight delay to allow cleanup
+    setTimeout(() => {
+      this.setState({ 
+        hasError: false, 
+        error: null, 
+        errorInfo: null,
+        retryCount: newRetryCount
+      });
+    }, this.props.retryDelay || 100);
   };
 
   render() {
@@ -78,6 +121,14 @@ ErrorBoundary.propTypes = {
   fallback: PropTypes.node,
   /** Additional CSS classes for the error container */
   className: PropTypes.string,
+  /** Callback when error occurs with enhanced error context */
+  onError: PropTypes.func,
+  /** Custom retry handler function */
+  onRetry: PropTypes.func,
+  /** Maximum retry attempts before giving up */
+  maxRetries: PropTypes.number,
+  /** Delay in ms before retry (default: 100ms) */
+  retryDelay: PropTypes.number,
 };
 
 /**

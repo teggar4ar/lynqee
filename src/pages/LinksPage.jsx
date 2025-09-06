@@ -25,6 +25,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { GripVertical, Info, Link, Plus, Search, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.js';
 import { useUserLinks } from '../hooks/useUserLinks.js';
 import { useLinkReordering } from '../hooks/useLinkReordering.js';
@@ -52,6 +53,7 @@ const LinksPage = () => {
   const [deletingLink, setDeletingLink] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [localLinks, setLocalLinks] = useState(links || []);
+  const [showDndBanner, setShowDndBanner] = useState(true);
 
   // Drag and drop functionality
   const {
@@ -165,9 +167,7 @@ const LinksPage = () => {
               {/* Search Box */}
               <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+                  <Search className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   type="text"
@@ -191,10 +191,9 @@ const LinksPage = () => {
                   onClick={handleOpenAddLinkModal}
                   disabled={loading}
                   className="w-full px-4 py-2 text-sm font-medium min-h-[40px] md:w-auto md:px-6"
+                  title="Add a new link to your profile"
                 >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
+                  <Plus className="w-4 h-4 mr-2" />
                   Add Link
                 </Button>
               </div>
@@ -228,9 +227,7 @@ const LinksPage = () => {
                   // No search results
                   <>
                     <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
+                      <Search className="w-8 h-8 text-gray-400" />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       No links found
@@ -250,9 +247,7 @@ const LinksPage = () => {
                   // No links at all
                   <>
                     <div className="w-16 h-16 mx-auto mb-4 bg-golden-yellow/20 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                      </svg>
+                      <Link className="w-8 h-8 text-golden-yellow" />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       Start building your link collection
@@ -265,9 +260,7 @@ const LinksPage = () => {
                       onClick={handleOpenAddLinkModal}
                       className="px-6 py-3 text-base font-medium min-h-[44px]"
                     >
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
+                      <Plus className="w-5 h-5 mr-2" />
                       Add Your First Link
                     </Button>
                   </>
@@ -276,30 +269,41 @@ const LinksPage = () => {
             ) : (
               // Drag and Drop Information Banner + Links List
               <>
-                {filteredLinks.length > 1 && (
-                  <div className="bg-mint-cream border-l-4 border-golden-yellow p-4 mx-4 mt-4 rounded-r-lg">
+                {filteredLinks.length > 1 && showDndBanner && (
+                  <div className="bg-mint-cream border-l-4 border-golden-yellow p-4 mx-4 mt-4 rounded-r-lg relative">
                     <div className="flex items-start">
                       <div className="flex-shrink-0">
-                        <svg className="w-5 h-5 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <Info className="w-5 h-5 text-golden-yellow" />
                       </div>
-                      <div className="ml-3">
+                      <div className="ml-3 pr-8">
                         <h3 className="text-sm font-medium text-forest-green">
                           Drag to Reorder Links
                         </h3>
                         <div className="mt-1 text-sm text-sage-gray">
                           <p>
                             Use the <span className="inline-flex items-center px-1">
-                              <svg className="w-3 h-3 text-sage-gray" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-                              </svg>
+                              <GripVertical className="w-3 h-3 text-sage-gray" />
                             </span> handle to drag and drop links to change their order. 
                             On mobile, press and hold the handle to start dragging.
                             Changes will be saved automatically and appear on your public profile in real-time.
                           </p>
                         </div>
                       </div>
+                      {/* Close Button */}
+                      <button
+                        onClick={() => setShowDndBanner(false)}
+                        className="
+                          absolute top-3 right-3
+                          p-1 rounded-full
+                          text-sage-gray hover:text-forest-green
+                          transition-colors duration-200
+                          
+                        "
+                        aria-label="Close drag and drop information"
+                        title="Close this message"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 )}
@@ -360,6 +364,7 @@ const LinksPage = () => {
           onClose={handleCloseAddLinkModal}
           onLinkAdded={handleLinkAdded}
           existingLinksCount={links?.length || 0}
+          existingLinks={links || []}
         />
 
         {/* Edit Link Modal */}
@@ -368,6 +373,7 @@ const LinksPage = () => {
           onClose={handleCloseEditLinkModal}
           onLinkUpdated={handleLinkUpdated}
           link={editingLink}
+          existingLinks={links || []}
         />
 
         {/* Delete Link Modal */}

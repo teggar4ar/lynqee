@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { AlertTriangle } from 'lucide-react';
+import { getUserFriendlyErrorMessage } from '../../../utils/errorUtils';
 
 /**
  * ErrorDisplay Component
@@ -19,12 +21,12 @@ const ErrorDisplay = ({
   size = 'default',
   showIcon = false 
 }) => {
-  // Handle different error types and extract message
+  // Handle different error types and extract message using errorUtils
   const formatError = (error) => {
     if (!error) return null;
-    if (typeof error === 'string') return error;
-    if (error.message) return error.message;
-    return 'An unexpected error occurred';
+    
+    // Use getUserFriendlyErrorMessage for consistent error handling
+    return getUserFriendlyErrorMessage(error);
   };
 
   const errorMessage = formatError(error);
@@ -44,9 +46,9 @@ const ErrorDisplay = ({
   return (
     <div 
       className={`
-        bg-red-50 
+        bg-coral-pink/20 
         border 
-        border-red-200 
+        border-coral-red/30 
         rounded-lg 
         ${textSizeClass}
         ${className}
@@ -57,21 +59,13 @@ const ErrorDisplay = ({
       <div className="flex items-start space-x-2">
         {showIcon && (
           <div className="flex-shrink-0 mt-0.5">
-            <svg 
-              className="w-4 h-4 text-red-500" 
-              fill="currentColor" 
-              viewBox="0 0 20 20"
+            <AlertTriangle 
+              className="w-4 h-4 text-coral-red" 
               aria-hidden="true"
-            >
-              <path 
-                fillRule="evenodd" 
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" 
-                clipRule="evenodd" 
-              />
-            </svg>
+            />
           </div>
         )}
-        <p className="text-red-700 leading-relaxed">
+        <p className="text-coral-red leading-relaxed">
           {errorMessage}
         </p>
       </div>

@@ -93,6 +93,8 @@ const ResetPassword = () => {
         setTimeout(() => {
           navigate('/dashboard');
         }, 3000);
+      }, {
+        showAlerts: false  // Disable automatic validation alerts
       });
     } catch (err) {
       console.error('[ResetPassword] Password reset failed:', err);

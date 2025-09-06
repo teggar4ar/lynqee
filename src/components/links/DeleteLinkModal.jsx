@@ -7,8 +7,10 @@
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { AlertTriangle, Link } from 'lucide-react';
 import { Button, ErrorDisplay, Modal } from '../common';
 import LinksService from '../../services/LinksService.js';
+import { useAlerts } from '../../hooks';
 import { getContextualErrorMessage } from '../../utils/errorUtils';
 
 const DeleteLinkModal = ({ 
@@ -19,11 +21,18 @@ const DeleteLinkModal = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { showSuccess, showError } = useAlerts();
 
   // Handle link deletion
   const handleDelete = async () => {
     if (!link) {
       setError('No link selected for deletion');
+      showError({
+        title: 'Cannot Delete Link',
+        message: 'No link selected for deletion',
+        duration: 3000,
+        position: 'bottom-center'
+      });
       return;
     }
 
@@ -32,7 +41,19 @@ const DeleteLinkModal = ({
 
     try {
       // Delete the link via service
-      await LinksService.deleteLink(link.id);
+      const result = await LinksService.deleteLink(link.id);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to delete link');
+      }
+
+      // Show success notification
+      showSuccess({
+        title: 'Link Deleted',
+        message: `"${link.title}" has been removed from your profile`,
+        duration: 3000,
+        position: 'bottom-center'
+      });
 
       // Notify parent component of successful deletion
       if (onLinkDeleted) {
@@ -48,6 +69,14 @@ const DeleteLinkModal = ({
       // Use centralized error handling with context
       const errorMessage = getContextualErrorMessage(err, 'link');
       setError(errorMessage);
+      
+      // Show error alert
+      showError({
+        title: 'Failed to Delete Link',
+        message: errorMessage,
+        duration: 5000,
+        position: 'bottom-center'
+      });
     } finally {
       setLoading(false);
     }
@@ -84,9 +113,7 @@ const DeleteLinkModal = ({
           text-sm
         ">
           <div className="flex items-start space-x-3">
-            <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 18.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
+            <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-red-800 mb-1">Permanent Deletion</p>
               <p className="text-red-700">This action cannot be undone. The link will be permanently removed from your profile.</p>
@@ -99,9 +126,7 @@ const DeleteLinkModal = ({
           <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
             <div className="flex items-start space-x-3">
               <div className="w-10 h-10 bg-golden-yellow/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-golden-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
+                <Link className="w-5 h-5 text-golden-yellow" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-medium text-gray-900 truncate">

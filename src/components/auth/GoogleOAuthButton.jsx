@@ -12,6 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '../common/Button.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useAlerts } from '../../hooks';
 import { useAsync } from '../../hooks/useAsync.js';
 
 const GoogleOAuthButton = ({ 
@@ -23,17 +24,37 @@ const GoogleOAuthButton = ({
   children = 'Continue with Google'
 }) => {
   const { signInWithGoogle } = useAuth();
+  const { showError } = useAlerts();
   const { loading, execute } = useAsync(signInWithGoogle);
 
   const handleGoogleSignIn = async () => {
     try {
+      // Execute the Google sign-in flow
       const result = await execute(redirectTo);
       
+      // No success message - just continue with the OAuth flow
       if (onSuccess) {
         onSuccess(result);
       }
     } catch (error) {
       console.error('[GoogleOAuthButton] Sign in failed:', error);
+      
+      // Provide specific error messages for common OAuth errors
+      let errorMessage = 'Failed to sign in with Google';
+      
+      if (error.message?.includes('popup')) {
+        errorMessage = 'Google sign-in popup was closed or blocked';
+      } else if (error.message?.includes('network')) {
+        errorMessage = 'Network error during Google sign-in';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      showError({
+        title: 'Google Sign-in Failed',
+        message: errorMessage,
+        position: 'top-right'
+      });
       
       if (onError) {
         onError(error);

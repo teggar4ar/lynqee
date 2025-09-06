@@ -14,7 +14,7 @@
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useAuth } from '../../hooks/useAuth.js';
+import { useAuth } from '../../hooks';
 import UsernameSelection from './UsernameSelection.jsx';
 import AvatarSelection from './AvatarSelection.jsx';
 import ProfileInformation from './ProfileInformation.jsx';

@@ -68,6 +68,7 @@ DashboardProvider.propTypes = {
  * @returns {Object} Dashboard context value
  * @throws {Error} If used outside DashboardProvider
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const useDashboard = () => {
   const context = useContext(DashboardContext);
   if (context === undefined) {
