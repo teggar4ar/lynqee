@@ -38,9 +38,9 @@ const LinkManagerCard = ({
       const buttonRect = buttonRef.current.getBoundingClientRect();
       const dropdownWidth = 128; // Fixed dropdown width
       
-      // Calculate position with boundary checks
-      let top = buttonRect.bottom + window.scrollY + 4; // 4px spacing
-      let left = buttonRect.right - dropdownWidth + window.scrollX; // Align right
+      // Calculate position relative to viewport (no need for scrollY/scrollX with fixed positioning)
+      let top = buttonRect.bottom + 4; // 4px spacing
+      let left = buttonRect.right - dropdownWidth; // Align right
       
       // Ensure dropdown doesn't go off-screen on the left
       if (left < 8) {
@@ -53,6 +53,12 @@ const LinkManagerCard = ({
         left = maxLeft;
       }
       
+      // Ensure dropdown doesn't go off-screen on the bottom
+      const dropdownHeight = 120; // Approximate dropdown height
+      if (top + dropdownHeight > window.innerHeight) {
+        top = buttonRect.top - dropdownHeight - 4; // Show above instead
+      }
+      
       setDropdownPosition({ top, left });
       setIsPositionCalculated(true);
     } else {
@@ -60,7 +66,7 @@ const LinkManagerCard = ({
     }
   }, [showActions]);
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside or scrolling
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
@@ -84,14 +90,23 @@ const LinkManagerCard = ({
     if (showActions) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
-      window.addEventListener('scroll', handleScroll, true); // Use capture to catch all scroll events
+      
+      // Add scroll listeners to multiple elements to catch all scroll events
+      window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+      document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+      
+      // Also listen for touch events that might cause scrolling
+      document.addEventListener('touchmove', handleScroll, { passive: true });
+      
       window.addEventListener('resize', handleResize);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
-      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('scroll', handleScroll, { capture: true });
+      document.removeEventListener('scroll', handleScroll, { capture: true });
+      document.removeEventListener('touchmove', handleScroll);
       window.removeEventListener('resize', handleResize);
     };
   }, [showActions]);

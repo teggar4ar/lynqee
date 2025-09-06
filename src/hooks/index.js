@@ -25,6 +25,7 @@ export { useFormValidation } from './useFormValidation.js';
 
 // Utility hooks
 export { useAsync } from './useAsync.js';
+export { default as usePagination } from './usePagination.js';
 export { useRetry, useAsyncRetry } from './useRetry.js';
 export { useErrorReporting } from './useErrorReporting.js';
 export { useInactivityTimeout } from './useInactivityTimeout.js';

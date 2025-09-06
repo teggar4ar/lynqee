@@ -29,8 +29,8 @@ import { GripVertical, Info, Link, Plus, Search, X, Eye, EyeOff } from 'lucide-r
 import { useAuth } from '../hooks/useAuth.js';
 import { useUserLinks } from '../hooks/useUserLinks.js';
 import { useLinkReordering } from '../hooks/useLinkReordering.js';
-import { useAlerts } from '../hooks/useAlerts.js';
-import { Button, ErrorState, ProfileSetupGuard, ProtectedRoute } from '../components/common';
+import { useAlerts, usePagination } from '../hooks';
+import { Button, ErrorState, Pagination, ProfileSetupGuard, ProtectedRoute } from '../components/common';
 import { LinksSkeleton, RefreshIndicator } from '../components/common/ModernLoading.jsx';
 import { DashboardLayout } from '../components/dashboard';
 import { AddLinkModal, DeleteLinkModal, DraggableLink, EditLinkModal } from '../components/links';
@@ -113,6 +113,26 @@ const LinksPage = () => {
     (link.url?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
+  // Pagination functionality (10 links per page by default)
+  const {
+    currentItems: paginatedLinks,
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    hasNextPage,
+    hasPreviousPage,
+    isFirstPage,
+    isLastPage,
+    goToPage,
+    goToFirstPage,
+    goToLastPage,
+    goToNextPage,
+    goToPreviousPage,
+    resetPagination,
+    changeItemsPerPage
+  } = usePagination(filteredLinks, 10);
+
   // Update local links when real-time links change (but preserve optimistic updates during dragging)
   useEffect(() => {
     if (!isDragging && links && links.length > 0) {
@@ -124,6 +144,11 @@ const LinksPage = () => {
       setLocalLinks([]);
     }
   }, [links, isDragging]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    resetPagination();
+  }, [searchQuery, viewMode]); // Removed resetPagination from deps since it's memoized
 
   // Handle Add Link Modal
   const handleOpenAddLinkModal = () => {
@@ -404,7 +429,7 @@ const LinksPage = () => {
             ) : (
               // Drag and Drop Information Banner + Links List
               <>
-                {filteredLinks.length > 1 && showDndBanner && (
+                {paginatedLinks.length > 1 && showDndBanner && (
                   <div className="bg-mint-cream border-l-4 border-golden-yellow p-4 mx-4 mt-4 rounded-r-lg relative">
                     <div className="flex items-start">
                       <div className="flex-shrink-0">
@@ -418,9 +443,14 @@ const LinksPage = () => {
                           <p>
                             Use the <span className="inline-flex items-center px-1">
                               <GripVertical className="w-3 h-3 text-sage-gray" />
-                            </span> handle to drag and drop links to change their order. 
+                            </span> handle to drag and drop links to change their order within this page. 
                             On mobile, press and hold the handle to start dragging.
                             Changes will be saved automatically and appear on your public profile in real-time.
+                            {totalPages > 1 && (
+                              <span className="block mt-1 text-xs text-golden-yellow font-medium">
+                                Note: Reordering works within the current page. Navigate between pages to reorder links across your full collection.
+                              </span>
+                            )}
                           </p>
                         </div>
                       </div>
@@ -461,15 +491,15 @@ const LinksPage = () => {
                   }}
                 >
                 <SortableContext 
-                  items={filteredLinks.map(link => link.id)}
+                  items={paginatedLinks.map(link => link.id)}
                   strategy={verticalListSortingStrategy}
                 >
                   <div className="divide-y divide-gray-100">
-                    {filteredLinks.map((link, index) => (
+                    {paginatedLinks.map((link, index) => (
                       <DraggableLink
                         key={link.id}
                         link={link}
-                        position={index + 1}
+                        position={(currentPage - 1) * itemsPerPage + index + 1}
                         showEditButton={true}
                         showDeleteButton={true}
                         showSelection={false}
@@ -488,6 +518,24 @@ const LinksPage = () => {
                   </div>
                 </SortableContext>
               </DndContext>
+              
+              {/* Pagination Component */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                hasNextPage={hasNextPage}
+                hasPreviousPage={hasPreviousPage}
+                isFirstPage={isFirstPage}
+                isLastPage={isLastPage}
+                onPageChange={goToPage}
+                onFirstPage={goToFirstPage}
+                onLastPage={goToLastPage}
+                onNextPage={goToNextPage}
+                onPreviousPage={goToPreviousPage}
+                onPageSizeChange={changeItemsPerPage}
+              />
               </>
             )}
           </div>
