@@ -8,6 +8,7 @@ import { isValidEmail } from '../../utils/validators.js';
 import { getUserFriendlyErrorMessage } from '../../utils/errorUtils.js';
 import { ArrowRight, Check, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 import { Button, Input } from '../common';
+import { RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
 
 const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
   const { signUp } = useAuth();
@@ -143,7 +144,7 @@ const SignUpForm = ({ onSwitchToSignIn, onSignUpSuccess, onError }) => {
         <div className="hidden lg:block order-2 lg:order-1">
           <div className="relative">
             <div className="bg-gradient-to-br from-golden-yellow/20 to-coral-red/20 rounded-3xl p-8 transform rotate-3 hover:rotate-1 transition-transform duration-500">
-              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-deep-forest/10">
+              <div className={RESPONSIVE_PATTERNS.MODAL_CONTENT}>
                 <div className="space-y-6">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-coral-pink rounded-full flex items-center justify-center mx-auto mb-4">

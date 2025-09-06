@@ -12,6 +12,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Loader2 } from 'lucide-react';
+import { RESPONSIVE_PATTERNS, TOUCH_TARGETS } from '../../utils/mobileUtils';
 
 const Button = ({
   children,
@@ -38,8 +39,8 @@ const Button = ({
 
   // Size variants (mobile-optimized)
   const sizeClasses = {
-    small: 'px-3 py-2 text-sm min-h-[40px]',
-    medium: 'px-4 py-3 text-base min-h-[44px]',
+    small: `px-3 py-2 text-sm ${TOUCH_TARGETS.MIN}`,
+    medium: `${RESPONSIVE_PATTERNS.BUTTON}`,
     large: 'px-6 py-4 text-lg min-h-[48px] md:min-h-[52px]',
   };
 

@@ -10,6 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { TOUCH_TARGETS } from '../../utils/mobileUtils';
 
 // Generate a unique ID for cases where name is not provided
 let inputCounter = 0;
@@ -103,9 +104,7 @@ const Input = ({
           required={required}
           disabled={disabled}
           autoComplete={autoComplete}
-          className={adjustedInputClasses}
-          // Ensure minimum touch target size on mobile
-          style={{ minHeight: '44px' }}
+          className={`${adjustedInputClasses} ${TOUCH_TARGETS.MIN}`}
           {...props}
         />
         

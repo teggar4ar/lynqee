@@ -17,6 +17,7 @@ import { Button, Input } from '../common';
 import { ProfileService } from '../../services';
 import { useAlerts } from '../../hooks';
 import { validateUsername } from '../../utils/validators.js';
+import { RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
 
 const UsernameSelection = ({ initialUsername, onComplete, userEmail }) => {
   const [username, setUsername] = useState(initialUsername || '');
@@ -168,7 +169,7 @@ const UsernameSelection = ({ initialUsername, onComplete, userEmail }) => {
         <p className="text-sm text-gray-600 mb-2 md:text-base">
           Your username will be part of your unique Lynqee URL:
         </p>
-        <p className="text-sm font-medium text-golden-yellow md:text-base">
+        <p className={RESPONSIVE_PATTERNS.WARNING_TEXT}>
           lynqee.com/<span className="bg-golden-yellow/10 px-1 rounded">{username || 'username'}</span>
         </p>
       </div>
@@ -184,7 +185,7 @@ const UsernameSelection = ({ initialUsername, onComplete, userEmail }) => {
             placeholder="Enter your username"
             error={validationError}
             touched={touched}
-            className="text-base md:text-sm" // Mobile-friendly text size
+            className={RESPONSIVE_PATTERNS.FORM_INPUT_TEXT} // Mobile-friendly text size
             autoComplete="username"
             autoFocus
           />

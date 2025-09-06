@@ -15,6 +15,7 @@ import { NavLink } from 'react-router-dom';
 import { Eye, LayoutDashboard, Link, LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useUserProfile } from '../../hooks/useUserProfile.js';
+import { TOUCH_TARGETS } from '../../utils/mobileUtils';
 
 const BottomNavigation = ({ className = '' }) => {
   const { user, signOut } = useAuth();
@@ -94,7 +95,7 @@ const BottomNavigation = ({ className = '' }) => {
                 disabled={item.disabled}
                 className={`
                   flex flex-col items-center justify-center
-                  min-w-[44px] min-h-[44px] px-2 py-1
+                  ${TOUCH_TARGETS.MIN} px-2 py-1
                   rounded-lg transition-colors duration-200
                   ${item.disabled 
                     ? 'opacity-50 cursor-not-allowed' 
@@ -118,7 +119,7 @@ const BottomNavigation = ({ className = '' }) => {
               to={item.path}
               className={({ isActive: _isActive }) => `
                 flex flex-col items-center justify-center
-                min-w-[44px] min-h-[44px] px-2 py-1
+                ${TOUCH_TARGETS.MIN} px-2 py-1
                 rounded-lg transition-colors duration-200
                 ${item.disabled 
                   ? 'opacity-50 cursor-not-allowed pointer-events-none' 

@@ -3,17 +3,8 @@
  * 
  * Features:
  * - Mobile-optimized design with touch-friendly buttons
- * - Responsive page number display            <button
-              onClick={onNextPage}
-              disabled={!hasNextPage}
-              className={`
-                p-2 rounded-lg transition-all duration-200 min-h-[44px] min-w-[44px]
-                flex items-center justify-center
-                ${!hasNextPage
-                  ? 'text-gray-300 cursor-not-allowed'
-                  : 'text-gray-600 hover:text-forest-green hover:bg-forest-green/10 active:bg-forest-green/20'
-                }
-              `}stent theming with the app's color scheme
+ * - Responsive page number display
+ * - Consistent theming with the app's color scheme
  * - Accessible navigation controls
  */
 
@@ -21,6 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import PageSizeSelector from './PageSizeSelector';
+import { TOUCH_TARGETS } from '../../utils/mobileUtils';
 
 const Pagination = ({
   currentPage,
@@ -117,7 +109,7 @@ const Pagination = ({
               onClick={onFirstPage}
               disabled={isFirstPage}
               className={`
-                p-2 rounded-lg transition-all duration-200 min-h-[44px] min-w-[44px]
+                p-2 rounded-lg transition-all duration-200 ${TOUCH_TARGETS.MIN}
                 flex items-center justify-center
                 ${isFirstPage
                   ? 'text-gray-300 cursor-not-allowed'
@@ -134,7 +126,7 @@ const Pagination = ({
               onClick={onPreviousPage}
               disabled={!hasPreviousPage}
               className={`
-                p-2 rounded-lg transition-all duration-200 min-h-[44px] min-w-[44px]
+                p-2 rounded-lg transition-all duration-200 ${TOUCH_TARGETS.MIN}
                 flex items-center justify-center
                 ${!hasPreviousPage
                   ? 'text-gray-300 cursor-not-allowed'
@@ -195,7 +187,7 @@ const Pagination = ({
               onClick={onNextPage}
               disabled={hasNextPage === false}
               className={`
-                p-2 rounded-lg transition-all duration-200 min-h-[44px] min-w-[44px]
+                p-2 rounded-lg transition-all duration-200 ${TOUCH_TARGETS.MIN}
                 flex items-center justify-center
                 ${!hasNextPage
                   ? 'text-gray-300 cursor-not-allowed'
@@ -212,7 +204,7 @@ const Pagination = ({
               onClick={onLastPage}
               disabled={isLastPage}
               className={`
-                p-2 rounded-lg transition-all duration-200 min-h-[44px] min-w-[44px]
+                p-2 rounded-lg transition-all duration-200 ${TOUCH_TARGETS.MIN}
                 flex items-center justify-center
                 ${isLastPage
                   ? 'text-gray-300 cursor-not-allowed'

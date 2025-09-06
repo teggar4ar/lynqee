@@ -7,6 +7,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
 
 // Modern loading spinner with gradient and smooth animation
 export const CompactSpinner = ({ size = 'sm', className = '' }) => {
@@ -61,7 +62,7 @@ const Shimmer = ({ className = '' }) => (
 
 // Enhanced profile skeleton with shimmer effect
 export const ProfileSkeleton = ({ className = '' }) => (
-  <div className={`bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 relative overflow-hidden ${className}`}>
+  <div className={`${RESPONSIVE_PATTERNS.CARD_ELEVATED} relative overflow-hidden ${className}`}>
     <Shimmer />
     <div className="flex items-center justify-between mb-6">
       <div>
@@ -88,7 +89,7 @@ ProfileSkeleton.propTypes = {
 
 // Enhanced stats skeleton with modern card design
 export const StatsSkeleton = ({ className = '' }) => (
-  <div className={`bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6 relative overflow-hidden ${className}`}>
+  <div className={`${RESPONSIVE_PATTERNS.DASHBOARD_CARD} relative overflow-hidden ${className}`}>
     <Shimmer />
     <div className="grid grid-cols-3 gap-4">
       {[1, 2, 3].map(i => (
@@ -109,7 +110,7 @@ StatsSkeleton.propTypes = {
 export const LinksSkeleton = ({ count = 3, className = '' }) => (
   <div className={`space-y-3 ${className}`}>
     {Array.from({ length: count }, (_, i) => (
-      <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 relative overflow-hidden shadow-sm">
+      <div key={i} className={`${RESPONSIVE_PATTERNS.CARD_MODERN} border border-gray-100 relative overflow-hidden shadow-sm`}>
         <Shimmer />
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gray-200 rounded-xl flex-shrink-0" />

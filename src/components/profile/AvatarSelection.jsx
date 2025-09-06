@@ -15,6 +15,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Avatar, AvatarUpload, Button, ErrorDisplay } from '../common';
+import { TOUCH_TARGETS, TOUCH_SPACING, RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
 
 const AvatarSelection = ({ 
   userId, 
@@ -78,11 +79,11 @@ const AvatarSelection = ({
         />
       )}
       {/* Preview Section */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+      <div className={`mb-6 ${RESPONSIVE_PATTERNS.CONTAINER_PADDING} bg-gray-50 rounded-lg border border-gray-200`}>
         <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wide">
           Profile Preview
         </p>
-        <div className="flex items-center space-x-3">
+        <div className={`flex items-center ${TOUCH_SPACING.X_COMFORTABLE}`}>
           <Avatar
             src={avatarUrl}
             alt="Profile preview"
@@ -100,13 +101,13 @@ const AvatarSelection = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-row space-x-3">
+      <div className={`flex flex-row ${TOUCH_SPACING.X_COMFORTABLE}`}>
         <Button
           type="button"
           variant="primary"
           onClick={handleContinue}
           disabled={loading}
-          className="flex-1 py-3 text-base min-h-[44px]"
+          className={`flex-1 py-3 text-base ${TOUCH_TARGETS.MIN}`}
         >
           {loading ? 'Continuing...' : 'Continue'}
         </Button>
@@ -116,7 +117,7 @@ const AvatarSelection = ({
           variant="ghost"
           onClick={handleSkip}
           disabled={loading}
-          className="flex-1 py-3 text-base min-h-[44px]"
+          className={`flex-1 py-3 text-base ${TOUCH_TARGETS.MIN}`}
         >
           Skip for now
         </Button>

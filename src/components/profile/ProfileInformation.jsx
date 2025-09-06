@@ -15,6 +15,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Avatar, Button, Input } from '../common';
 import { VALIDATION_MESSAGES, formatMessage } from '../../constants/validationMessages';
+import { TOUCH_TARGETS, TOUCH_SPACING, RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
 
 const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, loading }) => {
   const [formData, setFormData] = useState({
@@ -106,11 +107,11 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
       </div>
 
       {/* Preview - Mobile optimized */}
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 md:mb-6 md:p-4">
+      <div className={`mb-4 ${RESPONSIVE_PATTERNS.PREVIEW_CONTAINER} md:mb-6`}>
         <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
           Preview
         </p>
-        <div className="flex items-start space-x-3">
+        <div className={`flex items-start ${TOUCH_SPACING.X_COMFORTABLE}`}>
           <Avatar
             src={avatarUrl}
             alt="Profile preview"
@@ -119,10 +120,10 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
             className="!w-10 !h-10 md:!w-12 md:!h-12 flex-shrink-0"
           />
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-medium text-gray-900 truncate md:text-base">
+            <h3 className={`${RESPONSIVE_PATTERNS.CARD_TITLE} truncate`}>
               {formData.name || 'Your Name'}
             </h3>
-            <p className="text-xs text-gray-600 md:text-sm">@{username}</p>
+            <p className={RESPONSIVE_PATTERNS.CARD_SUBTITLE}>@{username}</p>
             {formData.bio && (
               <p className="text-xs text-gray-700 mt-1 md:text-sm md:text-base">{formData.bio}</p>
             )}
@@ -140,12 +141,12 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
           placeholder="Your full name"
           error={errors.name}
           touched={touched.name}
-          className="text-base md:text-sm" // Mobile-friendly text size
+          className={RESPONSIVE_PATTERNS.FORM_INPUT_TEXT} // Mobile-friendly text size
           autoComplete="name"
         />
 
         <div>
-          <label htmlFor="input-profile-bio" className="block text-sm font-medium text-gray-700 mb-1 md:text-base">
+          <label htmlFor="input-profile-bio" className={RESPONSIVE_PATTERNS.FORM_LABEL}>
             Bio
             <span className="text-gray-500 font-normal ml-1">(optional)</span>
           </label>
@@ -157,8 +158,7 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
             placeholder="Tell people a little about yourself..."
             rows={3}
             maxLength={BIO_MAX_LENGTH}
-            className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-golden-yellow focus:border-golden-yellow resize-none text-base md:text-sm"
-            style={{ minHeight: '44px' }}
+            className={`w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-golden-yellow focus:border-golden-yellow resize-none ${RESPONSIVE_PATTERNS.FORM_INPUT_TEXT} ${TOUCH_TARGETS.MIN}`}
           />
           <div className="mt-1 flex justify-between text-xs text-gray-500">
             <span>{errors.bio || ''}</span>
@@ -166,12 +166,12 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
           </div>
         </div>
 
-        <div className="flex flex-row space-x-3 pt-2">
+        <div className={`flex flex-row ${TOUCH_SPACING.X_COMFORTABLE} pt-2`}>
           <Button
             type="submit"
             variant="primary"
             disabled={loading}
-            className="flex-1 py-3 text-base min-h-[44px]" // Touch-friendly button
+            className={`flex-1 py-3 text-base ${TOUCH_TARGETS.MIN}`} // Touch-friendly button
           >
             {loading ? 'Creating Profile...' : 'Create Profile'}
           </Button>
@@ -181,7 +181,7 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
             variant="ghost"
             onClick={handleSkip}
             disabled={loading}
-            className="flex-1 py-3 text-base min-h-[44px]"
+            className={`flex-1 py-3 text-base ${TOUCH_TARGETS.MIN}`}
           >
             Skip for now
           </Button>

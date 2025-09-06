@@ -9,6 +9,7 @@ import { getUserFriendlyErrorMessage } from '../../utils/errorUtils.js';
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import GoogleOAuthButton from './GoogleOAuthButton.jsx';
 import { Button, Input } from '../common';
+import { RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
 
 const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
   const { signIn, resetPassword } = useAuth();
@@ -231,7 +232,7 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
         <div className="hidden lg:block">
           <div className="relative">
             <div className="bg-gradient-to-br from-coral-pink/20 to-golden-yellow/20 rounded-3xl p-8 transform -rotate-3 hover:rotate-0 transition-transform duration-500">
-              <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-deep-forest/10">
+              <div className={RESPONSIVE_PATTERNS.MODAL_CONTENT}>
                 <div className="space-y-6">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-yellow rounded-full flex items-center justify-center mx-auto mb-4">

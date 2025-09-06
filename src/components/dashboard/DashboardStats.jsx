@@ -12,6 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Eye, Info, Link, MousePointer } from 'lucide-react';
 import { useAlerts } from '../../hooks';
+import { RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
 
 const DashboardStats = ({ 
   stats = {},
@@ -70,7 +71,7 @@ const DashboardStats = ({
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-lg shadow-sm p-4 md:p-6 ${className}`}>
+      <div className={`${RESPONSIVE_PATTERNS.STATS_CARD} ${className}`}>
         <div className="animate-pulse">
           <div className="h-5 bg-gray-200 rounded w-1/3 mb-3"></div>
           <div className="grid grid-cols-3 gap-3 md:gap-4">
@@ -87,7 +88,7 @@ const DashboardStats = ({
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm p-4 md:p-6 ${className}`}>
+    <div className={`${RESPONSIVE_PATTERNS.STATS_CARD} ${className}`}>
       <div className="flex items-center justify-between mb-3 md:mb-4">
         <h2 className="text-lg font-semibold text-gray-900 md:text-xl">
           Quick Stats

@@ -9,6 +9,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import { Edit, Eye, EyeOff, GripVertical, Link, MoreVertical, Trash2 } from 'lucide-react';
+import { TOUCH_TARGETS, RESPONSIVE_PATTERNS, TOUCH_SPACING } from '../../utils/mobileUtils';
 
 const LinkManagerCard = ({ 
   link, 
@@ -151,7 +152,7 @@ const LinkManagerCard = ({
       p-4
       ${className}
     `}>
-      <div className="flex items-center space-x-3">
+      <div className={`flex items-center ${TOUCH_SPACING.X_COMFORTABLE}`}>
         {/* Selection Checkbox */}
         {showSelection && (
           <div className="flex-shrink-0">
@@ -167,7 +168,7 @@ const LinkManagerCard = ({
         {/* Drag Handle */}
         {showDragHandle && !showSelection && (
           <div 
-            className="flex-shrink-0 cursor-move text-gray-400 hover:text-gray-600 touch-manipulation p-2 -m-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className={`flex-shrink-0 cursor-move text-gray-400 hover:text-gray-600 touch-manipulation p-2 -m-2 ${TOUCH_TARGETS.MIN} flex items-center justify-center`}
             {...dragHandleProps}
             style={{ 
               touchAction: 'none', // Prevent scrolling when touching drag handle
@@ -262,7 +263,7 @@ const LinkManagerCard = ({
               <button
                 ref={buttonRef}
                 onClick={handleToggleActions}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+                className={`p-2 text-gray-400 hover:text-gray-600 rounded-lg ${TOUCH_TARGETS.MIN} flex items-center justify-center touch-manipulation`}
                 aria-label="More actions"
               >
                 <MoreVertical className="w-5 h-5" />
@@ -298,7 +299,7 @@ const LinkManagerCard = ({
             {showEditButton && (
               <button
                 onClick={handleEdit}
-                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                className={`${RESPONSIVE_PATTERNS.DROPDOWN_ITEM} text-gray-700 hover:bg-gray-50 flex items-center`}
               >
                 <Edit className="w-4 h-4 mr-2" />
                 Edit
@@ -310,7 +311,7 @@ const LinkManagerCard = ({
                   handleToggleVisibility(!link.is_public);
                   setShowActions(false);
                 }}
-                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                className={`${RESPONSIVE_PATTERNS.DROPDOWN_ITEM} text-gray-700 hover:bg-gray-50 flex items-center`}
               >
                 {link.is_public ? (
                   <EyeOff className="w-4 h-4 mr-2" />
@@ -323,7 +324,7 @@ const LinkManagerCard = ({
             {showDeleteButton && (
               <button
                 onClick={handleDelete}
-                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center rounded-b-lg"
+                className={`${RESPONSIVE_PATTERNS.DROPDOWN_ITEM} text-red-600 hover:bg-red-50 flex items-center rounded-b-lg`}
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete

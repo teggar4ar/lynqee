@@ -13,6 +13,7 @@ import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { TOUCH_TARGETS } from '../../utils/mobileUtils';
 
 const Modal = ({
   isOpen,
@@ -147,13 +148,13 @@ const Modal = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="
+                  className={`
                     p-2 text-sage-gray hover:text-forest-green
                     rounded-lg hover:bg-mint-cream
                     transition-colors duration-200
                     focus:outline-none focus:ring-2 focus:ring-forest-green
-                    min-w-[44px] min-h-[44px]
-                  "
+                    ${TOUCH_TARGETS.MIN}
+                  `}
                   aria-label="Close modal"
                 >
                   <X className="w-6 h-6" />

@@ -18,6 +18,7 @@ import { AvatarUpload, Button, Input } from '../common';
 import ErrorDisplay from '../common/error/ErrorDisplay.jsx';
 import { ProfileService } from '../../services';
 import { useAlerts, useAvatar } from '../../hooks';
+import { TOUCH_TARGETS, RESPONSIVE_PATTERNS, TOUCH_SPACING } from '../../utils/mobileUtils';
 import useAsync from '../../hooks/useAsync.js';
 import { validateUsername } from '../../utils/validators.js';
 import { SERVICE_ERROR_MESSAGES, VALIDATION_MESSAGES, formatMessage } from '../../constants/validationMessages';
@@ -257,7 +258,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
   const usernameStatus = getUsernameStatus();
 
   return (
-    <div className="w-full bg-white rounded-lg p-4 md:p-2 md:max-w-md md:mx-auto">
+    <div className="w-full bg-white rounded-lg p-4 md:p-6 md:max-w-md md:mx-auto">
       {error && (
         <ErrorDisplay 
           error={error} 
@@ -268,7 +269,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
       <form onSubmit={handleSubmit} className="space-y-4 md:space-y-4">
         {/* Avatar Upload Section */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2 md:text-base">
+          <label className={RESPONSIVE_PATTERNS.FORM_LABEL}>
             Profile Photo
           </label>
           <AvatarUpload
@@ -296,7 +297,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
           placeholder="Your full name"
           error={errors.name}
           touched={touched.name}
-          className="text-base md:text-sm"
+          className={RESPONSIVE_PATTERNS.FORM_INPUT_TEXT}
         />
 
         <div>
@@ -309,7 +310,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
             placeholder="Your username"
             error={errors.username}
             touched={touched.username}
-            className="text-base md:text-sm"
+            className={RESPONSIVE_PATTERNS.FORM_INPUT_TEXT}
             autoComplete="username"
           />
           
@@ -328,7 +329,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
         </div>
 
         <div>
-          <label htmlFor="input-bio" className="block text-sm font-medium text-gray-700 mb-1 md:text-base">
+          <label htmlFor="input-bio" className={RESPONSIVE_PATTERNS.FORM_LABEL}>
             Bio
             <span className="text-gray-500 font-normal ml-1">(optional)</span>
           </label>
@@ -340,8 +341,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
             placeholder="Tell people a little about yourself..."
             rows={3}
             maxLength={BIO_MAX_LENGTH}
-            className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-golden-yellow focus:border-golden-yellow resize-none text-base md:text-sm"
-            style={{ minHeight: '44px' }}
+            className={`w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-golden-yellow focus:border-golden-yellow resize-none ${RESPONSIVE_PATTERNS.FORM_INPUT_TEXT} ${TOUCH_TARGETS.MIN}`}
           />
           <div className="mt-1 flex justify-between text-xs text-gray-500">
             <span>{errors.bio || ''}</span>
@@ -349,12 +349,12 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
           </div>
         </div>
 
-        <div className="flex flex-row space-x-3 pt-2">
+        <div className={`flex flex-row ${TOUCH_SPACING.X_COMFORTABLE} pt-2`}>
           <Button
             type="submit"
             variant="primary"
             disabled={!canSubmit}
-            className="flex-1 py-3 text-base min-h-[44px]"
+            className={`flex-1 py-3 text-base ${TOUCH_TARGETS.MIN}`}
           >
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
@@ -364,7 +364,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
             variant="ghost"
             onClick={onCancel}
             disabled={loading}
-            className="flex-1 py-3 text-base min-h-[44px]"
+            className={`flex-1 py-3 text-base ${TOUCH_TARGETS.MIN}`}
           >
             Cancel
           </Button>

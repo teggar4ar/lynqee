@@ -23,13 +23,19 @@ export const TOUCH_TARGETS = {
  * Touch-optimized spacing for mobile layouts
  */
 export const TOUCH_SPACING = {
-  // Minimum spacing between touch targets (8px)
+  // Vertical spacing
+  Y_MIN: 'space-y-2',      // 8px
+  Y_COMFORTABLE: 'space-y-3', // 12px
+  Y_LARGE: 'space-y-4',    // 16px
+  
+  // Horizontal spacing
+  X_MIN: 'space-x-2',      // 8px
+  X_COMFORTABLE: 'space-x-3', // 12px
+  X_LARGE: 'space-x-4',    // 16px
+  
+  // Legacy aliases for backward compatibility
   MIN: 'space-y-2',
-  
-  // Comfortable spacing (12px)
   COMFORTABLE: 'space-y-3',
-  
-  // Large spacing for better touch accuracy (16px)
   LARGE: 'space-y-4',
 };
 
@@ -42,6 +48,27 @@ export const RESPONSIVE_PATTERNS = {
   
   // Cards that work well on mobile
   CARD: 'bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6',
+  
+  // Container padding patterns for mobile-first design
+  CONTAINER_PADDING: 'p-4 md:p-6',
+  CONTAINER_PADDING_SMALL: 'p-3 md:p-4',
+  CONTAINER_PADDING_LARGE: 'p-6 md:p-8',
+  
+  // Preview/info container
+  PREVIEW_CONTAINER: 'p-3 bg-gray-50 rounded-lg border border-gray-200 md:p-4',
+  
+  // Enhanced card variants
+  CARD_ELEVATED: 'bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-8',
+  CARD_MODERN: 'bg-white rounded-xl p-6 shadow-lg border border-gray-100',
+  CARD_SIMPLE: 'bg-white rounded-lg shadow-sm p-4 md:p-6',
+  
+  // Modal and dialog patterns
+  MODAL_CONTENT: 'bg-white rounded-2xl p-8 shadow-xl border-2 border-deep-forest/10',
+  DIALOG_CARD: 'bg-white p-6 rounded-lg shadow',
+  
+  // Dashboard and stats patterns
+  STATS_CARD: 'bg-white rounded-lg shadow-sm p-4 md:p-6',
+  DASHBOARD_CARD: 'bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6',
   
   // Mobile-optimized button
   BUTTON: 'px-4 py-3 rounded-lg font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1',
@@ -60,9 +87,37 @@ export const RESPONSIVE_PATTERNS = {
   SUBHEADING: 'text-lg font-semibold text-gray-800 sm:text-xl',
   BODY: 'text-base text-gray-600 leading-relaxed',
   
+  // Form typography patterns
+  FORM_LABEL: 'block text-sm font-medium text-gray-700 mb-2 md:text-base',
+  FORM_INPUT_TEXT: 'text-base md:text-sm', // Larger on mobile for better readability
+  FORM_CAPTION: 'text-xs md:text-sm text-gray-600',
+  
+  // Component typography patterns
+  CARD_TITLE: 'text-sm font-medium text-gray-900 md:text-base',
+  CARD_SUBTITLE: 'text-xs md:text-sm text-gray-600',
+  BUTTON_TEXT: 'text-sm font-medium',
+  
+  // Description and info text
+  DESCRIPTION: 'text-xs md:text-sm text-gray-500',
+  CAPTION: 'text-xs text-gray-500 md:text-sm',
+  SUCCESS_TEXT: 'text-sm font-medium text-forest-green md:text-base',
+  WARNING_TEXT: 'text-sm font-medium text-golden-yellow md:text-base',
+  
   // Mobile-first flex layouts
   FLEX_COL: 'flex flex-col space-y-4 sm:space-y-6',
   FLEX_ROW: 'flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4',
+  
+  // Dropdown patterns
+  DROPDOWN: 'fixed bg-white border border-gray-200 rounded-lg shadow-lg z-[9999]',
+  DROPDOWN_ITEM: 'w-full px-3 py-2 text-left text-sm transition-all duration-150',
+  
+  // Form patterns
+  FORM_SPACING: 'space-y-4 md:space-y-6',
+  TEXTAREA: 'w-full px-3 py-3 border border-gray-300 rounded-lg resize-none text-base md:text-sm',
+  
+  // Action patterns
+  ACTION_BUTTON: 'p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors',
+  ICON_BUTTON: 'p-1 text-gray-400 hover:text-forest-green rounded',
 };
 
 /**

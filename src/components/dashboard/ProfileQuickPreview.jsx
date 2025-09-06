@@ -13,6 +13,7 @@ import PropTypes from 'prop-types';
 import { Copy, ExternalLink } from 'lucide-react';
 import { Avatar, Button } from '../common';
 import { useAlerts } from '../../hooks';
+import { RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
 
 const ProfileQuickPreview = ({ 
   profile, 
@@ -60,13 +61,13 @@ const ProfileQuickPreview = ({
   };
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-8 ${className}`}>
+    <div className={`${RESPONSIVE_PATTERNS.CARD_ELEVATED} ${className}`}>
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
           <h2 className="text-lg md:text-2xl font-bold text-gray-900">
             Profile Overview
           </h2>
-          <p className="text-xs md:text-sm text-gray-500 mt-1">
+          <p className={`${RESPONSIVE_PATTERNS.DESCRIPTION} mt-1`}>
             Manage your public profile
           </p>
         </div>
@@ -104,11 +105,11 @@ const ProfileQuickPreview = ({
             <h3 className="text-base md:text-xl font-semibold text-gray-900 truncate">
               {profile.name || 'Add your name'}
             </h3>
-            <p className="text-sm md:text-lg text-golden-yellow font-medium">
+            <p className={`${RESPONSIVE_PATTERNS.WARNING_TEXT}`}>
               @{profile.username}
             </p>
             {profile.bio && (
-              <p className="text-xs md:text-sm text-gray-600 mt-1 md:mt-2 line-clamp-2 leading-relaxed">
+              <p className={`${RESPONSIVE_PATTERNS.DESCRIPTION} mt-1 md:mt-2 line-clamp-2 leading-relaxed`}>
                 {profile.bio}
               </p>
             )}
@@ -123,10 +124,10 @@ const ProfileQuickPreview = ({
                 <ExternalLink className="w-4 h-4 md:w-5 md:h-5 text-golden-yellow" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs md:text-sm font-medium text-gray-900 mb-0.5 md:mb-1">
+                <p className={`${RESPONSIVE_PATTERNS.CARD_SUBTITLE} font-medium text-gray-900 mb-0.5 md:mb-1`}>
                   Public Profile URL
                 </p>
-                <p className="text-xs md:text-sm text-gray-600 truncate">
+                <p className={`${RESPONSIVE_PATTERNS.CARD_SUBTITLE} truncate`}>
                   {getDisplayPath() || 'Set up your username first'}
                 </p>
               </div>

@@ -11,6 +11,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import { ChevronDown } from 'lucide-react';
+import { TOUCH_TARGETS, RESPONSIVE_PATTERNS, TOUCH_SPACING } from '../../utils/mobileUtils';
 
 const PageSizeSelector = ({
   currentPageSize,
@@ -110,7 +111,7 @@ const PageSizeSelector = ({
   };
 
   return (
-    <div className={`flex items-center space-x-3 text-sm ${className}`}>
+    <div className={`flex items-center ${TOUCH_SPACING.X_COMFORTABLE} text-sm ${className}`}>
       <span className="text-gray-600 whitespace-nowrap hidden sm:inline font-medium">
         Show:
       </span>
@@ -119,15 +120,15 @@ const PageSizeSelector = ({
         <button
           ref={buttonRef}
           onClick={() => setShowDropdown(!showDropdown)}
-          className="
+          className={`
             flex items-center justify-between bg-white border border-gray-200 rounded-lg
-            px-3 py-2 text-sm font-medium text-gray-700
+            ${RESPONSIVE_PATTERNS.DROPDOWN_ITEM} font-medium text-gray-700
             focus:outline-none focus:ring-2 focus:ring-forest-green/20 focus:border-forest-green
             transition-all duration-200
             cursor-pointer hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm
             min-h-[36px] min-w-[70px] sm:min-w-[80px]
             shadow-sm
-          "
+          `}
           aria-label="Select number of items per page"
           aria-expanded={showDropdown}
         >
@@ -148,8 +149,8 @@ const PageSizeSelector = ({
         createPortal(
           <div 
             ref={dropdownRef}
-            className="fixed w-28 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] py-1 
-                       transform transition-all duration-150 ease-out opacity-100 scale-100"
+            className={`w-28 ${RESPONSIVE_PATTERNS.DROPDOWN} py-1 
+                       transform transition-all duration-150 ease-out opacity-100 scale-100`}
             style={{
               top: `${dropdownPosition.top}px`,
               left: `${dropdownPosition.left}px`,
@@ -160,7 +161,7 @@ const PageSizeSelector = ({
                 key={size}
                 onClick={() => handleOptionSelect(size)}
                 className={`
-                  w-full px-4 py-2.5 text-left text-sm transition-all duration-150
+                  ${RESPONSIVE_PATTERNS.DROPDOWN_ITEM}
                   flex items-center justify-between group
                   ${size === currentPageSize 
                     ? 'bg-forest-green/8 text-forest-green font-medium border-l-2 border-forest-green' 

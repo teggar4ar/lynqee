@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { AlertTriangle, Link } from 'lucide-react';
+import { TOUCH_TARGETS, RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
 import { Button, ErrorDisplay, Modal } from '../common';
 import LinksService from '../../services/LinksService.js';
 import { useAlerts } from '../../hooks';
@@ -129,10 +130,10 @@ const DeleteLinkModal = ({
                 <Link className="w-5 h-5 text-golden-yellow" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-medium text-gray-900 truncate">
+                <h3 className={`${RESPONSIVE_PATTERNS.CARD_TITLE} truncate`}>
                   {link.title || 'Untitled Link'}
                 </h3>
-                <p className="text-xs text-gray-600 truncate mt-1">
+                <p className={`${RESPONSIVE_PATTERNS.CARD_SUBTITLE} truncate mt-1`}>
                   {link.url}
                 </p>
               </div>
@@ -154,12 +155,12 @@ const DeleteLinkModal = ({
             variant="outline"
             onClick={handleCancel}
             disabled={loading}
-            className="
+            className={`
               flex-1
               py-3
               text-base
-              min-h-[44px]
-            "
+              ${TOUCH_TARGETS.MIN}
+            `}
           >
             Cancel
           </Button>
@@ -168,12 +169,12 @@ const DeleteLinkModal = ({
             onClick={handleDelete}
             loading={loading}
             disabled={loading || !link}
-            className="
+            className={`
               flex-1
               py-3
               text-base
-              min-h-[44px]
-            "
+              ${TOUCH_TARGETS.MIN}
+            `}
           >
             {loading ? 'Deleting...' : 'Delete Link'}
           </Button>

@@ -35,6 +35,7 @@ import { LinksSkeleton, RefreshIndicator } from '../components/common/ModernLoad
 import { DashboardLayout } from '../components/dashboard';
 import { AddLinkModal, DeleteLinkModal, DraggableLink, EditLinkModal } from '../components/links';
 import { getErrorType } from '../utils/errorUtils';
+import { TOUCH_TARGETS, RESPONSIVE_PATTERNS } from '../utils/mobileUtils';
 
 const LinksPage = () => {
   const { user } = useAuth();
@@ -235,7 +236,7 @@ const LinksPage = () => {
           <RefreshIndicator isVisible={refreshing} />
           
           {/* Search and Add Link Section */}
-          <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+          <div className={`${RESPONSIVE_PATTERNS.CARD} mb-4`}>
             <div className="flex space-x-3 items-center">
               {/* Search Box */}
               <div className="relative flex-1">
@@ -274,7 +275,7 @@ const LinksPage = () => {
           </div>
 
           {/* Filter Tabs and Stats */}
-          <div className="bg-white rounded-lg shadow-sm mb-4">
+          <div className={`${RESPONSIVE_PATTERNS.CARD_SIMPLE} mb-4`}>
             {/* Stats Display */}
             <div className="px-4 py-3 border-b border-gray-100">
               <div className="flex items-center justify-between text-sm">
@@ -307,7 +308,7 @@ const LinksPage = () => {
                     onClick={() => setViewMode(key)}
                     className={`
                       px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
-                      min-h-[44px] flex items-center justify-center flex-shrink-0
+                      ${TOUCH_TARGETS.MIN} flex items-center justify-center flex-shrink-0
                       ${viewMode === key
                         ? 'bg-golden-yellow text-white shadow-sm'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -322,7 +323,7 @@ const LinksPage = () => {
           </div>
 
           {/* Main Content Area */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className={RESPONSIVE_PATTERNS.CARD_SIMPLE}>
             {loading ? (
               <div className="p-4">
                 <LinksSkeleton count={5} />
@@ -379,7 +380,7 @@ const LinksPage = () => {
                     <Button
                       variant="primary"
                       onClick={handleOpenAddLinkModal}
-                      className="px-6 py-3 text-base font-medium min-h-[44px]"
+                      className={`px-6 py-3 text-base font-medium ${TOUCH_TARGETS.MIN}`}
                     >
                       <Plus className="w-5 h-5 mr-2" />
                       Add Your First Link

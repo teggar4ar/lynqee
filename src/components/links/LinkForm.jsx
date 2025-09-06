@@ -13,6 +13,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Input } from '../common';
 import { validateLinkData } from '../../utils/validators';
+import { TOUCH_TARGETS, RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
 // Remove useAlerts for inline-only validation
 
 const LinkForm = ({
@@ -182,12 +183,12 @@ const LinkForm = ({
           required
           disabled={loading || disabled}
           autoComplete="off"
-          className="
+          className={`
             text-base sm:text-sm
-            min-h-[44px]
-          "
+            ${TOUCH_TARGETS.MIN}
+          `}
         />
-        <p className="mt-1 text-xs text-gray-600 sm:text-sm">
+        <p className={`mt-1 ${RESPONSIVE_PATTERNS.FORM_CAPTION}`}>
           Choose a descriptive title for your link
         </p>
       </div>
@@ -207,12 +208,12 @@ const LinkForm = ({
           required
           disabled={loading || disabled}
           autoComplete="url"
-          className="
+          className={`
             text-base sm:text-sm
-            min-h-[44px]
-          "
+            ${TOUCH_TARGETS.MIN}
+          `}
         />
-        <p className="mt-1 text-xs text-gray-600 sm:text-sm">
+        <p className={`mt-1 ${RESPONSIVE_PATTERNS.FORM_CAPTION}`}>
           Include the full URL starting with https://
         </p>
       </div>
@@ -229,12 +230,12 @@ const LinkForm = ({
             variant="outline"
             onClick={onCancel}
             disabled={loading}
-            className="
+            className={`
               w-full sm:w-auto
               py-3 sm:py-2
               text-base sm:text-sm
-              min-h-[44px]
-            "
+              ${TOUCH_TARGETS.MIN}
+            `}
           >
             {cancelLabel}
           </Button>
@@ -244,12 +245,12 @@ const LinkForm = ({
           type="submit"
           variant="primary"
           disabled={loading || disabled}
-          className="
+          className={`
             w-full sm:w-auto
             py-3 sm:py-2
             text-base sm:text-sm
-            min-h-[44px]
-          "
+            ${TOUCH_TARGETS.MIN}
+          `}
         >
           {loading ? (
             <div className="flex items-center justify-center space-x-2">
