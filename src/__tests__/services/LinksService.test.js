@@ -55,6 +55,15 @@ describe('LinksService CRUD Operations', () => {
         created_at: '2024-01-01T00:00:00.000Z',
       };
 
+      // Mock getLinkCountByUserId to return a successful count
+      vi.spyOn(LinksService, 'getLinkCountByUserId').mockResolvedValue({
+        success: true,
+        error: null,
+        data: 5, // Below the limit
+        errorCode: null,
+        httpStatus: 200,
+      });
+
       // Mock Supabase chain for create operation
       const mockSelect = vi.fn().mockReturnValue({
         single: vi.fn().mockResolvedValue({
@@ -74,9 +83,20 @@ describe('LinksService CRUD Operations', () => {
       const result = await LinksService.createLink(newLinkData);
 
       expect(supabase.from).toHaveBeenCalledWith('links');
-      expect(mockInsert).toHaveBeenCalledWith([newLinkData]);
+      expect(mockInsert).toHaveBeenCalledWith([{
+        title: 'New Test Link',
+        url: 'https://newtest.com',
+        user_id: mockUser.id,
+        position: 1,
+      }]);
       expect(mockSelect).toHaveBeenCalled();
-      expect(result).toEqual(expectedCreatedLink);
+      expect(result).toEqual({
+        success: true,
+        error: null,
+        data: expectedCreatedLink,
+        errorCode: null,
+        httpStatus: 200,
+      });
     });
 
     it('should handle create link errors', async () => {
@@ -86,6 +106,15 @@ describe('LinksService CRUD Operations', () => {
         user_id: mockUser.id,
         position: 1,
       };
+
+      // Mock getLinkCountByUserId to return a successful count
+      vi.spyOn(LinksService, 'getLinkCountByUserId').mockResolvedValue({
+        success: true,
+        error: null,
+        data: 5, // Below the limit
+        errorCode: null,
+        httpStatus: 200,
+      });
 
       const mockError = new Error('Database connection failed');
 
@@ -101,9 +130,15 @@ describe('LinksService CRUD Operations', () => {
         insert: mockInsert,
       });
 
-      await expect(LinksService.createLink(newLinkData)).rejects.toThrow(
-        'Failed to create link: Database connection failed'
-      );
+      const result = await LinksService.createLink(newLinkData);
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Database connection failed',
+        data: null,
+        errorCode: null,
+        httpStatus: null,
+      });
     });
 
     it('should create link with correct data structure', async () => {
@@ -113,6 +148,15 @@ describe('LinksService CRUD Operations', () => {
         user_id: 'user-123',
         position: 3,
       };
+
+      // Mock getLinkCountByUserId to return a successful count
+      vi.spyOn(LinksService, 'getLinkCountByUserId').mockResolvedValue({
+        success: true,
+        error: null,
+        data: 5, // Below the limit
+        errorCode: null,
+        httpStatus: 200,
+      });
 
       const mockChain = {
         insert: vi.fn().mockReturnValue({
@@ -129,7 +173,12 @@ describe('LinksService CRUD Operations', () => {
 
       await LinksService.createLink(linkData);
 
-      expect(mockChain.insert).toHaveBeenCalledWith([linkData]);
+      expect(mockChain.insert).toHaveBeenCalledWith([{
+        title: 'Valid Link',
+        url: 'https://valid.com',
+        user_id: 'user-123',
+        position: 3,
+      }]);
     });
   });
 
@@ -160,7 +209,13 @@ describe('LinksService CRUD Operations', () => {
       expect(mockSelect).toHaveBeenCalledWith('*');
       expect(mockEq).toHaveBeenCalledWith('user_id', userId);
       expect(mockOrder).toHaveBeenCalledWith('position', { ascending: true });
-      expect(result).toEqual(mockLinks);
+      expect(result).toEqual({
+        success: true,
+        error: null,
+        data: mockLinks,
+        errorCode: null,
+        httpStatus: 200,
+      });
     });
 
     it('should return empty array when no links found', async () => {
@@ -185,7 +240,13 @@ describe('LinksService CRUD Operations', () => {
 
       const result = await LinksService.getLinksByUserId(userId);
 
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        success: true,
+        error: null,
+        data: [],
+        errorCode: null,
+        httpStatus: 200,
+      });
     });
 
     it('should get links by username successfully', async () => {
@@ -216,7 +277,13 @@ describe('LinksService CRUD Operations', () => {
           profiles!inner(username)
         `);
       expect(mockEq).toHaveBeenCalledWith('profiles.username', username);
-      expect(result).toEqual(mockLinks);
+      expect(result).toEqual({
+        success: true,
+        error: null,
+        data: mockLinks,
+        errorCode: null,
+        httpStatus: 200,
+      });
     });
 
     it('should handle read operation errors', async () => {
@@ -237,9 +304,15 @@ describe('LinksService CRUD Operations', () => {
         select: mockSelect,
       });
 
-      await expect(LinksService.getLinksByUserId(userId)).rejects.toThrow(
-        'Failed to get links: Network error'
-      );
+      const result = await LinksService.getLinksByUserId(userId);
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Network error',
+        data: null,
+        errorCode: null,
+        httpStatus: null,
+      });
     });
   });
 
@@ -286,7 +359,13 @@ describe('LinksService CRUD Operations', () => {
       expect(supabase.from).toHaveBeenCalledWith('links');
       expect(mockUpdate).toHaveBeenCalledWith(updates);
       expect(mockEq).toHaveBeenCalledWith('id', linkId);
-      expect(result).toEqual(updatedLink);
+      expect(result).toEqual({
+        success: true,
+        error: null,
+        data: updatedLink,
+        errorCode: null,
+        httpStatus: 200,
+      });
     });
 
     it('should handle update errors', async () => {
@@ -312,9 +391,15 @@ describe('LinksService CRUD Operations', () => {
         update: mockUpdate,
       });
 
-      await expect(LinksService.updateLink(linkId, updates)).rejects.toThrow(
-        'Failed to update link: Update failed'
-      );
+      const result = await LinksService.updateLink(linkId, updates);
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Update failed',
+        data: null,
+        errorCode: null,
+        httpStatus: null,
+      });
     });
 
     it('should update link positions successfully', async () => {
@@ -347,7 +432,11 @@ describe('LinksService CRUD Operations', () => {
 
       const result = await LinksService.updateLinkPositions(linkUpdates);
 
-      expect(result).toBe(true);
+      expect(result).toEqual({
+        success: true,
+        error: null,
+        data: null,
+      });
       expect(mockUpdate).toHaveBeenCalledTimes(2);
     });
   });
@@ -373,7 +462,12 @@ describe('LinksService CRUD Operations', () => {
       expect(supabase.from).toHaveBeenCalledWith('links');
       expect(mockDelete).toHaveBeenCalled();
       expect(mockEq).toHaveBeenCalledWith('id', linkId);
-      expect(result).toBe(true);
+      expect(result).toEqual({
+        success: true,
+        error: null,
+        data: null,
+        errorCode: null,
+      });
     });
 
     it('should handle delete errors', async () => {
@@ -390,9 +484,15 @@ describe('LinksService CRUD Operations', () => {
         delete: mockDelete,
       });
 
-      await expect(LinksService.deleteLink(linkId)).rejects.toThrow(
-        'Failed to delete link: Delete failed'
-      );
+      const result = await LinksService.deleteLink(linkId);
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Delete failed',
+        data: null,
+        errorCode: null,
+        httpStatus: null,
+      });
     });
 
     it('should not affect other links when deleting', async () => {
@@ -430,6 +530,15 @@ describe('LinksService CRUD Operations', () => {
 
       const createdLink = { id: 'new-id', ...newLink };
 
+      // Mock getLinkCountByUserId to return a successful count
+      vi.spyOn(LinksService, 'getLinkCountByUserId').mockResolvedValue({
+        success: true,
+        error: null,
+        data: 5, // Below the limit
+        errorCode: null,
+        httpStatus: 200,
+      });
+
       // Mock create operation
       supabase.from.mockReturnValueOnce({
         insert: vi.fn().mockReturnValue({
@@ -443,7 +552,13 @@ describe('LinksService CRUD Operations', () => {
       });
 
       const created = await LinksService.createLink(newLink);
-      expect(created).toEqual(createdLink);
+      expect(created).toEqual({
+        success: true,
+        error: null,
+        data: createdLink,
+        errorCode: null,
+        httpStatus: 200,
+      });
 
       // Update the link
       const updates = { title: 'Updated Test Link' };
@@ -462,8 +577,14 @@ describe('LinksService CRUD Operations', () => {
         }),
       });
 
-      const updated = await LinksService.updateLink(created.id, updates);
-      expect(updated).toEqual(updatedLink);
+      const updated = await LinksService.updateLink(createdLink.id, updates);
+      expect(updated).toEqual({
+        success: true,
+        error: null,
+        data: updatedLink,
+        errorCode: null,
+        httpStatus: 200,
+      });
 
       // Delete the link
       supabase.from.mockReturnValueOnce({
@@ -474,8 +595,13 @@ describe('LinksService CRUD Operations', () => {
         }),
       });
 
-      const deleted = await LinksService.deleteLink(created.id);
-      expect(deleted).toBe(true);
+      const deleted = await LinksService.deleteLink(createdLink.id);
+      expect(deleted).toEqual({
+        success: true,
+        error: null,
+        data: null,
+        errorCode: null,
+      });
     });
 
     it('should handle bulk operations correctly', async () => {
@@ -501,7 +627,11 @@ describe('LinksService CRUD Operations', () => {
 
       const result = await LinksService.updateLinkPositions(linkUpdates);
 
-      expect(result).toBe(true);
+      expect(result).toEqual({
+        success: true,
+        error: null,
+        data: null,
+      });
       expect(supabase.from).toHaveBeenCalledTimes(3);
     });
 
@@ -538,7 +668,15 @@ describe('LinksService CRUD Operations', () => {
           }),
         });
 
-      await expect(LinksService.updateLinkPositions(linkUpdates)).rejects.toThrow();
+      const result = await LinksService.updateLinkPositions(linkUpdates);
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Update failed',
+        data: null,
+        errorCode: null,
+        httpStatus: null,
+      });
     });
   });
 
@@ -558,7 +696,13 @@ describe('LinksService CRUD Operations', () => {
       });
 
       const result = await LinksService.getLinksByUserId(userId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        success: true,
+        error: null,
+        data: [],
+        errorCode: null,
+        httpStatus: 200,
+      });
     });
 
     it('should handle undefined data responses gracefully', async () => {
@@ -576,7 +720,13 @@ describe('LinksService CRUD Operations', () => {
       });
 
       const result = await LinksService.getLinksByUserId(userId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        success: true,
+        error: null,
+        data: [],
+        errorCode: null,
+        httpStatus: 200,
+      });
     });
 
     it('should preserve data integrity during updates', async () => {
@@ -608,10 +758,16 @@ describe('LinksService CRUD Operations', () => {
 
       const result = await LinksService.updateLink(linkId, updates);
 
-      expect(result).toEqual(expectedResult);
-      expect(result.id).toBe(originalData.id);
-      expect(result.user_id).toBe(originalData.user_id);
-      expect(result.created_at).toBe(originalData.created_at);
+      expect(result).toEqual({
+        success: true,
+        error: null,
+        data: expectedResult,
+        errorCode: null,
+        httpStatus: 200,
+      });
+      expect(result.data.id).toBe(originalData.id);
+      expect(result.data.user_id).toBe(originalData.user_id);
+      expect(result.data.created_at).toBe(originalData.created_at);
     });
   });
 });

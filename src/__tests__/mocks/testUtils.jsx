@@ -15,6 +15,7 @@ import AppStateContext from '../../contexts/AppStateContext.jsx';
 import ProfileContext, { ProfileProvider } from '../../contexts/ProfileContext.jsx';
 import LinksContext, { LinksProvider } from '../../contexts/LinksContext.jsx';
 import DashboardContext, { DashboardProvider } from '../../contexts/DashboardContext.jsx';
+import { AlertProvider } from '../../contexts/AlertContext.jsx';
 
 /**
  * Mock user object for testing
@@ -164,15 +165,17 @@ export const TestProviders = ({
   return (
     <BrowserRouter>
       <AuthContext.Provider value={authValue}>
-        <ProfileProvider>
-          <LinksProvider>
-            <DashboardProvider>
-              <AppStateContext.Provider value={appStateValue}>
-                {children}
-              </AppStateContext.Provider>
-            </DashboardProvider>
-          </LinksProvider>
-        </ProfileProvider>
+        <AlertProvider>
+          <ProfileProvider>
+            <LinksProvider>
+              <DashboardProvider>
+                <AppStateContext.Provider value={appStateValue}>
+                  {children}
+                </AppStateContext.Provider>
+              </DashboardProvider>
+            </LinksProvider>
+          </ProfileProvider>
+        </AlertProvider>
       </AuthContext.Provider>
     </BrowserRouter>
   );

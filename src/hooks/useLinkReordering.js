@@ -8,10 +8,12 @@
 import { useState } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import { LinksService } from '../services';
+import { useAlerts } from './useAlerts';
 
 export const useLinkReordering = (links, onLinksUpdate) => {
   const [isDragging, setIsDragging] = useState(false);
   const [reorderingLinks, setReorderingLinks] = useState([]);
+  const { showSuccess, showError } = useAlerts();
 
   const handleDragStart = () => {
     setIsDragging(true);
@@ -35,6 +37,9 @@ export const useLinkReordering = (links, onLinksUpdate) => {
         return;
       }
 
+      // Get the moved link for feedback
+      const movedLink = links[oldIndex];
+
       // Create optimistic update
       const reorderedLinks = arrayMove(links, oldIndex, newIndex);
       
@@ -51,7 +56,19 @@ export const useLinkReordering = (links, onLinksUpdate) => {
       }
 
       // Save to backend
-      await LinksService.updateLinkPositions(linkUpdates);
+      const result = await LinksService.updateLinkPositions(linkUpdates);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update link positions');
+      }
+
+      // Show success feedback
+      showSuccess({
+        title: 'Order Updated',
+        message: `"${movedLink.title}" moved to position ${newIndex + 1}`,
+        duration: 2000,
+        position: 'bottom-center'
+      });
       
       // Don't clear the reordering state immediately
       // Let the real-time updates handle the final state
@@ -66,6 +83,14 @@ export const useLinkReordering = (links, onLinksUpdate) => {
       if (onLinksUpdate) {
         onLinksUpdate(links); // Revert to original order
       }
+
+      // Show error feedback
+      showError({
+        title: 'Reorder Failed',
+        message: 'Failed to reorder links. Please try again.',
+        duration: 3000,
+        position: 'bottom-center'
+      });
       
       console.error('Failed to reorder links. Please try again.');
     }

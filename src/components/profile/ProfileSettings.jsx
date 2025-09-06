@@ -17,12 +17,14 @@ import PropTypes from 'prop-types';
 import { AvatarUpload, Button, Input } from '../common';
 import ErrorDisplay from '../common/error/ErrorDisplay.jsx';
 import { ProfileService } from '../../services';
-import { useAvatar } from '../../hooks';
+import { useAlerts, useAvatar } from '../../hooks';
 import useAsync from '../../hooks/useAsync.js';
 import { validateUsername } from '../../utils/validators.js';
+import { SERVICE_ERROR_MESSAGES, VALIDATION_MESSAGES, formatMessage } from '../../constants/validationMessages';
 
 const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
   const { avatarUrl, updateAvatarUrl, refreshAvatar } = useAvatar(profile?.avatar_url);
+  const { showSuccess } = useAlerts(); // Remove showError for inline-only validation
   
   const [formData, setFormData] = useState({
     name: profile?.name || '',
@@ -32,6 +34,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
   
   const [originalUsername] = useState(profile?.username || '');
   const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [avatarError, setAvatarError] = useState(null); // Add separate state for avatar errors
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
@@ -79,28 +82,43 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
       [field]: value
     }));
 
-    // Clear error when user starts typing - COMPLETELY REMOVE the error
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field]; // Remove the field entirely instead of setting to empty string
-        return newErrors;
-      });
-    }
+    // Mark field as touched
+    setTouched(prev => ({
+      ...prev,
+      [field]: true
+    }));
 
-    // For username, clear the validation state immediately to allow fresh validation
+    // Perform validation and set errors in one operation
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      
+      // Remove any existing error for this field first
+      delete newErrors[field];
+      
+      // Real-time validation for name field
+      if (field === 'name' && value.length > NAME_MAX_LENGTH) {
+        newErrors.name = VALIDATION_MESSAGES.PROFILE_NAME_TOO_LONG;
+      }
+
+      // Real-time validation for bio field  
+      if (field === 'bio' && value.length > BIO_MAX_LENGTH) {
+        newErrors.bio = formatMessage(VALIDATION_MESSAGES.PROFILE_BIO_TOO_LONG, BIO_MAX_LENGTH);
+      }
+
+      // Real-time validation for username
+      if (field === 'username') {
+        const validation = validateUsername(value);
+        if (!validation.isValid) {
+          newErrors.username = validation.error;
+        }
+      }
+      
+      return newErrors;
+    });
+
+    // For username, clear the availability state
     if (field === 'username') {
       setIsUsernameAvailable(null);
-      
-      // Only set validation error if the username is clearly invalid
-      // Let the useEffect handle availability checking
-      const validation = validateUsername(value);
-      if (!validation.isValid) {
-        setErrors(prev => ({
-          ...prev,
-          username: validation.error
-        }));
-      }
     }
   };
 
@@ -113,18 +131,18 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
       if (!validation.isValid) {
         newErrors.username = validation.error;
       } else if (isUsernameAvailable === false) {
-        newErrors.username = 'This username is not available';
+        newErrors.username = VALIDATION_MESSAGES.USERNAME_NOT_AVAILABLE;
       }
     }
 
     // Name validation
     if (formData.name && formData.name.length > NAME_MAX_LENGTH) {
-      newErrors.name = `Name must be ${NAME_MAX_LENGTH} characters or less`;
+      newErrors.name = VALIDATION_MESSAGES.PROFILE_NAME_TOO_LONG;
     }
 
     // Bio validation
     if (formData.bio && formData.bio.length > BIO_MAX_LENGTH) {
-      newErrors.bio = `Bio must be ${BIO_MAX_LENGTH} characters or less`;
+      newErrors.bio = formatMessage(VALIDATION_MESSAGES.PROFILE_BIO_TOO_LONG, BIO_MAX_LENGTH);
     }
 
     setErrors(newErrors);
@@ -158,15 +176,38 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
         // Include avatar_url in updates (it's managed by the avatar hook)
         updates.avatar_url = avatarUrl;
 
-        const updatedProfile = await ProfileService.updateProfile(profile.id, updates);
+        const result = await ProfileService.updateProfile(profile.id, updates);
         
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to update profile');
+        }
+
         // Refresh avatar to ensure cache busting
         refreshAvatar();
+
+        // Show success notification
+        const changedFields = [];
+        if (formData.name !== (profile?.name || '')) changedFields.push('display name');
+        if (formData.bio !== (profile?.bio || '')) changedFields.push('bio');
+        if (formData.username !== originalUsername) changedFields.push('username');
+        if (avatarUrl !== (profile?.avatar_url || null)) changedFields.push('avatar');
+
+        const successMessage = changedFields.length > 0 
+          ? `Updated ${changedFields.join(', ')} successfully!`
+          : 'Profile updated successfully!';
+
+        showSuccess({
+          title: 'Profile Updated',
+          message: successMessage,
+          duration: 3000,
+          position: 'bottom-center'
+        });
         
-        onUpdate(updatedProfile);
+        onUpdate(result.data);
       });
     } catch (err) {
       console.error('Failed to update profile:', err);
+      // Error handling is managed by useAsync hook
     }
   };
 
@@ -178,7 +219,10 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
 
   const handleAvatarError = (error) => {
     console.error('Avatar upload error:', error);
-    setAvatarError(error.message || 'Failed to upload avatar');
+    const errorMessage = error.message || SERVICE_ERROR_MESSAGES.PROFILE.FAILED_UPLOAD;
+    setAvatarError(errorMessage);
+    
+    // Keep inline error display only, no alert needed
   };
 
   const hasChanges = 
@@ -251,8 +295,8 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
           onChange={handleInputChange('name')}
           placeholder="Your full name"
           error={errors.name}
+          touched={touched.name}
           className="text-base md:text-sm"
-          maxLength={NAME_MAX_LENGTH}
         />
 
         <div>
@@ -264,6 +308,7 @@ const ProfileSettings = ({ profile, onUpdate, onCancel }) => {
             onChange={handleInputChange('username')}
             placeholder="Your username"
             error={errors.username}
+            touched={touched.username}
             className="text-base md:text-sm"
             autoComplete="username"
           />

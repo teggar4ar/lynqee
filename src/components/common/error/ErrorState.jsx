@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { RESPONSIVE_PATTERNS, TOUCH_TARGETS } from '../../../utils/mobileUtils';
+import { getErrorType, getUserFriendlyErrorMessage } from '../../../utils/errorUtils';
 
 /**
  * ErrorState Component
@@ -18,8 +19,13 @@ const ErrorState = ({
   showRetry = true,
   className = ''
 }) => {
-  // Error type configurations
-  const errorTypes = {
+  // Auto-detect error type if not provided and error object exists
+  const detectedType = type === 'general' && error ? getErrorType(error) : type;
+  
+  // Get user-friendly message from errorUtils if available
+  const autoMessage = error ? getUserFriendlyErrorMessage(error) : null;
+  // Error type configurations with mapping to detected types
+  const errorTypeConfigs = {
     general: {
       icon: '⚠️',
       defaultTitle: 'Something went wrong',
@@ -56,6 +62,12 @@ const ErrorState = ({
       defaultMessage: 'You don\'t have permission to view this content.',
       retryText: 'Sign In'
     },
+    auth: {
+      icon: '🔒',
+      defaultTitle: 'Authentication Error',
+      defaultMessage: 'Please check your credentials and try again.',
+      retryText: 'Try Again'
+    },
     rateLimit: {
       icon: '⏰',
       defaultTitle: 'Too Many Requests',
@@ -67,12 +79,25 @@ const ErrorState = ({
       defaultTitle: 'Under Maintenance',
       defaultMessage: 'We\'re performing maintenance. Please try again later.',
       retryText: 'Check Status'
+    },
+    validation: {
+      icon: '📝',
+      defaultTitle: 'Invalid Input',
+      defaultMessage: 'Please check your information and try again.',
+      retryText: 'Fix Input'
+    },
+    duplicate: {
+      icon: '📋',
+      defaultTitle: 'Already Exists',
+      defaultMessage: 'This item already exists. Please try a different value.',
+      retryText: 'Try Different'
     }
   };
 
-  const config = errorTypes[type] || errorTypes.general;
+  const config = errorTypeConfigs[detectedType] || errorTypeConfigs.general;
   const displayTitle = title || config.defaultTitle;
-  const displayMessage = message || error?.message || config.defaultMessage;
+  // Prioritize: custom message > auto-detected message > config default > error message
+  const displayMessage = message || autoMessage || config.defaultMessage;
 
   const handleRetry = () => {
     if (onRetry) {
@@ -179,7 +204,7 @@ const ErrorState = ({
 };
 
 ErrorState.propTypes = {
-  /** Type of error to display */
+  /** Type of error to display - can be auto-detected from error object */
   type: PropTypes.oneOf([
     'general',
     'network',
@@ -187,10 +212,13 @@ ErrorState.propTypes = {
     'profileNotFound',
     'linksError',
     'unauthorized',
+    'auth',
     'rateLimit',
-    'maintenance'
+    'maintenance',
+    'validation',
+    'duplicate'
   ]),
-  /** Error object with message and stack trace */
+  /** Error object with message and stack trace - used for auto-detection */
   error: PropTypes.shape({
     message: PropTypes.string,
     stack: PropTypes.string
@@ -199,7 +227,7 @@ ErrorState.propTypes = {
   onRetry: PropTypes.func,
   /** Custom title to override default */
   title: PropTypes.string,
-  /** Custom message to override default */
+  /** Custom message to override default and auto-detected message */
   message: PropTypes.string,
   /** Whether to show retry button */
   showRetry: PropTypes.bool,

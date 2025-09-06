@@ -14,6 +14,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Avatar, Button, Input } from '../common';
+import { VALIDATION_MESSAGES, formatMessage } from '../../constants/validationMessages';
 
 const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, loading }) => {
   const [formData, setFormData] = useState({
@@ -22,7 +23,9 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
   });
 
   const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
+  const NAME_MAX_LENGTH = 50;
   const BIO_MAX_LENGTH = 160;
 
   const handleInputChange = (field) => (e) => {
@@ -32,26 +35,44 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
       [field]: value
     }));
 
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: ''
-      }));
-    }
+    // Mark field as touched
+    setTouched(prev => ({
+      ...prev,
+      [field]: true
+    }));
+
+    // Perform validation and set errors in one operation
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      
+      // Remove any existing error for this field first
+      delete newErrors[field];
+      
+      // Real-time validation for name field
+      if (field === 'name' && value.length > NAME_MAX_LENGTH) {
+        newErrors.name = VALIDATION_MESSAGES.PROFILE_NAME_TOO_LONG;
+      }
+
+      // Real-time validation for bio field
+      if (field === 'bio' && value.length > BIO_MAX_LENGTH) {
+        newErrors.bio = formatMessage(VALIDATION_MESSAGES.PROFILE_BIO_TOO_LONG, BIO_MAX_LENGTH);
+      }
+      
+      return newErrors;
+    });
   };
 
   const validateForm = () => {
     const newErrors = {};
 
     // Name validation (optional but if provided, should be reasonable)
-    if (formData.name && formData.name.length > 50) {
-      newErrors.name = 'Name must be 50 characters or less';
+    if (formData.name && formData.name.length > NAME_MAX_LENGTH) {
+      newErrors.name = VALIDATION_MESSAGES.PROFILE_NAME_TOO_LONG;
     }
 
     // Bio validation
     if (formData.bio && formData.bio.length > BIO_MAX_LENGTH) {
-      newErrors.bio = `Bio must be ${BIO_MAX_LENGTH} characters or less`;
+      newErrors.bio = formatMessage(VALIDATION_MESSAGES.PROFILE_BIO_TOO_LONG, BIO_MAX_LENGTH);
     }
 
     setErrors(newErrors);
@@ -118,6 +139,7 @@ const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, load
           onChange={handleInputChange('name')}
           placeholder="Your full name"
           error={errors.name}
+          touched={touched.name}
           className="text-base md:text-sm" // Mobile-friendly text size
           autoComplete="name"
         />

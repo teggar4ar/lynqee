@@ -82,7 +82,7 @@ describe('ErrorDisplay', () => {
       render(<ErrorDisplay error="Test error" showIcon={true} />);
       const iconContainer = screen.getByText('Test error').parentElement.querySelector('svg');
       expect(iconContainer).toBeInTheDocument();
-      expect(iconContainer).toHaveClass('w-4', 'h-4', 'text-red-500');
+      expect(iconContainer).toHaveClass('w-4', 'h-4', 'text-coral-red');
     });
 
     it('hides icon when showIcon is false', () => {
@@ -96,8 +96,8 @@ describe('ErrorDisplay', () => {
     it('applies default error styling classes', () => {
       render(<ErrorDisplay error="Test error" />);
       const container = screen.getByRole('alert');
-      expect(container).toHaveClass('bg-red-50');
-      expect(container).toHaveClass('border-red-200');
+      expect(container).toHaveClass('bg-coral-pink/20');
+      expect(container).toHaveClass('border-coral-red/30');
       expect(container).toHaveClass('rounded-lg');
     });
 
@@ -110,7 +110,7 @@ describe('ErrorDisplay', () => {
     it('combines default and custom classes', () => {
       render(<ErrorDisplay error="Test error" className="mb-4" />);
       const container = screen.getByRole('alert');
-      expect(container).toHaveClass('bg-red-50');
+      expect(container).toHaveClass('bg-coral-pink/20');
       expect(container).toHaveClass('mb-4');
     });
   });
@@ -152,7 +152,7 @@ describe('ErrorDisplay', () => {
         type: 'network'
       };
       render(<ErrorDisplay error={networkError} />);
-      expect(screen.getByText('Network error occurred')).toBeInTheDocument();
+      expect(screen.getByText('Unable to connect to the server. Please check your internet connection and try again.')).toBeInTheDocument();
     });
 
     it('handles validation error objects', () => {
@@ -162,7 +162,7 @@ describe('ErrorDisplay', () => {
         field: 'email'
       };
       render(<ErrorDisplay error={validationError} />);
-      expect(screen.getByText('Validation failed')).toBeInTheDocument();
+      expect(screen.getByText('Please check your information is correct and try again.')).toBeInTheDocument();
     });
 
     it('handles complex error objects with nested messages', () => {
@@ -172,8 +172,8 @@ describe('ErrorDisplay', () => {
         }
       };
       render(<ErrorDisplay error={complexError} />);
-      // Should fall back to default message since no direct message property
-      expect(screen.getByText('An unexpected error occurred')).toBeInTheDocument();
+      // Should display the nested message properly
+      expect(screen.getByText('Nested error message')).toBeInTheDocument();
     });
   });
 
@@ -181,19 +181,19 @@ describe('ErrorDisplay', () => {
     it('handles boolean error values gracefully', () => {
       render(<ErrorDisplay error={true} />);
       // Should show fallback message for invalid error types
-      expect(screen.getByText('An unexpected error occurred')).toBeInTheDocument();
+      expect(screen.getByText('An unexpected error occurred. Please try again.')).toBeInTheDocument();
     });
 
     it('handles number error values gracefully', () => {
       render(<ErrorDisplay error={404} />);
       // Should show fallback message for invalid error types  
-      expect(screen.getByText('An unexpected error occurred')).toBeInTheDocument();
+      expect(screen.getByText('The requested content was not found.')).toBeInTheDocument();
     });
 
     it('handles array error values gracefully', () => {
       render(<ErrorDisplay error={['error1', 'error2']} />);
       // Should show fallback message for invalid error types
-      expect(screen.getByText('An unexpected error occurred')).toBeInTheDocument();
+      expect(screen.getByText('An unexpected error occurred. Please try again.')).toBeInTheDocument();
     });
 
     it('handles very long error messages', () => {

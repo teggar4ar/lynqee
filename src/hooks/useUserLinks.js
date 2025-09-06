@@ -45,8 +45,13 @@ const useBaseUserLinks = (userId) => {
       setError(null);
       if (showLoading) setIsRefreshingLinks(true);
 
-      const links = await LinksService.getLinksByUserId(userId);
-      updateLinks(links);
+      const result = await LinksService.getLinksByUserId(userId);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch links');
+      }
+      
+      updateLinks(result.data);
       
       if (!hasLinksData) {
         setIsInitialLoading(false);

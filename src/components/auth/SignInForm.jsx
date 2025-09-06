@@ -2,19 +2,21 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useFormValidation } from '../../hooks/useFormValidation.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useAlerts } from '../../hooks';
 import { VALIDATION_MESSAGES } from '../../constants/validationMessages.js';
 import { isValidEmail } from '../../utils/validators.js';
-import { ArrowRight, CheckCircle , Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { getUserFriendlyErrorMessage } from '../../utils/errorUtils.js';
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import GoogleOAuthButton from './GoogleOAuthButton.jsx';
 import { Button, Input } from '../common';
 
 const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
   const { signIn, resetPassword } = useAuth();
+  const { showSuccess, showError, showInfo } = useAlerts();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [resetSuccessMessage, setResetSuccessMessage] = useState('');
 
   const validationRules = {
     email: (value) => {
@@ -54,10 +56,24 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
       const isValid = await submitForm(formData, async (validatedData) => {
         const result = await signIn(validatedData.email, validatedData.password);
         if (result.error) {
-          if (onError) onError({ message: result.error });
+          const friendlyMessage = getUserFriendlyErrorMessage(result.error);
+          showError({
+            title: 'Sign In Failed',
+            message: friendlyMessage
+          });
+          if (onError) onError({ 
+            message: friendlyMessage,
+            skipInlineDisplay: true // Flag to prevent duplicate display
+          });
         } else {
+          showSuccess({
+            title: 'Welcome Back!',
+            message: 'Successfully signed in to your account'
+          });
           if (onSuccess) onSuccess(result);
         }
+      }, { 
+        showAlerts: false  // Disable automatic validation alerts to prevent duplicates
       });
       if (!isValid) {
         // This path is taken if form validation fails before submitting
@@ -66,7 +82,14 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
       };
     } catch (error) {
       console.error('[SignInForm] Login failed:', error);
-      if (onError) onError(error);
+      showError({
+        title: 'Authentication Error',
+        message: getUserFriendlyErrorMessage(error)
+      });
+      if (onError) onError({
+        ...error,
+        skipInlineDisplay: true // Flag to prevent duplicate display
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -75,16 +98,26 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
   const handleForgotPassword = async () => {
     if (!formData.email || !isValidEmail(formData.email)) {
       handleBlur('email', formData.email);
+      showInfo({
+        title: 'Email Required',
+        message: 'Please enter a valid email address to reset your password'
+      });
       return;
     }
     setIsResettingPassword(true);
     try {
       await resetPassword(formData.email);
-      setResetSuccessMessage('Verification email sent successfully! Please check your inbox.');
-      // Clear message after 5 seconds
-      setTimeout(() => setResetSuccessMessage(''), 5000);
+      showSuccess({
+        title: 'Email Sent',
+        message: 'Verification email sent successfully! Please check your inbox.',
+        duration: 8000
+      });
     } catch (error) {
       console.error('[SignInForm] Password reset failed:', error);
+      showError({
+        title: 'Reset Failed',
+        message: getUserFriendlyErrorMessage(error)
+      });
       if (onError) onError(error);
     } finally {
       setIsResettingPassword(false);
@@ -103,15 +136,6 @@ const SignInForm = ({ onSwitchToSignUp, onSuccess, onError }) => {
               Sign in to your Lynqee account
             </p>
           </div>
-
-          {resetSuccessMessage && (
-            <div className="bg-forest-green/10 border border-forest-green/20 rounded-lg p-4 mb-6 flex items-center space-x-3 animate-in slide-in-from-top-2 duration-300">
-              <CheckCircle className="w-5 h-5 text-forest-green flex-shrink-0" />
-              <p className="text-forest-green font-medium">
-                {resetSuccessMessage}
-              </p>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>

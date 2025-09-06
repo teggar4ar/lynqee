@@ -13,15 +13,19 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Input } from '../common';
 import { validateLinkData } from '../../utils/validators';
+// Remove useAlerts for inline-only validation
 
 const LinkForm = ({
   initialData = null, // Changed to null to detect when no data is passed
   onSubmit,
   onCancel,
   loading = false,
+  disabled = false,
   submitLabel = 'Add Link',
   cancelLabel = 'Cancel',
-  className = ''
+  className = '',
+  existingLinks = [], // Array of existing links for duplicate checking
+  currentLinkId = null // For edit mode, to exclude current link from duplicate check
 }) => {
   // Memoize the default initial data to prevent re-creation on every render
   const defaultInitialData = useMemo(() => ({ title: '', url: '' }), []);
@@ -32,6 +36,8 @@ const LinkForm = ({
   const [formData, setFormData] = useState(actualInitialData);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  
+  // Remove alert system for inline-only validation
   
   // Use ref to track the last processed initialData to avoid infinite loops
   const lastInitialDataRef = useRef(actualInitialData);
@@ -84,7 +90,7 @@ const LinkForm = ({
   // Validate individual field
   const validateField = (fieldName, value) => {
     const tempData = { ...formData, [fieldName]: value };
-    const validation = validateLinkData(tempData);
+    const validation = validateLinkData(tempData, existingLinks, currentLinkId);
     
     setErrors(prev => ({
       ...prev,
@@ -112,10 +118,12 @@ const LinkForm = ({
     };
 
     // Validate all data
-    const validation = validateLinkData(dataToValidate);
+    const validation = validateLinkData(dataToValidate, existingLinks, currentLinkId);
 
     if (!validation.isValid) {
       setErrors(validation.errors);
+      
+      // Keep only inline validation errors, no alert needed
       return;
     }
 
@@ -169,9 +177,10 @@ const LinkForm = ({
           value={formData.title}
           onChange={handleChange}
           onBlur={handleBlur}
-          error={touched.title ? errors.title : ''}
+          error={errors.title}
+          touched={touched.title}
           required
-          disabled={loading}
+          disabled={loading || disabled}
           autoComplete="off"
           className="
             text-base sm:text-sm
@@ -193,9 +202,10 @@ const LinkForm = ({
           value={formData.url}
           onChange={handleChange}
           onBlur={handleUrlBlur}
-          error={touched.url ? errors.url : ''}
+          error={errors.url}
+          touched={touched.url}
           required
-          disabled={loading}
+          disabled={loading || disabled}
           autoComplete="url"
           className="
             text-base sm:text-sm
@@ -233,7 +243,7 @@ const LinkForm = ({
         <Button
           type="submit"
           variant="primary"
-          disabled={loading}
+          disabled={loading || disabled}
           className="
             w-full sm:w-auto
             py-3 sm:py-2
@@ -267,12 +277,22 @@ LinkForm.propTypes = {
   onCancel: PropTypes.func,
   /** Whether the form is in loading state */
   loading: PropTypes.bool,
+  /** Whether the form should be disabled */
+  disabled: PropTypes.bool,
   /** Text for the submit button */
   submitLabel: PropTypes.string,
   /** Text for the cancel button */
   cancelLabel: PropTypes.string,
   /** Additional CSS classes */
   className: PropTypes.string,
+  /** Array of existing links for duplicate checking */
+  existingLinks: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string,
+    title: PropTypes.string,
+    url: PropTypes.string,
+  })),
+  /** Current link ID (for edit mode) */
+  currentLinkId: PropTypes.string,
 };
 
 export default LinkForm;

@@ -96,8 +96,8 @@ describe('errorUtils (Enhanced)', () => {
     it('returns user-friendly messages for auth errors', () => {
       const authError = new Error('Authentication failed');
       const message = getUserFriendlyErrorMessage(authError);
-      expect(message).toContain('sign in');
-      expect(message).toContain('credentials');
+      expect(message).toContain('email or password');
+      expect(message).toContain('incorrect');
     });
 
     it('returns user-friendly messages for validation errors', () => {
@@ -117,8 +117,8 @@ describe('errorUtils (Enhanced)', () => {
     it('returns user-friendly messages for rate limit errors', () => {
       const rateLimitError = new Error('Rate limit exceeded');
       const message = getUserFriendlyErrorMessage(rateLimitError);
-      expect(message).toContain('slow down');
-      expect(message).toContain('try again later');
+      expect(message).toContain('Too many attempts');
+      expect(message).toContain('wait a few minutes');
     });
 
     it('returns generic message for unknown errors', () => {

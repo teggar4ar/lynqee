@@ -115,8 +115,16 @@ describe('Error Boundary Tests', () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(
         'ErrorBoundary caught an error:',
-        expect.any(Error),
-        expect.any(Object)
+        expect.objectContaining({
+          boundaryName: 'ErrorBoundary',
+          error: expect.objectContaining({
+            message: 'Something went wrong'
+          }),
+          componentStack: expect.any(String),
+          retryCount: 0,
+          timestamp: expect.any(String),
+          url: expect.any(String)
+        })
       );
       
       consoleSpy.mockRestore();
@@ -144,8 +152,18 @@ describe('Error Boundary Tests', () => {
       );
 
       expect(onError).toHaveBeenCalledWith(
-        expect.objectContaining({ message: expect.stringContaining('Network error') }),
-        expect.any(Object)
+        expect.objectContaining({
+          boundaryType: 'GlobalErrorBoundary',
+          error: expect.objectContaining({
+            message: expect.stringContaining('Network error')
+          }),
+          componentStack: expect.any(String),
+          errorId: expect.any(String),
+          retryCount: 0,
+          timestamp: expect.any(String),
+          url: expect.any(String),
+          userAgent: expect.any(String)
+        })
       );
     });
   });

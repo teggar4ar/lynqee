@@ -10,21 +10,53 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Copy, ExternalLink } from 'lucide-react';
 import { Avatar, Button } from '../common';
+import { useAlerts } from '../../hooks';
 
 const ProfileQuickPreview = ({ 
   profile, 
   onEditProfile, 
-  onViewPublicProfile,
   loading = false,
   className = '' 
 }) => {
+  const { showSuccess, showError } = useAlerts();
+
   if (!profile) {
     return null;
   }
 
   const getPublicProfileUrl = () => {
+    return profile.username ? `${window.location.origin}/${profile.username}` : '';
+  };
+
+  const getDisplayPath = () => {
     return profile.username ? `/${profile.username}` : '';
+  };
+
+  const handleCopyProfileUrl = async () => {
+    const url = getPublicProfileUrl();
+    if (!url) {
+      showError({
+        title: 'No Profile URL',
+        message: 'Please set up your username first to copy your profile URL.',
+      });
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      showSuccess({
+        title: 'Copied!',
+        message: 'Profile URL copied to clipboard',
+      });
+    } catch (error) {
+      console.error('Failed to copy URL:', error);
+      showError({
+        title: 'Copy Failed',
+        message: 'Could not copy URL to clipboard. Please try again.',
+      });
+    }
   };
 
   return (
@@ -88,43 +120,32 @@ const ProfileQuickPreview = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 md:space-x-3">
               <div className="w-8 h-8 md:w-10 md:h-10 bg-golden-yellow/20 rounded-lg flex items-center justify-center">
-                <svg 
-                  className="w-4 h-4 md:w-5 md:h-5 text-golden-yellow" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" 
-                  />
-                </svg>
+                <ExternalLink className="w-4 h-4 md:w-5 md:h-5 text-golden-yellow" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs md:text-sm font-medium text-gray-900 mb-0.5 md:mb-1">
-                  Public Profile
+                  Public Profile URL
                 </p>
                 <p className="text-xs md:text-sm text-gray-600 truncate">
-                  {getPublicProfileUrl() || 'Set up your username first'}
+                  {getDisplayPath() || 'Set up your username first'}
                 </p>
               </div>
             </div>
             <Button
               variant="outline"
-              onClick={onViewPublicProfile}
+              onClick={handleCopyProfileUrl}
               disabled={!profile.username}
+              aria-label="Copy profile URL"
               className="
-                px-2 py-1 md:px-4 md:py-2 text-xs md:text-sm font-medium
+                p-4 md:p-3
                 bg-white/80 backdrop-blur-sm
                 border-golden-yellow/50 text-golden-yellow
                 hover:bg-golden-yellow/10 hover:border-golden-yellow
                 transition-all duration-200
-                min-w-[60px] md:min-w-[80px]
+                w-12 h-12 md:w-10 md:h-10
               "
             >
-              View
+              <Copy className="w-4 h-4 md:w-5 md:h-5 text-golden-yellow" />
             </Button>
           </div>
         </div>
@@ -141,7 +162,6 @@ ProfileQuickPreview.propTypes = {
     avatar_url: PropTypes.string,
   }),
   onEditProfile: PropTypes.func.isRequired,
-  onViewPublicProfile: PropTypes.func.isRequired,
   loading: PropTypes.bool,
   className: PropTypes.string,
 };

@@ -5,6 +5,7 @@ import React, { Suspense, lazy } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import { AppStateProvider } from './contexts/AppStateContext.jsx';
+import { AlertProvider } from './contexts/AlertContext.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import { InitialLoading } from './components/common/ModernLoading.jsx';
 import { ErrorBoundary, ErrorState, GlobalErrorBoundary } from './components/common/error';
@@ -22,6 +23,9 @@ const ProfileSetup = lazy(() => import('./pages/ProfileSetup.jsx'));
 const PublicProfile = lazy(() => import('./pages/PublicProfile.jsx'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword.jsx'));
 
+// Testing components (development only)
+const ErrorTestComponent = lazy(() => import('./components/common/ErrorTestComponent.jsx'));
+
 function App() {
   return (
     <GlobalErrorBoundary onError={(error, errorInfo) => {
@@ -32,12 +36,13 @@ function App() {
       // In production, you might want to send this to an error reporting service
       // like Sentry, Bugsnag, or LogRocket
     }}>
-      <AuthProvider>
-        <AppStateProvider>
-          <Router>
-            <div className="app-container">
-              {/* 4. BUNGKUS <Routes> DENGAN <Suspense> */}
-              <Suspense fallback={<InitialLoading />}>
+      <AlertProvider>
+        <AuthProvider>
+          <AppStateProvider>
+            <Router>
+              <div className="app-container">
+                {/* 4. BUNGKUS <Routes> DENGAN <Suspense> */}
+                <Suspense fallback={<InitialLoading />}>
               <Routes>
                 {/* Rute Publik: bisa diakses siapa saja */}
                 <Route 
@@ -115,6 +120,16 @@ function App() {
                   } 
                 />
                 
+                {/* Rute untuk Testing Tools - untuk development/debugging */}
+                <Route 
+                  path="/test-errors" 
+                  element={
+                    <ErrorBoundary fallback={<ErrorState type="general" />}>
+                      <ErrorTestComponent />
+                    </ErrorBoundary>
+                  } 
+                />
+                
                 {/* Rute Catch-all untuk 404 - harus selalu paling akhir */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -123,6 +138,7 @@ function App() {
         </Router>
       </AppStateProvider>
     </AuthProvider>
+      </AlertProvider>
     </GlobalErrorBoundary>
   );
 }

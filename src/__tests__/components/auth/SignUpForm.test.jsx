@@ -166,7 +166,8 @@ describe('SignUpForm', () => {
 
   it('calls onError callback on sign-up failure', async () => {
     const mockOnError = vi.fn();
-    mockSignUp.mockRejectedValue(new Error('Email already exists'));
+    const mockError = new Error('Email already exists');
+    mockSignUp.mockRejectedValue(mockError);
 
     renderWithUnauthenticatedUser(<SignUpForm onError={mockOnError} />);
 
@@ -181,7 +182,10 @@ describe('SignUpForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockOnError).toHaveBeenCalledWith(new Error('Email already exists'));
+      expect(mockOnError).toHaveBeenCalledWith({
+        ...mockError,
+        skipInlineDisplay: true
+      });
     });
   });
 

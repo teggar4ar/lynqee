@@ -2,15 +2,15 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useAlerts } from '../../hooks';
 import { ArrowLeft, CheckCircle, Clock, Mail, RefreshCw } from 'lucide-react';
 
 const EmailVerificationUI = ({ email, onBackToSignIn }) => {
   const { resetPassword, user, isAuthenticated, isLoading } = useAuth();
+  const { showSuccess, showError, showInfo } = useAlerts();
   const navigate = useNavigate();
   const [isResending, setIsResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [resendSuccess, setResendSuccess] = useState(false);
-  const [resendError, setResendError] = useState('');
 
   // Monitor authentication state changes for automatic redirect
   useEffect(() => {
@@ -32,24 +32,37 @@ const EmailVerificationUI = ({ email, onBackToSignIn }) => {
   }, [resendCooldown]);
 
   const handleResendEmail = async () => {
-    if (resendCooldown > 0 || isResending) return;
+    if (resendCooldown > 0 || isResending) {
+      showInfo({
+        title: 'Please Wait',
+        message: `You can request another email in ${resendCooldown} seconds`,
+        duration: 3000
+      });
+      return;
+    }
 
     setIsResending(true);
-    setResendError('');
-    setResendSuccess(false);
 
     try {
       await resetPassword(email, `${window.location.origin}/verify-email`);
-      setResendSuccess(true);
+      showSuccess({
+        title: 'Email Sent',
+        message: 'Verification email has been resent to your inbox',
+        position: 'top-center',
+        duration: 5000
+      });
       setResendCooldown(60);
-
-      setTimeout(() => {
-        setResendSuccess(false);
-      }, 5000);
-
     } catch (error) {
       console.error('[EmailVerificationUI] Resend failed:', error);
-      setResendError('Failed to resend verification email. Please try again.');
+      showError({
+        title: 'Email Not Sent',
+        message: 'Failed to resend verification email. Please try again.',
+        position: 'top-center',
+        action: {
+          label: 'Try Again',
+          onClick: handleResendEmail
+        }
+      });
     } finally {
       setIsResending(false);
     }
@@ -78,21 +91,6 @@ const EmailVerificationUI = ({ email, onBackToSignIn }) => {
               </div>
             </div>
           </div>
-
-          {resendSuccess && (
-            <div className="bg-forest-green/10 border border-forest-green/20 rounded-lg p-4 mb-6 flex items-center space-x-3">
-              <CheckCircle className="w-5 h-5 text-forest-green flex-shrink-0" />
-              <p className="text-forest-green font-medium">
-                Verification email sent successfully!
-              </p>
-            </div>
-          )}
-
-          {resendError && (
-            <div className="bg-coral-red/10 border border-coral-red/30 rounded-lg p-4 mb-6">
-              <p className="text-coral-red font-medium">{resendError}</p>
-            </div>
-          )}
 
           <div className="space-y-4">
             <button

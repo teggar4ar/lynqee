@@ -10,7 +10,7 @@
  * - Proper error handling
  */
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import AuthService from '../services/AuthService.js';
 import { useInactivityTimeout } from '../hooks/useInactivityTimeout.js';
@@ -25,6 +25,9 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   // 'loading' sekarang hanya berarti "memeriksa sesi awal"
   const [loadingInitial, setLoadingInitial] = useState(true);
+  
+  // Use ref to track when we should show success message
+  const previousUserRef = useRef(null);
 
   /**
    * Handle automatic logout due to inactivity
@@ -104,6 +107,9 @@ export const AuthProvider = ({ children }) => {
         if (prevUser?.id === newUser?.id) {
           return prevUser;
         }
+        
+        // Update previousUserRef
+        previousUserRef.current = prevUser;
         return newUser;
       });
     });

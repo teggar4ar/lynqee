@@ -10,11 +10,12 @@
  * - Optimized for touch interactions
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import BottomNavigation from '../common/BottomNavigation.jsx';
 import SidebarNavigation from '../common/SidebarNavigation.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useAlerts } from '../../hooks';
 import { Button } from '../common';
 
 const DashboardLayout = ({ 
@@ -24,14 +25,26 @@ const DashboardLayout = ({
   className = '' 
 }) => {
   const { signOut, isLoading } = useAuth();
+  const { showError } = useAlerts();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
     try {
+      setIsSigningOut(true);
       await signOut();
       // The AuthContext will handle the redirect after successful sign out
     } catch (error) {
       console.error('[DashboardLayout] Sign out failed:', error);
-      alert('Failed to sign out. Please try again.');
+      showError({
+        title: 'Sign out failed',
+        message: 'Unable to sign you out. Please try again.',
+        action: {
+          label: 'Retry',
+          onClick: handleSignOut
+        }
+      });
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
@@ -57,7 +70,7 @@ const DashboardLayout = ({
               <Button
                 variant="outline"
                 onClick={handleSignOut}
-                disabled={isLoading}
+                disabled={isLoading || isSigningOut}
                 className="
                   hidden
                   px-3 py-2 text-sm md:px-4 md:py-2

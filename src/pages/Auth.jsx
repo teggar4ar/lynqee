@@ -2,17 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { AuthContainer } from '../components/auth';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
-import { ErrorDisplay, SuccessDisplay } from '../components/common';
+import { ErrorDisplay } from '../components/common';
 
 const Auth = () => {
   const navigate = useNavigate();
   const { user, isLoading } = useAuth();
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  // Handle redirect after authentication
   useEffect(() => {
     if (!isLoading && user && !isRedirecting) {
+      // Simply redirect to dashboard without showing any alerts
       setIsRedirecting(true);
       navigate('/dashboard', { replace: true });
     }
@@ -20,11 +21,15 @@ const Auth = () => {
 
   const handleAuthSuccess = () => {
     setError(null);
-    setSuccess('Authentication successful! Redirecting...');
+    // Success is now handled by individual auth components via toast alerts
   };
 
   const handleAuthError = (error) => {
-    setSuccess(null);
+    // Only for errors that don't come from SignInForm or SignUpForm
+    // since those components already handle showing toast alerts
+    if (error && error.skipInlineDisplay) {
+      return;
+    }
     setError(error.message || 'Authentication failed. Please try again.');
   };
 
@@ -44,13 +49,7 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-mint-cream">
       <main>
-        {/* Display success/error messages */}
-        {success && (
-          <SuccessDisplay
-            message={success}
-            className="max-w-md mx-auto mt-4"
-          />
-        )}
+        {/* Display inline error messages for non-toast errors */}
         {error && (
           <ErrorDisplay
             error={error}

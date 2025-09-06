@@ -12,10 +12,11 @@
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { Edit } from 'lucide-react';
 import { ErrorDisplay, Modal } from '../common';
 import LinkForm from './LinkForm';
 import { LinksService } from '../../services';
-import { useAuth } from '../../hooks/useAuth';
+import { useAlerts, useAuth } from '../../hooks';
 import { getContextualErrorMessage } from '../../utils/errorUtils';
 
 const EditLinkModal = ({
@@ -23,14 +24,19 @@ const EditLinkModal = ({
   onClose,
   onLinkUpdated,
   link,
+  existingLinks = [], // Array of existing links for duplicate checking
   className = ''
 }) => {
   const { user } = useAuth();
+  const { showSuccess, showInfo } = useAlerts();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null); // Add local error state for service-level errors
 
   // Handle form submission
   const handleSubmit = async (formData) => {
+    // Clear any previous errors
+    setError(null);
+    
     if (!user) {
       setError('You must be logged in to edit links');
       return;
@@ -42,32 +48,52 @@ const EditLinkModal = ({
     }
 
     setLoading(true);
-    setError('');
 
     try {
       // Prepare update data - only include changed fields
       const updateData = {};
+      const changedFields = [];
       
       if (formData.title !== link.title) {
         updateData.title = formData.title;
+        changedFields.push('title');
       }
       
       if (formData.url !== link.url) {
         updateData.url = formData.url;
+        changedFields.push('URL');
       }
 
-      // If no changes were made, just close the modal
+      // If no changes were made, show info message and close
       if (Object.keys(updateData).length === 0) {
+        showInfo({
+          title: 'No Changes',
+          message: 'No changes were made to this link.',
+          duration: 2000,
+          position: 'bottom-center'
+        });
         onClose();
         return;
       }
 
       // Update the link via service
-      const updatedLink = await LinksService.updateLink(link.id, updateData);
+      const result = await LinksService.updateLink(link.id, updateData);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update link');
+      }
+
+      // Show success notification with what was changed
+      showSuccess({
+        title: 'Link Updated',
+        message: `Successfully updated ${changedFields.join(' and ')} for "${formData.title}"`,
+        duration: 3000,
+        position: 'bottom-center'
+      });
 
       // Notify parent component of successful update
       if (onLinkUpdated) {
-        onLinkUpdated(updatedLink);
+        onLinkUpdated(result.data);
       }
 
       // Close modal on success
@@ -78,6 +104,8 @@ const EditLinkModal = ({
       
       // Use centralized error handling with context
       const errorMessage = getContextualErrorMessage(err, 'link');
+      
+      // Set local error state for inline display
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -87,16 +115,14 @@ const EditLinkModal = ({
   // Handle modal close
   const handleClose = () => {
     if (loading) return; // Prevent closing while saving
-    
-    setError('');
+    setError(null); // Clear errors when closing
     onClose();
   };
 
   // Handle cancel
   const handleCancel = () => {
     if (loading) return; // Prevent cancel while saving
-    
-    setError('');
+    setError(null); // Clear errors when canceling
     onClose();
   };
 
@@ -117,11 +143,12 @@ const EditLinkModal = ({
       className={className}
     >
       <div className="space-y-4">
-        {/* Error Message */}
+        {/* Service-level error display */}
         {error && (
           <ErrorDisplay 
             error={error} 
-            showIcon={true}
+            className="mb-4"
+            showDetails={false}
           />
         )}
 
@@ -131,9 +158,7 @@ const EditLinkModal = ({
           text-sm text-sage-gray
         ">
           <div className="flex items-start space-x-2">
-            <svg className="w-5 h-5 text-golden-yellow flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
+            <Edit className="w-5 h-5 text-golden-yellow flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium mb-1 text-forest-green">Editing Link</p>
               <p>Make your changes below. The position of this link will remain the same.</p>
@@ -150,6 +175,8 @@ const EditLinkModal = ({
             loading={loading}
             submitLabel="Update Link"
             cancelLabel="Cancel"
+            existingLinks={existingLinks}
+            currentLinkId={link.id}
           />
         )}
 
@@ -183,6 +210,12 @@ EditLinkModal.propTypes = {
     created_at: PropTypes.string,
     updated_at: PropTypes.string,
   }),
+  /** Array of existing links for duplicate checking */
+  existingLinks: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string,
+    title: PropTypes.string,
+    url: PropTypes.string,
+  })),
   /** Additional CSS classes */
   className: PropTypes.string,
 };

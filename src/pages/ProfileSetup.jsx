@@ -14,6 +14,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
+import { useAlerts } from '../hooks';
 import useAsync from '../hooks/useAsync.js';
 import ProfileSetupWizard from '../components/profile/ProfileSetupWizard.jsx';
 import { ProfileService } from '../services';
@@ -24,6 +25,7 @@ import { InitialLoading } from '../components/common/ModernLoading.jsx';
 const ProfileSetup = () => {
   const navigate = useNavigate();
   const { user, updateUserProfile, isAuthenticated, isLoading } = useAuth();
+  const { showSuccess } = useAlerts();
   const [currentStep, setCurrentStep] = useState(1);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const { loading, error, execute } = useAsync();
@@ -117,11 +119,21 @@ const ProfileSetup = () => {
           await updateUserProfile({ has_profile: true });
         }
 
+        // Show success alert before redirecting
+        showSuccess({
+          title: 'Profile Created!',
+          message: `Welcome to Lynqee, ${profileData.name || profileData.username}! Your profile is ready.`,
+          duration: 3000,
+          position: 'bottom-center'
+        });
+
         return newProfile;
       });
 
-      // Redirect to dashboard after successful profile creation
-      navigate('/dashboard', { replace: true });
+      // Small delay to allow user to see the success message before redirect
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 1500);
     } catch (err) {
       console.error('Failed to create profile:', err);
     }
