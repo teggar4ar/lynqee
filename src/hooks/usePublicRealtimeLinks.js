@@ -32,7 +32,7 @@ export const usePublicRealtimeLinks = (username) => {
       setLoading(true);
       setError(null);
       
-      const result = await LinksService.getLinksByUsername(username);
+      const result = await LinksService.getPublicLinksByUsername(username);
       
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch links');
@@ -88,22 +88,38 @@ export const usePublicRealtimeLinks = (username) => {
         (payload) => {
           switch (payload.eventType) {
             case 'INSERT':
-              // Add the new link to the list and sort by position
-              setLinks(prevLinks => {
-                const newLinks = [...prevLinks, payload.new];
-                const sortedLinks = newLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
-                return sortedLinks;
-              });
+              // Only add if it's a public link
+              if (payload.new.is_public) {
+                setLinks(prevLinks => {
+                  const newLinks = [...prevLinks, payload.new];
+                  const sortedLinks = newLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
+                  return sortedLinks;
+                });
+              }
               break;
               
             case 'UPDATE':
-              // Update the existing link and re-sort by position
+              // Handle visibility changes - add/remove based on is_public
               setLinks(prevLinks => {
-                const updatedLinks = prevLinks.map(link => 
-                  link.id === payload.new.id ? payload.new : link
-                );
-                const sortedLinks = updatedLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
-                return sortedLinks;
+                const existingLinkIndex = prevLinks.findIndex(link => link.id === payload.new.id);
+                
+                if (payload.new.is_public) {
+                  // Link is now public
+                  if (existingLinkIndex >= 0) {
+                    // Update existing public link
+                    const updatedLinks = prevLinks.map(link => 
+                      link.id === payload.new.id ? payload.new : link
+                    );
+                    return updatedLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
+                  } else {
+                    // Add newly public link
+                    const newLinks = [...prevLinks, payload.new];
+                    return newLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
+                  }
+                } else {
+                  // Link is now private - remove it
+                  return prevLinks.filter(link => link.id !== payload.new.id);
+                }
               });
               break;
               

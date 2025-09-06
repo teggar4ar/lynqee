@@ -1,14 +1,14 @@
 /**
  * LinkManagerCard Component
  * 
- * Enhanced link card for management interface with edit/delete actions
- * Includes drag handles, selection checkboxes, and management actions
+ * Enhanced link card for management interface with edit/delete actions and visibility controls
+ * Includes drag handles, selection checkboxes, visibility toggles, and management actions
  */
 
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
-import { Edit, GripVertical, Link, MoreVertical, Trash2 } from 'lucide-react';
+import { Edit, Eye, EyeOff, GripVertical, Link, MoreVertical, Trash2 } from 'lucide-react';
 
 const LinkManagerCard = ({ 
   link, 
@@ -17,10 +17,12 @@ const LinkManagerCard = ({
   showDeleteButton = true,
   showDragHandle = true,
   showSelection = false,
+  showVisibilityToggle = true,
   isSelected = false,
   onEdit,
   onDelete,
   onSelect,
+  onToggleVisibility,
   dragHandleProps = null,
   className = ''
 }) => {
@@ -28,15 +30,33 @@ const LinkManagerCard = ({
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [isPositionCalculated, setIsPositionCalculated] = useState(false);
 
   // Calculate dropdown position when showing
   useEffect(() => {
     if (showActions && buttonRef.current) {
       const buttonRect = buttonRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: buttonRect.bottom + window.scrollY + 4, // 4px spacing
-        left: buttonRect.right - 128 + window.scrollX, // 128px is dropdown width, align right
-      });
+      const dropdownWidth = 128; // Fixed dropdown width
+      
+      // Calculate position with boundary checks
+      let top = buttonRect.bottom + window.scrollY + 4; // 4px spacing
+      let left = buttonRect.right - dropdownWidth + window.scrollX; // Align right
+      
+      // Ensure dropdown doesn't go off-screen on the left
+      if (left < 8) {
+        left = 8; // 8px minimum margin from left edge
+      }
+      
+      // Ensure dropdown doesn't go off-screen on the right
+      const maxLeft = window.innerWidth - dropdownWidth - 8;
+      if (left > maxLeft) {
+        left = maxLeft;
+      }
+      
+      setDropdownPosition({ top, left });
+      setIsPositionCalculated(true);
+    } else {
+      setIsPositionCalculated(false);
     }
   }, [showActions]);
 
@@ -94,6 +114,12 @@ const LinkManagerCard = ({
     e.preventDefault();
     e.stopPropagation();
     if (onSelect) onSelect(link.id);
+  };
+
+  const handleToggleVisibility = (isPublic) => {
+    if (onToggleVisibility) {
+      onToggleVisibility(link, isPublic);
+    }
   };
 
   const handleToggleActions = (e) => {
@@ -156,15 +182,46 @@ const LinkManagerCard = ({
               <p className="text-xs text-gray-600 truncate mt-1">
                 {link.url}
               </p>
-              {position && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Position {position}
-                </p>
-              )}
+              
+              {/* Visibility Status Indicator */}
+              <div className="flex items-center mt-1 space-x-2">
+                <div className="flex items-center space-x-1">
+                  {link.is_public ? (
+                    <Eye className="w-3 h-3 text-forest-green" />
+                  ) : (
+                    <EyeOff className="w-3 h-3 text-gray-400" />
+                  )}
+                  <span className={`text-xs ${link.is_public ? 'text-forest-green' : 'text-gray-400'}`}>
+                    {link.is_public ? 'Public' : 'Private'}
+                  </span>
+                </div>
+                
+                {position && (
+                  <>
+                    <span className="text-xs text-gray-300">•</span>
+                    <span className="text-xs text-gray-400">
+                      Position {position}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {showVisibilityToggle && (
+                <button
+                  onClick={() => handleToggleVisibility(!link.is_public)}
+                  className="p-1 text-gray-400 hover:text-forest-green rounded"
+                  title={link.is_public ? 'Hide from public profile' : 'Show on public profile'}
+                >
+                  {link.is_public ? (
+                    <Eye className="w-4 h-4" />
+                  ) : (
+                    <EyeOff className="w-4 h-4" />
+                  )}
+                </button>
+              )}
               {showEditButton && (
                 <button
                   onClick={handleEdit}
@@ -213,11 +270,11 @@ const LinkManagerCard = ({
       )}
 
       {/* Portal-rendered Mobile Actions Dropdown to prevent layout shifts */}
-      {showActions && typeof window !== 'undefined' && 
+      {showActions && isPositionCalculated && typeof window !== 'undefined' && 
         createPortal(
           <div 
             ref={dropdownRef}
-            className="fixed w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999]"
+            className="fixed w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] transform transition-all duration-150 ease-out opacity-100 scale-100"
             style={{
               top: `${dropdownPosition.top}px`,
               left: `${dropdownPosition.left}px`,
@@ -226,10 +283,26 @@ const LinkManagerCard = ({
             {showEditButton && (
               <button
                 onClick={handleEdit}
-                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center rounded-t-lg"
+                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
               >
                 <Edit className="w-4 h-4 mr-2" />
                 Edit
+              </button>
+            )}
+            {showVisibilityToggle && (
+              <button
+                onClick={() => {
+                  handleToggleVisibility(!link.is_public);
+                  setShowActions(false);
+                }}
+                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+              >
+                {link.is_public ? (
+                  <EyeOff className="w-4 h-4 mr-2" />
+                ) : (
+                  <Eye className="w-4 h-4 mr-2" />
+                )}
+                {link.is_public ? 'Make Private' : 'Make Public'}
               </button>
             )}
             {showDeleteButton && (
@@ -254,6 +327,7 @@ LinkManagerCard.propTypes = {
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     url: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
+    is_public: PropTypes.bool,
     click_count: PropTypes.number,
     created_at: PropTypes.string,
   }).isRequired,
@@ -262,10 +336,12 @@ LinkManagerCard.propTypes = {
   showDeleteButton: PropTypes.bool,
   showDragHandle: PropTypes.bool,
   showSelection: PropTypes.bool,
+  showVisibilityToggle: PropTypes.bool,
   isSelected: PropTypes.bool,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   onSelect: PropTypes.func,
+  onToggleVisibility: PropTypes.func,
   dragHandleProps: PropTypes.object,
   className: PropTypes.string,
 };

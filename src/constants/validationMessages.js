@@ -35,6 +35,10 @@ export const VALIDATION_MESSAGES = {
   LINK_URL_INVALID_CHARS: 'URL cannot contain spaces or line breaks',
   LINK_LIMIT_EXCEEDED: 'You have reached the maximum number of links allowed for your profile',
   
+  // Link visibility validation
+  LINK_VISIBILITY_REQUIRED: 'Link visibility setting is required',
+  PUBLIC_LINK_LIMIT_EXCEEDED: 'You have reached the maximum number of public links allowed',
+  
   // Profile validation
   PROFILE_NAME_TOO_LONG: 'Name must be 50 characters or less',
   PROFILE_BIO_TOO_LONG: 'Bio must be {0} characters or less',
@@ -60,6 +64,7 @@ export const ERROR_MESSAGES = {
     validation: 'Please check your information is correct and try again.',
     duplicate: 'This item already exists. Please try a different value.',
     linkLimit: 'You have reached the maximum number of links allowed. Please delete some links before adding new ones.',
+    publicLinkLimit: 'You have reached the maximum number of public links allowed. Please set some links to private or delete them.',
     general: 'An unexpected error occurred. Please try again.'
   },
   
@@ -70,6 +75,8 @@ export const ERROR_MESSAGES = {
       validation: 'Please ensure you have a valid URL and link information, then try again.',
       network: 'Unable to save your link. Please check your connection and try again.',
       linkLimit: 'You have reached the maximum number of links allowed for your profile. Please delete some links before adding new ones.',
+      publicLinkLimit: 'You have reached the maximum number of public links allowed. Please set some links to private before adding more.',
+      visibility: 'Unable to change link visibility. Please try again.',
       general: 'Failed to save the link. Please try again.'
     },
     profile: {
@@ -102,7 +109,10 @@ export const SERVICE_ERROR_MESSAGES = {
     TIMEOUT: 'Request timeout. Please check your connection and try again',
     RATE_LIMIT: 'Rate limit exceeded. Please wait a moment and try again',
     NETWORK: 'Network error. Please check your connection and try again',
-    MISSING_DATA: 'Missing required link data (title, url, or user_id)'
+    MISSING_DATA: 'Missing required link data (title, url, or user_id)',
+    VISIBILITY_UPDATE_FAILED: 'Failed to update link visibility. Please try again',
+    PUBLIC_LINK_LIMIT: 'You have reached the maximum number of public links allowed',
+    INVALID_VISIBILITY: 'Invalid visibility setting. Must be true or false'
   },
   
   // Profile service error messages

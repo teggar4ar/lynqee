@@ -180,6 +180,60 @@ const useBaseUserLinks = (userId) => {
     removeLinkOptimistic(linkId);
   }, [removeLinkOptimistic]);
 
+  // Visibility management functions
+  const toggleVisibility = useCallback(async (linkId, isPublic) => {
+    try {
+      // Optimistic update first
+      updateLinks(currentLinks => {
+        const links = currentLinks || [];
+        return links.map(link => 
+          link.id === linkId ? { ...link, is_public: isPublic } : link
+        );
+      });
+
+      const result = await LinksService.toggleLinkVisibility(linkId, isPublic);
+      
+      if (!result.success) {
+        // Revert optimistic update on error
+        updateLinks(currentLinks => {
+          const links = currentLinks || [];
+          return links.map(link => 
+            link.id === linkId ? { ...link, is_public: !isPublic } : link
+          );
+        });
+        throw new Error(result.error);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Failed to toggle link visibility:', error);
+      throw error;
+    }
+  }, [updateLinks]);
+
+  const bulkToggleVisibility = useCallback(async (linkIds, isPublic) => {
+    try {
+      const results = await Promise.all(
+        linkIds.map(linkId => toggleVisibility(linkId, isPublic))
+      );
+      return results;
+    } catch (error) {
+      console.error('Failed to bulk toggle visibility:', error);
+      throw error;
+    }
+  }, [toggleVisibility]);
+
+  // Computed properties for link visibility stats
+  const linksArray = linksData || [];
+  const publicLinks = linksArray.filter(link => link.is_public);
+  const privateLinks = linksArray.filter(link => !link.is_public);
+  
+  const stats = {
+    total: linksArray.length,
+    public: publicLinks.length,
+    private: privateLinks.length
+  };
+
   return {
     data: linksData || [],
     loading: isInitialLoading,
@@ -190,7 +244,14 @@ const useBaseUserLinks = (userId) => {
     isRealTimeConnected,
     // Optimistic update methods
     addOptimistic,
-    removeOptimistic
+    removeOptimistic,
+    // New computed properties
+    publicLinks,
+    privateLinks,
+    stats,
+    // New visibility management methods
+    toggleVisibility,
+    bulkToggleVisibility
   };
 };
 

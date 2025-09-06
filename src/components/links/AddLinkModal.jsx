@@ -27,7 +27,7 @@ const AddLinkModal = ({
   className = ''
 }) => {
   const { user } = useAuth();
-  const { showSuccess } = useAlerts();
+  const { showSuccess, showInfo } = useAlerts();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null); // Add local error state for service-level errors
 
@@ -64,13 +64,24 @@ const AddLinkModal = ({
         throw new Error(result.error || 'Failed to create link');
       }
 
-      // Show success notification
-      showSuccess({
-        title: 'Link Added',
-        message: `"${formData.title}" has been added to your profile!`,
-        duration: 3000,
-        position: 'bottom-center'
-      });
+      // Check if link was automatically set to private due to public limit
+      if (result.meta?.wasAutoSetToPrivate) {
+        // Show info notification about auto-private setting
+        showInfo({
+          title: 'Link Added as Private',
+          message: `"${formData.title}" was added as a private link because you've reached the maximum of ${result.meta.publicLinksLimit} public links.`,
+        }, {
+          duration: 6000
+        });
+      } else {
+        // Show normal success notification
+        showSuccess({
+          title: 'Link Added',
+          message: `"${formData.title}" has been added to your profile!`,
+        }, {
+          duration: 3000
+        });
+      }
 
       // Notify parent component of successful creation
       if (onLinkAdded) {

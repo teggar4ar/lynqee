@@ -23,6 +23,7 @@ const DraggableLink = ({
   onEdit,
   onDelete,
   onSelect,
+  onToggleVisibility,
   className = ''
 }) => {
   const {
@@ -84,6 +85,7 @@ const DraggableLink = ({
         onEdit={onEdit}
         onDelete={onDelete}
         onSelect={onSelect}
+        onToggleVisibility={onToggleVisibility}
         dragHandleProps={{
           ...attributes,
           ...listeners,
@@ -114,6 +116,7 @@ DraggableLink.propTypes = {
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   onSelect: PropTypes.func,
+  onToggleVisibility: PropTypes.func,
   className: PropTypes.string,
 };
 

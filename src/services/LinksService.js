@@ -6,7 +6,7 @@
  */
 
 import { SUPABASE_TABLES, supabase } from './supabase.js';
-import { APP_CONFIG } from '../constants/index.js';
+import { APP_CONFIG, LINK_DISPLAY_CONFIG } from '../constants/index.js';
 import { SERVICE_ERROR_MESSAGES } from '../constants/validationMessages.js';
 
 class LinksService {
@@ -163,6 +163,31 @@ class LinksService {
   }
 
   /**
+   * Get a single link by its ID
+   * @param {string} linkId - The link ID to fetch
+   * @returns {Promise<Object>} Standardized response with link object
+   */
+  static async getLinkById(linkId) {
+    try {
+      if (!linkId) {
+        throw new Error('Link ID is required');
+      }
+
+      const request = supabase
+        .from(SUPABASE_TABLES.LINKS)
+        .select('*')
+        .eq('id', linkId)
+        .single();
+
+      const { data, error } = await this._withTimeout(request);
+      return this._formatResponse(data, error);
+    } catch (error) {
+      console.error('[LinksService] getLinkById error:', error);
+      return this._formatResponse(null, { message: error.message });
+    }
+  }
+
+  /**
    * Get all links for a user by their username (public access)
    * This combines profile lookup with links fetch for public profile pages
    * @param {string} username - The username to get links for
@@ -214,6 +239,32 @@ class LinksService {
   }
 
   /**
+   * Get the count of public links for a user
+   * @param {string} userId - The user ID to count public links for
+   * @returns {Promise<Object>} Standardized response with count
+   */
+  static async getPublicLinkCountByUserId(userId) {
+    try {
+      const request = supabase
+        .from(SUPABASE_TABLES.LINKS)
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_public', true);
+
+      const { count, error } = await this._withTimeout(request);
+      
+      if (error) {
+        return this._formatResponse(null, error);
+      }
+
+      return this._formatResponse(count || 0, null);
+    } catch (error) {
+      console.error('[LinksService] getPublicLinkCountByUserId error:', error);
+      return this._formatResponse(null, { message: error.message });
+    }
+  }
+
+  /**
    * Create a new link for the authenticated user
    * @param {Object} linkData - Link data { title, url, position }
    * @returns {Promise<Object>} Standardized response with created link object
@@ -235,11 +286,26 @@ class LinksService {
         throw new Error(`You have reached the maximum limit of ${APP_CONFIG.MAX_LINKS_PER_USER} links per profile`);
       }
 
+      // Check if we should set the link as private due to public link limit
+      let shouldBePublic = linkData.is_public !== undefined ? linkData.is_public : LINK_DISPLAY_CONFIG.VISIBILITY_TOGGLES.DEFAULT_PUBLIC;
+      let wasAutoSetToPrivate = false;
+      
+      if (shouldBePublic) {
+        // Check current public links count
+        const publicCountResult = await this.getPublicLinkCountByUserId(linkData.user_id);
+        if (publicCountResult.success && publicCountResult.data >= LINK_DISPLAY_CONFIG.DISPLAY_LIMITS.MAX_PUBLIC_LINKS) {
+          // Automatically set to private if public limit reached
+          shouldBePublic = false;
+          wasAutoSetToPrivate = true;
+        }
+      }
+
       // Sanitize data
       const sanitizedData = {
         ...linkData,
         title: linkData.title.trim(),
         url: linkData.url.trim(),
+        is_public: shouldBePublic
       };
 
       const request = supabase
@@ -249,7 +315,21 @@ class LinksService {
         .single();
 
       const { data, error } = await this._withTimeout(request);
-      return this._formatResponse(data, error);
+      
+      if (error) {
+        return this._formatResponse(null, error);
+      }
+      
+      // Return the link data along with metadata about auto-private setting
+      return {
+        success: true,
+        error: null,
+        data: data,
+        meta: {
+          wasAutoSetToPrivate,
+          publicLinksLimit: LINK_DISPLAY_CONFIG.DISPLAY_LIMITS.MAX_PUBLIC_LINKS
+        }
+      };
     } catch (error) {
       console.error('[LinksService] createLink error:', error);
       return this._formatResponse(null, { message: error.message });
@@ -278,6 +358,9 @@ class LinksService {
       }
       if (updates.position !== undefined) {
         sanitizedUpdates.position = updates.position;
+      }
+      if (updates.is_public !== undefined) {
+        sanitizedUpdates.is_public = updates.is_public;
       }
 
       const request = supabase
@@ -351,6 +434,152 @@ class LinksService {
       };
     } catch (error) {
       console.error('[LinksService] updateLinkPositions error:', error);
+      return this._formatResponse(null, { message: error.message });
+    }
+  }
+
+  /**
+   * Toggle link visibility on public profile
+   * @param {string} linkId - The link ID to update
+   * @param {boolean} isPublic - Whether the link should be public
+   * @returns {Promise<Object>} Standardized response with updated link object
+   */
+  static async toggleLinkVisibility(linkId, isPublic) {
+    try {
+      if (!linkId) {
+        throw new Error('Link ID is required for visibility toggle');
+      }
+
+      if (typeof isPublic !== 'boolean') {
+        throw new Error(SERVICE_ERROR_MESSAGES.LINKS.INVALID_VISIBILITY);
+      }
+
+      // If trying to make link public, check the public links limit
+      if (isPublic) {
+        // First get the link to find the user_id
+        const linkResult = await this.getLinkById(linkId);
+        if (!linkResult.success || !linkResult.data) {
+          throw new Error('Link not found');
+        }
+
+        const userId = linkResult.data.user_id;
+        
+        // Check current public links count
+        const publicCountResult = await this.getPublicLinkCountByUserId(userId);
+        if (!publicCountResult.success) {
+          throw new Error('Failed to check public links count');
+        }
+
+        if (publicCountResult.data >= LINK_DISPLAY_CONFIG.DISPLAY_LIMITS.MAX_PUBLIC_LINKS) {
+          throw new Error(`Maximum number of public links (${LINK_DISPLAY_CONFIG.DISPLAY_LIMITS.MAX_PUBLIC_LINKS}) has been reached`);
+        }
+      }
+
+      const request = supabase
+        .from(SUPABASE_TABLES.LINKS)
+        .update({ is_public: isPublic })
+        .eq('id', linkId)
+        .select()
+        .single();
+
+      const { data, error } = await this._withTimeout(request);
+      return this._formatResponse(data, error);
+    } catch (error) {
+      console.error('[LinksService] toggleLinkVisibility error:', error);
+      return this._formatResponse(null, { message: error.message });
+    }
+  }
+
+  /**
+   * Get public links by username with optional limit
+   * @param {string} username - The username to get links for
+   * @param {number} limit - Maximum number of links to return (optional)
+   * @returns {Promise<Object>} Standardized response with array of public link objects
+   */
+  static async getPublicLinksByUsername(username, limit = null) {
+    try {
+      let request = supabase
+        .from(SUPABASE_TABLES.LINKS)
+        .select(`
+          *,
+          profiles!inner(username)
+        `)
+        .eq('profiles.username', username)
+        .eq('is_public', true)
+        .order('position', { ascending: true });
+
+      // Apply limit if specified
+      if (limit && limit > 0) {
+        request = request.limit(limit);
+      }
+
+      const { data, error } = await this._withTimeout(request);
+      return this._formatResponse(data || [], error);
+    } catch (error) {
+      console.error('[LinksService] getPublicLinksByUsername error:', error);
+      return this._formatResponse(null, { message: error.message });
+    }
+  }
+
+  /**
+   * Get link statistics for user (total, public, private)
+   * @param {string} userId - The user ID
+   * @returns {Promise<Object>} Link statistics response
+   */
+  static async getLinkStats(userId) {
+    try {
+      if (!userId) {
+        throw new Error('User ID is required for link statistics');
+      }
+
+      // Get total count
+      const totalRequest = supabase
+        .from(SUPABASE_TABLES.LINKS)
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId);
+
+      // Get public count
+      const publicRequest = supabase
+        .from(SUPABASE_TABLES.LINKS)
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_public', true);
+
+      // Get private count
+      const privateRequest = supabase
+        .from(SUPABASE_TABLES.LINKS)
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_public', false);
+
+      // Execute all requests in parallel
+      const [totalResult, publicResult, privateResult] = await Promise.all([
+        this._withTimeout(totalRequest),
+        this._withTimeout(publicRequest),
+        this._withTimeout(privateRequest)
+      ]);
+
+      // Check for errors
+      if (totalResult.error || publicResult.error || privateResult.error) {
+        const error = totalResult.error || publicResult.error || privateResult.error;
+        throw new Error(error.message);
+      }
+
+      const total = totalResult.count || 0;
+      const publicCount = publicResult.count || 0;
+      const privateCount = privateResult.count || 0;
+      
+      const stats = {
+        total,
+        public: publicCount,
+        private: privateCount,
+        remaining_slots: Math.max(0, APP_CONFIG.MAX_LINKS_PER_USER - total),
+        public_remaining: Math.max(0, APP_CONFIG.MAX_PUBLIC_LINKS_DISPLAY - publicCount)
+      };
+
+      return this._formatResponse(stats, null);
+    } catch (error) {
+      console.error('[LinksService] getLinkStats error:', error);
       return this._formatResponse(null, { message: error.message });
     }
   }

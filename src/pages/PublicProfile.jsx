@@ -12,6 +12,7 @@ import {
 import { LinkList } from '../components/links';
 import { RESPONSIVE_PATTERNS, TOUCH_TARGETS } from '../utils/mobileUtils';
 import { getErrorType } from '../utils/errorUtils';
+import { APP_CONFIG } from '../constants';
 
 /**
  * PublicProfile Component
@@ -29,7 +30,12 @@ const PublicProfile = () => {
   
   // Fetch profile and links data
   const { data: profile, loading: profileLoading, error: profileError, notFound } = usePublicProfile(username);
-  const { data: links, loading: linksLoading, error: linksError } = usePublicRealtimeLinks(username);
+  const { data: allLinks, loading: linksLoading, error: linksError } = usePublicRealtimeLinks(username);
+
+  // Apply display limit
+  const displayLimit = APP_CONFIG.MAX_PUBLIC_LINKS_DISPLAY;
+  const displayLinks = allLinks ? allLinks.slice(0, displayLimit) : [];
+  const hasMoreLinks = allLinks && allLinks.length > displayLimit;
 
   // Handle case where username is missing (shouldn't happen with proper routing)
   if (!username) {
@@ -224,7 +230,7 @@ const PublicProfile = () => {
               }
             >
               <LinkList
-                links={links}
+                links={displayLinks}
                 loading={linksLoading}
                 error={linksError}
                 emptyMessage="No links added yet"
@@ -233,6 +239,15 @@ const PublicProfile = () => {
                 className="space-y-3 sm:space-y-4"
                 showAnimation={true}
               />
+              
+              {/* Show indicator if there are more links */}
+              {hasMoreLinks && (
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-gray-500">
+                    Showing {displayLinks.length} of {allLinks.length} links
+                  </p>
+                </div>
+              )}
             </ErrorBoundary>
           </section>
 

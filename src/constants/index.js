@@ -38,3 +38,22 @@ export const UI_CONSTANTS = {
   TOUCH_TARGET_MIN_SIZE: 44, // pixels
   ANIMATION_DURATION: 200, // milliseconds
 };
+
+// Link Display Configuration
+export const LINK_DISPLAY_CONFIG = {
+  VISIBILITY_TOGGLES: {
+    SHOW_IN_MANAGER: true,
+    ALLOW_BULK_TOGGLE: true,
+    DEFAULT_PUBLIC: true,
+  },
+  DISPLAY_LIMITS: {
+    MIN_PUBLIC_LINKS: 1,
+    MAX_PUBLIC_LINKS: 25,
+    DEFAULT_PUBLIC_LINKS: 3,
+  },
+  UI_SETTINGS: {
+    SHOW_VISIBILITY_STATS: true,
+    SHOW_PUBLIC_LINK_PREVIEW: true,
+    ENABLE_BULK_ACTIONS: true,
+  }
+};
