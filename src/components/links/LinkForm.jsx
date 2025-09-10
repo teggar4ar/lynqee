@@ -13,7 +13,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Input } from '../common';
 import { validateLinkData } from '../../utils/validators';
-import { TOUCH_TARGETS, RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
+import { RESPONSIVE_PATTERNS, TOUCH_TARGETS } from '../../utils/mobileUtils';
 // Remove useAlerts for inline-only validation
 
 const LinkForm = ({

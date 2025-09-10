@@ -95,8 +95,10 @@ describe('LinksService CRUD Operations', () => {
         success: true,
         error: null,
         data: expectedCreatedLink,
-        errorCode: null,
-        httpStatus: 200,
+        meta: {
+          wasAutoSetToPrivate: false,
+          publicLinksLimit: 25,
+        }
       });
     });
 
@@ -541,6 +543,15 @@ describe('LinksService CRUD Operations', () => {
         httpStatus: 200,
       });
 
+      // Mock getPublicLinkCountByUserId to return a successful count
+      vi.spyOn(LinksService, 'getPublicLinkCountByUserId').mockResolvedValue({
+        success: true,
+        error: null,
+        data: 10, // Below the public limit
+        errorCode: null,
+        httpStatus: 200,
+      });
+
       // Mock create operation
       supabase.from.mockReturnValueOnce({
         insert: vi.fn().mockReturnValue({
@@ -558,8 +569,10 @@ describe('LinksService CRUD Operations', () => {
         success: true,
         error: null,
         data: createdLink,
-        errorCode: null,
-        httpStatus: 200,
+        meta: {
+          wasAutoSetToPrivate: false,
+          publicLinksLimit: 25,
+        }
       });
 
       // Update the link
@@ -877,7 +890,7 @@ describe('LinksService CRUD Operations', () => {
           error: null,
         });
 
-        const mockEq = vi.fn((field, value) => {
+        const mockEq = vi.fn((field, _value) => {
           if (field === 'is_public') {
             return { order: mockOrder };
           }
@@ -921,7 +934,7 @@ describe('LinksService CRUD Operations', () => {
           limit: mockLimit,
         });
 
-        const mockEq = vi.fn((field, value) => {
+        const mockEq = vi.fn((field, _value) => {
           if (field === 'is_public') {
             return { order: mockOrder };
           }

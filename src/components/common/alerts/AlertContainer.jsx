@@ -86,7 +86,10 @@ export const AlertContainer = ({ alerts = [], onDismiss }) => {
       if (!grouped[position]) {
         grouped[position] = [];
       }
-      grouped[position].push(alert);
+      
+      // Update the alert object with the resolved position so Toast component gets the correct position
+      const alertWithPosition = { ...alert, position };
+      grouped[position].push(alertWithPosition);
     });
     
     return grouped;

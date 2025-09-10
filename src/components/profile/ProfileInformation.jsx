@@ -15,7 +15,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Avatar, Button, Input } from '../common';
 import { VALIDATION_MESSAGES, formatMessage } from '../../constants/validationMessages';
-import { TOUCH_TARGETS, TOUCH_SPACING, RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
+import { RESPONSIVE_PATTERNS, TOUCH_SPACING, TOUCH_TARGETS } from '../../utils/mobileUtils';
 
 const ProfileInformation = ({ initialData, username, avatarUrl, onComplete, loading }) => {
   const [formData, setFormData] = useState({

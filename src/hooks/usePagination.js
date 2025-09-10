@@ -8,7 +8,7 @@
  * - Responsive items per page
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 const usePagination = (data = [], initialItemsPerPage = 10) => {
   const [currentPage, setCurrentPage] = useState(1);

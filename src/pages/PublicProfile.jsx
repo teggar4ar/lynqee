@@ -30,7 +30,12 @@ const PublicProfile = () => {
   
   // Fetch profile and links data
   const { data: profile, loading: profileLoading, error: profileError, notFound } = usePublicProfile(username);
-  const { data: allLinks, loading: linksLoading, error: linksError } = usePublicRealtimeLinks(username);
+  const { 
+    data: allLinks, 
+    loading: linksLoading, 
+    error: linksError,
+    isRealTimeConnected
+  } = usePublicRealtimeLinks(username);
 
   // Apply display limit
   const displayLimit = APP_CONFIG.MAX_PUBLIC_LINKS_DISPLAY;
@@ -240,12 +245,22 @@ const PublicProfile = () => {
                 showAnimation={true}
               />
               
-              {/* Show indicator if there are more links */}
-              {hasMoreLinks && (
-                <div className="mt-6 text-center">
-                  <p className="text-sm text-gray-500">
-                    Showing {displayLinks.length} of {allLinks.length} links
-                  </p>
+              {/* Show indicator if there are more links or connection status */}
+              {(hasMoreLinks || !isRealTimeConnected) && (
+                <div className="mt-6 text-center space-y-2">
+                  {hasMoreLinks && (
+                    <p className="text-sm text-gray-500">
+                      Showing {displayLinks.length} of {allLinks.length} links
+                    </p>
+                  )}
+                  
+                  {/* Subtle connection status indicator for public profile */}
+                  {!isRealTimeConnected && allLinks && allLinks.length > 0 && (
+                    <div className="flex items-center justify-center space-x-1 text-xs text-amber-600">
+                      <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
+                      <span>Live updates paused</span>
+                    </div>
+                  )}
                 </div>
               )}
             </ErrorBoundary>

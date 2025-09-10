@@ -15,7 +15,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Avatar, AvatarUpload, Button, ErrorDisplay } from '../common';
-import { TOUCH_TARGETS, TOUCH_SPACING, RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
+import { RESPONSIVE_PATTERNS, TOUCH_SPACING, TOUCH_TARGETS } from '../../utils/mobileUtils';
 
 const AvatarSelection = ({ 
   userId, 

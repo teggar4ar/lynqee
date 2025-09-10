@@ -57,6 +57,7 @@ export const ERROR_MESSAGES = {
   // User-friendly error messages by type
   TYPE: {
     network: 'Unable to connect to the server. Please check your internet connection and try again.',
+    realtimeConnection: 'Real-time updates temporarily unavailable. Your changes are still being saved.',
     profileNotFound: 'The requested content was not found.',
     auth: 'The email or password you entered is incorrect. Please check and try again.',
     emailVerification: 'Please verify your email address before signing in. Check your inbox for a verification link.',
@@ -74,6 +75,7 @@ export const ERROR_MESSAGES = {
       duplicate: 'A link with this URL already exists in your collection.',
       validation: 'Please ensure you have a valid URL and link information, then try again.',
       network: 'Unable to save your link. Please check your connection and try again.',
+      realtimeConnection: 'Real-time link updates temporarily unavailable. Your changes are still being saved.',
       linkLimit: 'You have reached the maximum number of links allowed for your profile. Please delete some links before adding new ones.',
       publicLinkLimit: 'You have reached the maximum number of public links allowed. Please set some links to private before adding more.',
       visibility: 'Unable to change link visibility. Please try again.',
@@ -83,6 +85,7 @@ export const ERROR_MESSAGES = {
       duplicate: 'This username is already taken. Please choose a different profile name.',
       validation: 'Please check your profile information is in the correct format and try again.',
       network: 'Unable to update your profile. Please check your connection and try again.',
+      realtimeConnection: 'Real-time profile updates temporarily unavailable. Your changes are still being saved.',
       general: 'Failed to update your profile. Please try again.'
     },
     auth: {
@@ -91,6 +94,11 @@ export const ERROR_MESSAGES = {
       network: 'Unable to sign in. Please check your connection and try again.',
       auth: 'Please check your email and password, then sign in again.',
       general: 'Sign in failed. Please try again.'
+    },
+    realtime: {
+      realtimeConnection: 'Real-time connection updates temporarily unavailable. Please refresh the page.',
+      network: 'Connection lost. Attempting to reconnect...',
+      general: 'Real-time features temporarily unavailable.'
     }
   }
 };

@@ -25,7 +25,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { GripVertical, Info, Link, Plus, Search, X, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, GripVertical, Info, Link, Plus, RefreshCw, Search, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.js';
 import { useUserLinks } from '../hooks/useUserLinks.js';
 import { useLinkReordering } from '../hooks/useLinkReordering.js';
@@ -35,22 +35,21 @@ import { LinksSkeleton, RefreshIndicator } from '../components/common/ModernLoad
 import { DashboardLayout } from '../components/dashboard';
 import { AddLinkModal, DeleteLinkModal, DraggableLink, EditLinkModal } from '../components/links';
 import { getErrorType } from '../utils/errorUtils';
-import { TOUCH_TARGETS, RESPONSIVE_PATTERNS } from '../utils/mobileUtils';
+import { RESPONSIVE_PATTERNS, TOUCH_SPACING, TOUCH_TARGETS } from '../utils/mobileUtils';
 
 const LinksPage = () => {
   const { user } = useAuth();
-  const { showWarning } = useAlerts();
+  const { showWarning, showInfo } = useAlerts();
   const { 
     data: links, 
-    publicLinks,
-    privateLinks,
     stats,
     loading, 
     refreshing,
     error, 
     refetch,
     removeOptimistic,
-    toggleVisibility
+    toggleVisibility,
+    isRealTimeConnected
   } = useUserLinks(user?.id);
 
   const [showAddLinkModal, setShowAddLinkModal] = useState(false);
@@ -149,7 +148,7 @@ const LinksPage = () => {
   // Reset pagination when filters change
   useEffect(() => {
     resetPagination();
-  }, [searchQuery, viewMode]); // Removed resetPagination from deps since it's memoized
+  }, [searchQuery, viewMode, resetPagination]);
 
   // Handle Add Link Modal
   const handleOpenAddLinkModal = () => {
@@ -163,6 +162,18 @@ const LinksPage = () => {
   const handleLinkAdded = (_newLink) => {
     // Real-time subscription will handle the update automatically
     // No need to refetch since real-time updates are working
+    
+    // Show contextual message if real-time is down
+    if (!isRealTimeConnected) {
+      showInfo({
+        title: 'Link Added',
+        message: 'Your link has been saved. Refreshing to show latest updates...',
+        duration: 3000,
+        position: 'top-center'
+      });
+      // Trigger manual refresh to ensure data consistency
+      setTimeout(() => refetch(), 500);
+    }
   };
 
   // Handle Edit Link Modal
@@ -179,6 +190,18 @@ const LinksPage = () => {
   const handleLinkUpdated = (_updatedLink) => {
     // Real-time subscription will handle the update automatically
     // No need to refetch since real-time updates are working
+    
+    // Show contextual message if real-time is down
+    if (!isRealTimeConnected) {
+      showInfo({
+        title: 'Link Updated',
+        message: 'Your changes have been saved. Refreshing to show latest updates...',
+        duration: 3000,
+        position: 'top-center'
+      });
+      // Trigger manual refresh to ensure data consistency
+      setTimeout(() => refetch(), 500);
+    }
   };
 
   // Handle Delete Link Modal
@@ -198,12 +221,36 @@ const LinksPage = () => {
     if (deletedLink?.id) {
       removeOptimistic(deletedLink.id);
     }
+    
+    // Show contextual message if real-time is down
+    if (!isRealTimeConnected) {
+      showInfo({
+        title: 'Link Deleted',
+        message: 'Your link has been removed. Refreshing to ensure latest updates...',
+        duration: 3000,
+        position: 'top-center'
+      });
+      // Trigger manual refresh to ensure data consistency
+      setTimeout(() => refetch(), 500);
+    }
   };
 
   // Handle visibility toggle
   const handleToggleVisibility = async (link, isPublic) => {
     try {
       await toggleVisibility(link.id, isPublic);
+      
+      // Show contextual message if real-time is down
+      if (!isRealTimeConnected) {
+        showInfo({
+          title: 'Visibility Updated',
+          message: `Link is now ${isPublic ? 'public' : 'private'}. Refreshing to show latest updates...`,
+          duration: 3000,
+          position: 'top-center'
+        });
+        // Trigger manual refresh to ensure data consistency
+        setTimeout(() => refetch(), 500);
+      }
     } catch (error) {
       console.error('Failed to toggle link visibility:', error);
       
@@ -259,7 +306,19 @@ const LinksPage = () => {
               </div>
               
               {/* Add Link Button */}
-              <div className="flex-shrink-0">
+              <div className="flex items-center space-x-2 flex-shrink-0">
+                {/* Manual Refresh Button - more prominent when real-time is down */}
+                <Button
+                  variant={!isRealTimeConnected ? "secondary" : "outline"}
+                  onClick={refetch}
+                  disabled={loading || refreshing}
+                  className={`px-3 py-2 text-sm font-medium min-h-[40px] ${!isRealTimeConnected ? 'ring-2 ring-amber-200' : ''}`}
+                  title={!isRealTimeConnected ? "Manual refresh mode - click to get latest updates" : "Refresh links"}
+                >
+                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  <span className="sr-only">Refresh</span>
+                </Button>
+                
                 <Button
                   variant="primary"
                   onClick={handleOpenAddLinkModal}
@@ -277,47 +336,66 @@ const LinksPage = () => {
           {/* Filter Tabs and Stats */}
           <div className={`${RESPONSIVE_PATTERNS.CARD_SIMPLE} mb-4`}>
             {/* Stats Display */}
-            <div className="px-4 py-3 border-b border-gray-100">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">
-                  {stats.total} total link{stats.total !== 1 ? 's' : ''}
-                </span>
-                <div className="flex items-center space-x-4 text-xs">
+            <div className={`${RESPONSIVE_PATTERNS.CONTAINER_PADDING_SMALL}`}>
+              <div className={`${RESPONSIVE_PATTERNS.FLEX_ROW} pb-3 border-b border-gray-100`}>
+                <div className={`flex items-center ${TOUCH_SPACING.X_COMFORTABLE}`}>
+                  <span className={RESPONSIVE_PATTERNS.CARD_TITLE}>
+                    {stats.total} total link{stats.total !== 1 ? 's' : ''}
+                  </span>
+                  
+                  {/* Connection status indicator */}
+                  {!isRealTimeConnected && (
+                    <div className={`flex items-center ${TOUCH_SPACING.X_MIN} text-xs text-amber-600 md:text-sm`} title="Real-time updates temporarily unavailable">
+                      <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse md:w-2 md:h-2"></div>
+                      <span className="hidden sm:inline">Manual refresh mode</span>
+                      <span className="sm:hidden">Manual</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className={`flex items-center ${TOUCH_SPACING.X_COMFORTABLE}`}>
                   <span className="flex items-center">
-                    <div className="w-2 h-2 bg-forest-green rounded-full mr-1"></div>
-                    {stats.public} public
+                    <div className="w-2 h-2 bg-forest-green rounded-full mr-1.5 md:w-2.5 md:h-2.5 md:mr-2"></div>
+                    <span className={`font-medium ${RESPONSIVE_PATTERNS.CARD_SUBTITLE}`}>{stats.public}</span>
+                    <span className={`ml-1 ${RESPONSIVE_PATTERNS.CARD_SUBTITLE}`}>public</span>
                   </span>
                   <span className="flex items-center">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full mr-1"></div>
-                    {stats.private} private
+                    <div className="w-2 h-2 bg-gray-400 rounded-full mr-1.5 md:w-2.5 md:h-2.5 md:mr-2"></div>
+                    <span className={`font-medium ${RESPONSIVE_PATTERNS.CARD_SUBTITLE}`}>{stats.private}</span>
+                    <span className={`ml-1 ${RESPONSIVE_PATTERNS.CARD_SUBTITLE}`}>private</span>
                   </span>
                 </div>
               </div>
-            </div>
 
-            {/* Filter Tabs */}
-            <div className="px-4 py-3">
-              <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
-                {[
-                  { key: 'all', label: 'All Links', count: stats.total },
-                  { key: 'public', label: 'Public', count: stats.public },
-                  { key: 'private', label: 'Private', count: stats.private }
-                ].map(({ key, label, count }) => (
-                  <button
-                    key={key}
-                    onClick={() => setViewMode(key)}
-                    className={`
-                      px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
-                      ${TOUCH_TARGETS.MIN} flex items-center justify-center flex-shrink-0
-                      ${viewMode === key
-                        ? 'bg-golden-yellow text-white shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                      }
-                    `}
-                  >
-                    {label} ({count})
-                  </button>
-                ))}
+              {/* Filter Tabs */}
+              <div className="pt-3">
+                <div className={`flex ${TOUCH_SPACING.X_COMFORTABLE} overflow-x-auto scrollbar-hide`}>
+                  {[
+                    { key: 'all', label: 'All Links', shortLabel: 'All', count: stats.total },
+                    { key: 'public', label: 'Public', shortLabel: 'Public', count: stats.public },
+                    { key: 'private', label: 'Private', shortLabel: 'Private', count: stats.private }
+                  ].map(({ key, label, shortLabel, count }) => (
+                    <button
+                      key={key}
+                      onClick={() => setViewMode(key)}
+                      className={`
+                        ${RESPONSIVE_PATTERNS.BUTTON} flex-shrink-0
+                        ${TOUCH_TARGETS.MIN}
+                        ${viewMode === key
+                          ? 'bg-golden-yellow text-white shadow-sm ring-2 ring-golden-yellow/20'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200'
+                        }
+                      `}
+                    >
+                      <span className="md:hidden">
+                        {shortLabel} ({count})
+                      </span>
+                      <span className="hidden md:inline">
+                        {label} ({count})
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

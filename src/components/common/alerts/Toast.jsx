@@ -72,6 +72,7 @@ export const Toast = ({
   // State for controlling animation
   const [isExiting, setIsExiting] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
+  const [swipeDirection, setSwipeDirection] = useState(null); // Track swipe direction for exit animation
   const touchStart = useRef(null);
   const touchStartTime = useRef(null);
   const styles = toastStyles[type];
@@ -191,15 +192,24 @@ export const Toast = ({
   
   const handleTouchMove = (e) => {
     if (touchStart.current !== null) {
+      // Prevent default to avoid interfering with swipe
+      e.preventDefault();
+      
       const touchX = e.touches[0].clientX;
       const diff = touchX - touchStart.current;
       
-      // Allow swiping in one direction (right-to-left on right side, left-to-right on left side)
-      // This is based on the position of the toast
+      // Allow swiping in appropriate directions based on position
+      // For center positions (mobile), allow both left and right swipes
+      // For positioned alerts, maintain directional logic
       
       if (position.includes('right') && diff < 0) {
+        // Right-positioned: swipe left to dismiss
         setSwipeOffset(diff);
       } else if (position.includes('left') && diff > 0) {
+        // Left-positioned: swipe right to dismiss
+        setSwipeOffset(diff);
+      } else if (position.includes('center')) {
+        // Center-positioned (mobile): allow both directions
         setSwipeOffset(diff);
       }
     }
@@ -209,6 +219,8 @@ export const Toast = ({
     const threshold = 100; // px to trigger dismiss
     
     if (Math.abs(swipeOffset) > threshold) {
+      // Store swipe direction for exit animation
+      setSwipeDirection(swipeOffset > 0 ? 'right' : 'left');
       // Medium haptic feedback on successful dismiss
       triggerHapticFeedback('medium');
       handleDismiss();
@@ -247,11 +259,16 @@ export const Toast = ({
         ${isExiting ? 
           (position?.includes('right') ? 'translate-x-full opacity-0' : 
            position?.includes('left') ? '-translate-x-full opacity-0' : 
+           position?.includes('center') ? 
+             (swipeDirection === 'right' ? 'translate-x-full opacity-0' : '-translate-x-full opacity-0') :
            'translate-y-2 opacity-0') : 
           'translate-y-0 translate-x-0 opacity-100'
         }
       `}
-      style={swipeOffset ? { transform: `translateX(${swipeOffset}px)` } : {}}
+      style={{
+        transform: swipeOffset ? `translateX(${swipeOffset}px)` : undefined,
+        opacity: swipeOffset ? Math.max(0.3, 1 - Math.abs(swipeOffset) / 200) : 1
+      }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

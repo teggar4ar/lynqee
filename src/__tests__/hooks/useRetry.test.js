@@ -158,7 +158,9 @@ describe('useRetry (Enhanced)', () => {
       let promise;
       
       await act(async () => {
-        promise = result.current.retry();
+        promise = result.current.retry().catch(() => {
+          // Handle expected rejection when aborted
+        });
         // Wait a bit for the first attempt to start
         await vi.advanceTimersByTimeAsync(10);
       });
@@ -427,7 +429,9 @@ describe('useRetry (Enhanced)', () => {
       }));
       
       act(() => {
-        result.current.retry();
+        result.current.retry().catch(() => {
+          // Handle expected rejection
+        });
       });
       
       unmount();

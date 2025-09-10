@@ -118,10 +118,16 @@ const Dashboard = () => {
                     <h2 className="text-lg font-semibold text-gray-900 md:text-xl">
                       Your Links
                     </h2>
-                    {isRealTimeConnected && (
-                      <div className="flex items-center space-x-1">
+                    {/* Real-time connection status indicator */}
+                    {isRealTimeConnected ? (
+                      <div className="flex items-center space-x-1" title="Real-time updates active">
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                         <span className="text-xs text-gray-600 hidden md:inline">Live</span>
+                      </div>
+                    ) : links && links.length > 0 && (
+                      <div className="flex items-center space-x-1" title="Manual refresh mode">
+                        <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-amber-600 hidden md:inline">Manual</span>
                       </div>
                     )}
                   </div>

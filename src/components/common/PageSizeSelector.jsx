@@ -11,7 +11,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import { ChevronDown } from 'lucide-react';
-import { TOUCH_TARGETS, RESPONSIVE_PATTERNS, TOUCH_SPACING } from '../../utils/mobileUtils';
+import { RESPONSIVE_PATTERNS, TOUCH_SPACING, TOUCH_TARGETS } from '../../utils/mobileUtils';
 
 const PageSizeSelector = ({
   currentPageSize,
@@ -27,10 +27,6 @@ const PageSizeSelector = ({
   const [isPositionCalculated, setIsPositionCalculated] = useState(false);
 
   // Don't show if there are no items
-  if (totalItems === 0) {
-    return null;
-  }
-
   // Calculate dropdown position when showing
   useEffect(() => {
     if (showDropdown && buttonRef.current) {
@@ -104,6 +100,11 @@ const PageSizeSelector = ({
       window.removeEventListener('resize', handleResize);
     };
   }, [showDropdown]);
+
+  // Early return after all hooks
+  if (totalItems === 0) {
+    return null;
+  }
 
   const handleOptionSelect = (size) => {
     onPageSizeChange(size);

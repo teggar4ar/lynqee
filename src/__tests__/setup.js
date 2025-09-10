@@ -18,11 +18,27 @@ beforeEach(() => {
 });
 
 // Mock environment variables for tests
+// Mock import.meta.env for Vite environment variables
+Object.defineProperty(global, 'import', {
+  value: {
+    meta: {
+      env: {
+        VITE_SUPABASE_URL: 'https://test.supabase.co',
+        VITE_SUPABASE_ANON_KEY: 'test-anon-key',
+        MODE: 'test',
+        DEV: true,
+        PROD: false,
+      }
+    }
+  },
+  writable: true,
+});
+
 global.process = {
   ...global.process,
   env: {
     ...global.process?.env,
-    VITE_SUPABASE_URL: 'http://localhost:54321',
+    VITE_SUPABASE_URL: 'https://test.supabase.co',
     VITE_SUPABASE_ANON_KEY: 'test-anon-key',
   },
   listeners: vi.fn(() => []),
@@ -61,6 +77,24 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+// Mock window.location for navigation tests
+Object.defineProperty(window, 'location', {
+  writable: true,
+  value: {
+    origin: 'http://localhost:3000',
+    href: 'http://localhost:3000/',
+    hostname: 'localhost',
+    port: '3000',
+    protocol: 'http:',
+    pathname: '/',
+    search: '',
+    hash: '',
+    reload: vi.fn(),
+    assign: vi.fn(),
+    replace: vi.fn(),
+  },
+});
+
 // Mock IntersectionObserver for components that use it
 global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
@@ -80,43 +114,50 @@ global.URL.createObjectURL = vi.fn(() => 'mocked-url');
 global.URL.revokeObjectURL = vi.fn();
 
 // Mock Supabase client globally
-vi.mock('../services/supabase.js', () => ({
-  supabase: {
+const mockSupabaseClient = {
+  from: vi.fn(() => ({
+    select: vi.fn().mockReturnThis(),
+    insert: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    delete: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+    single: vi.fn().mockResolvedValue({ data: null, error: null }),
+    then: vi.fn(),
+  })),
+  storage: {
     from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValue({ data: [], error: null }),
-      single: vi.fn().mockResolvedValue({ data: null, error: null }),
-      then: vi.fn(),
-    })),
-    storage: {
-      from: vi.fn(() => ({
-        upload: vi.fn(),
-        remove: vi.fn(),
-        getPublicUrl: vi.fn(),
-      })),
-    },
-    auth: {
-      signInWithOAuth: vi.fn(),
-      signInWithPassword: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
-      resetPasswordForEmail: vi.fn(),
-      getSession: vi.fn(),
-      getUser: vi.fn(),
-      onAuthStateChange: vi.fn(() => ({
-        data: { subscription: { unsubscribe: vi.fn() } },
-      })),
-    },
-    channel: vi.fn(() => ({
-      on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn(),
+      upload: vi.fn(),
+      remove: vi.fn(),
+      getPublicUrl: vi.fn(),
     })),
   },
+  auth: {
+    signInWithOAuth: vi.fn(),
+    signInWithPassword: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+    resetPasswordForEmail: vi.fn(),
+    getSession: vi.fn(),
+    getUser: vi.fn(),
+    onAuthStateChange: vi.fn(() => ({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    })),
+  },
+  channel: vi.fn(() => ({
+    on: vi.fn().mockReturnThis(),
+    subscribe: vi.fn(() => ({
+      unsubscribe: vi.fn()
+    })),
+    removeChannel: vi.fn(),
+  })),
+  removeChannel: vi.fn(),
+};
+
+vi.mock('../services/supabase.js', () => ({
+  default: mockSupabaseClient,
+  supabase: mockSupabaseClient, // Add the named export that's missing!
   SUPABASE_TABLES: {
     PROFILES: 'profiles',
     LINKS: 'links',

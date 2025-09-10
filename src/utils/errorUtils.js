@@ -30,7 +30,29 @@ export const getErrorType = (error) => {
   
   const errorLower = errorMessage.toLowerCase();
   
-  // Network-related errors
+  // Real-time connection errors (more specific than general network)
+  if (
+    errorLower.includes('websocket') ||
+    errorLower.includes('realtime') ||
+    errorLower.includes('subscription failed') ||
+    errorLower.includes('channel_error') ||
+    errorLower.includes('subscription_error') ||
+    errorLower.includes('realtime connection') ||
+    errorLower.includes('real-time connection') ||
+    errorLower.includes('connection lost') ||
+    errorLower.includes('realtime timeout') ||
+    errorLower.includes('real-time connection timeout') ||
+    errorLower.includes('connection timed out') ||
+    errorLower.includes('timed out') ||
+    errorLower.includes('timed_out') ||
+    error.code === 'REALTIME_CONNECTION_ERROR' ||
+    error.code === 'REALTIME_TIMEOUT' ||
+    error.code === 'WEBSOCKET_ERROR'
+  ) {
+    return 'realtimeConnection';
+  }
+  
+  // Network-related errors (general network issues)
   if (
     errorLower.includes('failed to fetch') ||
     errorLower.includes('network error') ||

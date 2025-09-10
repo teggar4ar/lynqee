@@ -382,5 +382,99 @@ describe('errorUtils (Enhanced)', () => {
       expect(getErrorType(true)).toBe('general');
       expect(getErrorType([])).toBe('general');
     });
+
+    it('detects real-time connection errors correctly', () => {
+      const websocketError = new Error('WebSocket connection failed');
+      expect(getErrorType(websocketError)).toBe('realtimeConnection');
+      
+      const realtimeError = { message: 'realtime subscription failed' };
+      expect(getErrorType(realtimeError)).toBe('realtimeConnection');
+      
+      const channelError = new Error('channel_error occurred');
+      expect(getErrorType(channelError)).toBe('realtimeConnection');
+
+      const subscriptionError = { message: 'subscription failed' };
+      expect(getErrorType(subscriptionError)).toBe('realtimeConnection');
+
+      const realtimeCodeError = { code: 'REALTIME_CONNECTION_ERROR' };
+      expect(getErrorType(realtimeCodeError)).toBe('realtimeConnection');
+    });
+
+    it('detects connection timeout errors correctly', () => {
+      const timeoutError = new Error('Connection timed out');
+      expect(getErrorType(timeoutError)).toBe('realtimeConnection');
+      
+      const realtimeTimeoutError = { message: 'Real-time connection timeout' };
+      expect(getErrorType(realtimeTimeoutError)).toBe('realtimeConnection');
+    });
+  });
+
+  describe('Real-time Connection Error Handling', () => {
+    it('provides user-friendly messages for real-time connection errors', () => {
+      const websocketError = new Error('WebSocket connection failed');
+      const friendlyMessage = getUserFriendlyErrorMessage(websocketError);
+      
+      expect(friendlyMessage).toContain('Real-time updates temporarily unavailable');
+      expect(friendlyMessage).toContain('Your changes are still being saved');
+    });
+
+    it('handles contextual real-time error messages', () => {
+      const realtimeError = { message: 'channel_error' };
+      const contextualMessage = getContextualErrorMessage(realtimeError, 'realtime');
+      
+      expect(contextualMessage).toContain('connection');
+      expect(contextualMessage).toContain('updates');
+    });
+
+    it('identifies real-time errors as non-retryable for immediate retry', () => {
+      const realtimeError = new Error('realtime subscription failed');
+      
+      // Real-time errors should be handled by ConnectionManager, not immediate retry
+      expect(shouldRetryError(realtimeError)).toBe(false);
+    });
+
+    it('treats real-time errors as network-related for categorization', () => {
+      const websocketError = new Error('WebSocket connection failed');
+      
+      expect(isNetworkError(websocketError)).toBe(true);
+    });
+  });
+
+  describe('Connection State Error Messages', () => {
+    it('provides appropriate messages for different connection states', () => {
+      const scenarios = [
+        {
+          error: new Error('CHANNEL_ERROR'),
+          expectedInMessage: 'temporarily unavailable'
+        },
+        {
+          error: { message: 'SUBSCRIPTION_ERROR' },
+          expectedInMessage: 'temporarily unavailable'
+        },
+        {
+          error: new Error('TIMED_OUT'),
+          expectedInMessage: 'temporarily unavailable'
+        },
+        {
+          error: { code: 'REALTIME_CONNECTION_ERROR' },
+          expectedInMessage: 'temporarily unavailable'
+        }
+      ];
+
+      scenarios.forEach(({ error, expectedInMessage }) => {
+        const message = getUserFriendlyErrorMessage(error);
+        expect(message.toLowerCase()).toContain(expectedInMessage);
+      });
+    });
+
+    it('maintains consistency with existing error message patterns', () => {
+      const realtimeError = new Error('WebSocket connection failed');
+      const message = getUserFriendlyErrorMessage(realtimeError);
+      
+      // Should follow the existing pattern of helpful, non-technical messages
+      expect(message).not.toContain('WebSocket');
+      expect(message).not.toContain('channel_error');
+      expect(message).toContain('Real-time');
+    });
   });
 });

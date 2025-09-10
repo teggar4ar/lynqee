@@ -8,7 +8,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { AlertTriangle, Link } from 'lucide-react';
-import { TOUCH_TARGETS, RESPONSIVE_PATTERNS } from '../../utils/mobileUtils';
+import { RESPONSIVE_PATTERNS, TOUCH_TARGETS } from '../../utils/mobileUtils';
 import { Button, ErrorDisplay, Modal } from '../common';
 import LinksService from '../../services/LinksService.js';
 import { useAlerts } from '../../hooks';

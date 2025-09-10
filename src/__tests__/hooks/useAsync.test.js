@@ -313,8 +313,11 @@ describe('useAsync (Enhanced)', () => {
       
       const { result, unmount } = renderHook(() => useAsync(mockAsyncFn));
       
-      act(() => {
-        result.current.execute();
+      // Start the async operation and handle the promise rejection
+      const executePromise = act(() => {
+        return result.current.execute().catch(() => {
+          // Handle expected rejection after unmount
+        });
       });
       
       expect(result.current.loading).toBe(true);
@@ -323,6 +326,9 @@ describe('useAsync (Enhanced)', () => {
       
       // Reject the promise after unmount
       rejectPromise(new Error('Cancelled'));
+      
+      // Wait for the promise to be handled
+      await executePromise;
       
       // Should not cause state updates or errors
       expect(true).toBe(true);

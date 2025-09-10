@@ -18,7 +18,7 @@ import { AvatarUpload, Button, Input } from '../common';
 import ErrorDisplay from '../common/error/ErrorDisplay.jsx';
 import { ProfileService } from '../../services';
 import { useAlerts, useAvatar } from '../../hooks';
-import { TOUCH_TARGETS, RESPONSIVE_PATTERNS, TOUCH_SPACING } from '../../utils/mobileUtils';
+import { RESPONSIVE_PATTERNS, TOUCH_SPACING, TOUCH_TARGETS } from '../../utils/mobileUtils';
 import useAsync from '../../hooks/useAsync.js';
 import { validateUsername } from '../../utils/validators.js';
 import { SERVICE_ERROR_MESSAGES, VALIDATION_MESSAGES, formatMessage } from '../../constants/validationMessages';

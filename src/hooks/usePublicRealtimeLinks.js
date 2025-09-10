@@ -2,29 +2,114 @@
  * usePublicRealtimeLinks Hook
  * 
  * Hook for fetching public links data by username with real-time updates
+ * Uses useEnhancedRealtime for centralized connection management
  * @param {string} username - The username to fetch links for
  * @returns {Object} { data, loading, error, refetch, isRealTimeConnected }
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { supabase } from '../services/supabase.js';
+import { useCallback, useEffect, useState } from 'react';
 import { ProfileService } from '../services';
 import LinksService from '../services/LinksService.js';
+import { useAlerts } from './useAlerts.js';
+import { useEnhancedRealtime } from './useEnhancedRealtime.js';
 
 export const usePublicRealtimeLinks = (username) => {
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isRealTimeConnected, setIsRealTimeConnected] = useState(false);
   const [profileId, setProfileId] = useState(null);
   
-  // Subscription tracking
-  const subscriptionRef = useRef(null);
+  const { showInfo } = useAlerts();
 
+  // Handle real-time events for public links
+  const handleRealtimeEvent = useCallback((payload) => {
+    if (!payload || !profileId) return;
+
+    console.warn('[usePublicRealtimeLinks] Received real-time event:', payload);
+    
+    try {
+      const { eventType, new: newRecord, old: oldRecord } = payload;
+      
+      switch (eventType) {
+        case 'INSERT':
+          if (newRecord && newRecord.user_id === profileId && newRecord.is_public) {
+            setLinks(prevLinks => {
+              // Check if link already exists to prevent duplicates
+              const existingLinkIndex = prevLinks.findIndex(link => link.id === newRecord.id);
+              if (existingLinkIndex === -1) {
+                return [...prevLinks, newRecord].sort((a, b) => (a.position || 0) - (b.position || 0));
+              }
+              return prevLinks;
+            });
+          }
+          break;
+          
+        case 'UPDATE':
+          if (newRecord && newRecord.user_id === profileId) {
+            setLinks(prevLinks => {
+              const existingLinkIndex = prevLinks.findIndex(link => link.id === newRecord.id);
+              
+              if (newRecord.is_public) {
+                // Link is now public or updated
+                if (existingLinkIndex >= 0) {
+                  // Update existing public link
+                  const updatedLinks = prevLinks.map(link => 
+                    link.id === newRecord.id ? { ...link, ...newRecord } : link
+                  );
+                  return updatedLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
+                } else {
+                  // Add newly public link
+                  const newLinks = [...prevLinks, newRecord];
+                  return newLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
+                }
+              } else {
+                // Link is now private - remove it if it was public
+                return prevLinks.filter(link => link.id !== newRecord.id);
+              }
+            });
+          }
+          break;
+          
+        case 'DELETE':
+          if (oldRecord && oldRecord.user_id === profileId) {
+            setLinks(prevLinks => prevLinks.filter(link => link.id !== oldRecord.id));
+          }
+          break;
+          
+        default:
+          console.warn('[usePublicRealtimeLinks] Unknown event type:', eventType);
+      }
+    } catch (error) {
+      console.error('[usePublicRealtimeLinks] Error handling real-time event:', error);
+    }
+  }, [profileId]);
+
+  // Use enhanced real-time connection management
+  const {
+    isConnected: isRealTimeConnected,
+    connectionError,
+    connectionQuality,
+    reconnectInfo,
+    forceReconnect,
+    cancelReconnection
+  } = useEnhancedRealtime({
+    channelName: profileId ? `public-links-${profileId}` : null,
+    subscriptionConfig: profileId ? {
+      event: '*',
+      schema: 'public',
+      table: 'links',
+      filter: `user_id=eq.${profileId}`
+    } : null,
+    onPayload: handleRealtimeEvent,
+    enabled: !!profileId && !!username
+  });
+
+  // Fetch public links by username
   const fetchLinks = useCallback(async () => {
     if (!username) {
       setLinks([]);
       setLoading(false);
+      setProfileId(null);
       return;
     }
 
@@ -53,6 +138,8 @@ export const usePublicRealtimeLinks = (username) => {
           }
         } catch (profileErr) {
           console.error('[usePublicRealtimeLinks] Could not get profile ID for subscription:', profileErr);
+          // Still set profileId to null to cleanup any existing subscriptions
+          setProfileId(null);
         }
       }
       
@@ -60,114 +147,31 @@ export const usePublicRealtimeLinks = (username) => {
       console.error('[usePublicRealtimeLinks] Error fetching links:', err);
       setError(err.message || 'Failed to load links');
       setLinks([]);
+      setProfileId(null);
     } finally {
       setLoading(false);
     }
   }, [username]);
-
-  // Set up real-time subscription
-  const setupRealTimeSubscription = useCallback(() => {
-    if (!profileId) {
-      return;
-    }
-    
-    if (subscriptionRef.current) {
-      return;
-    }
-
-    const subscription = supabase
-      .channel(`public-links-${profileId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'links',
-          filter: `user_id=eq.${profileId}`
-        },
-        (payload) => {
-          switch (payload.eventType) {
-            case 'INSERT':
-              // Only add if it's a public link
-              if (payload.new.is_public) {
-                setLinks(prevLinks => {
-                  const newLinks = [...prevLinks, payload.new];
-                  const sortedLinks = newLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
-                  return sortedLinks;
-                });
-              }
-              break;
-              
-            case 'UPDATE':
-              // Handle visibility changes - add/remove based on is_public
-              setLinks(prevLinks => {
-                const existingLinkIndex = prevLinks.findIndex(link => link.id === payload.new.id);
-                
-                if (payload.new.is_public) {
-                  // Link is now public
-                  if (existingLinkIndex >= 0) {
-                    // Update existing public link
-                    const updatedLinks = prevLinks.map(link => 
-                      link.id === payload.new.id ? payload.new : link
-                    );
-                    return updatedLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
-                  } else {
-                    // Add newly public link
-                    const newLinks = [...prevLinks, payload.new];
-                    return newLinks.sort((a, b) => (a.position || 0) - (b.position || 0));
-                  }
-                } else {
-                  // Link is now private - remove it
-                  return prevLinks.filter(link => link.id !== payload.new.id);
-                }
-              });
-              break;
-              
-            case 'DELETE':
-              // Remove the deleted link
-              setLinks(prevLinks => {
-                const filteredLinks = prevLinks.filter(link => link.id !== payload.old.id);
-                return filteredLinks;
-              });
-              break;
-          }
-        }
-      )
-      .subscribe((status) => {
-        setIsRealTimeConnected(status === 'SUBSCRIBED');
-      });
-
-    subscriptionRef.current = subscription;
-  }, [profileId]);
-
-  // Clean up subscription
-  const cleanupSubscription = useCallback(() => {
-    if (subscriptionRef.current) {
-      supabase.removeChannel(subscriptionRef.current);
-      subscriptionRef.current = null;
-      setIsRealTimeConnected(false);
-    }
-  }, []);
 
   // Fetch links when username changes
   useEffect(() => {
     fetchLinks();
   }, [fetchLinks]);
 
-  // Set up subscription when profileId is available
-  useEffect(() => {
-    if (profileId) {
-      setupRealTimeSubscription();
-    }
-
-    // Cleanup on unmount or when profileId changes
-    return cleanupSubscription;
-  }, [profileId, setupRealTimeSubscription, cleanupSubscription]);
-
-  // Manual refresh function
+  // Manual refresh function with contextual feedback
   const refetch = useCallback(() => {
-    fetchLinks();
-  }, [fetchLinks]);
+    // Show contextual message when real-time is unavailable
+    if (!isRealTimeConnected && !loading) {
+      showInfo({
+        title: 'Getting Latest Updates',
+        message: 'Refreshing to ensure you have the most current information',
+        duration: 2000,
+        position: 'top-center'
+      });
+    }
+    
+    return fetchLinks();
+  }, [fetchLinks, isRealTimeConnected, loading, showInfo]);
 
   return {
     data: links,
@@ -175,8 +179,16 @@ export const usePublicRealtimeLinks = (username) => {
     error,
     refetch,
     isRealTimeConnected,
+    connectionError,
+    connectionQuality,
+    reconnectInfo,
     // Computed properties for common checks
     isEmpty: !loading && links.length === 0,
-    count: links.length
+    count: links.length,
+    // Enhanced connection management
+    forceReconnect,
+    cancelReconnection
   };
 };
+
+export default usePublicRealtimeLinks;

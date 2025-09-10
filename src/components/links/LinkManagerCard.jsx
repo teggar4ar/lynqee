@@ -9,7 +9,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import { Edit, Eye, EyeOff, GripVertical, Link, MoreVertical, Trash2 } from 'lucide-react';
-import { TOUCH_TARGETS, RESPONSIVE_PATTERNS, TOUCH_SPACING } from '../../utils/mobileUtils';
+import { RESPONSIVE_PATTERNS, TOUCH_SPACING, TOUCH_TARGETS } from '../../utils/mobileUtils';
 
 const LinkManagerCard = ({ 
   link, 
